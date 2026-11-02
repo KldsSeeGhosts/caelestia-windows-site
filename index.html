@@ -3,7 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Caelestia on Windows</title>
+<title>Caelestia for Windows</title>
+<meta name="description" content="The Caelestia desktop shell, ported from Linux to Windows 11 by a team of AI agents. The build in numbers: cost, tokens, agents, time and milestones.">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#1b1b24">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='10' fill='%231b1b24'/%3E%3Cpath fill='%23b8c3ff' d='M16 4.5l2.1 6.6a4 4 0 0 0 2.7 2.7L27.5 16l-6.7 2.1a4 4 0 0 0-2.7 2.7L16 27.5l-2.1-6.7a4 4 0 0 0-2.7-2.7L4.5 16l6.7-2.2a4 4 0 0 0 2.7-2.7z'/%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Caelestia for Windows">
+<meta property="og:description" content="The Caelestia desktop shell, ported from Linux to Windows 11 by a team of AI agents. The build in numbers.">
+<meta property="og:image" content="https://kldsseeghosts.github.io/caelestia-windows-site/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Caelestia wordmark among bold rounded shapes, with the build's agent, thread, pull request and commit counts.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Caelestia for Windows">
+<meta name="twitter:description" content="The Caelestia desktop shell, ported from Linux to Windows 11 by a team of AI agents. The build in numbers.">
+<meta name="twitter:image" content="https://kldsseeghosts.github.io/caelestia-windows-site/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght,wdth,ROND@6..144,200..700,25..151,0..100&display=swap" rel="stylesheet">
@@ -28,7 +43,8 @@
   --quad:oklch(.85 .09 calc(var(--h) + 130));--on-q:oklch(.28 .07 calc(var(--h) + 130));
   --quin:oklch(.83 .09 calc(var(--h) + 205));--sext:oklch(.83 .1 calc(var(--h) + 290));
   --bar:64px;--edge:10px;--corner:28px;
-  --spring:cubic-bezier(.34,1.56,.64,1);--out:cubic-bezier(.2,.8,.2,1);
+  /* The shell's own curves: expressive default and fast spatial springs, emphasized decelerate. */
+  --spring:cubic-bezier(.38,1.21,.22,1);--spring-fast:cubic-bezier(.42,1.67,.21,.9);--out:cubic-bezier(.05,.7,.1,1);
   --font:"Google Sans Flex","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
   color-scheme:dark;
 }
@@ -44,6 +60,12 @@ a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 ::selection{background:color-mix(in oklch,var(--primary) 40%,transparent)}
 :focus-visible{outline:2px solid var(--primary);outline-offset:3px;border-radius:8px}
+.chip:focus-visible,.spaces a:focus-visible{border-radius:50%}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+/* Numbers land on rolling reels, one per digit, like an odometer. */
+.odo{display:inline-flex;vertical-align:top;line-height:1}
+.odo>span{display:block;height:1em;overflow:visible clip}
+.odo i{display:block;font-style:normal;white-space:pre}
 svg{display:block;overflow:visible}
 
 /* Shell: desk, grain, frame (a huge box-shadow paints the border round a rounded hole) and bar. */
@@ -59,17 +81,21 @@ svg{display:block;overflow:visible}
 .mark{width:28px;height:28px;color:var(--primary);flex:none}
 /* Workspaces, as in the shell: a small dot, and the focused one swells into its shape. */
 .spaces{display:flex;flex-direction:column;align-items:center;padding:6px 0;background:var(--mid);border-radius:999px;width:36px;flex:none}
-.spaces a{display:grid;place-items:center;width:36px;height:36px}
-.spaces svg{width:36px;height:36px;fill:var(--ink-3);transform:scale(.24);transition:transform .55s var(--spring),fill .3s}
-.spaces a:hover svg{fill:var(--ink-2)}
+.spaces a{display:grid;place-items:center;width:36px;height:36px;animation:pop .6s var(--spring-fast) calc(.55s + var(--i) * 55ms) both}
+.spaces svg{width:36px;height:36px;fill:var(--ink-3);transform:scale(.24);transition:transform .5s var(--spring-fast),fill .3s}
+/* Hovering a workspace previews its shape, the way the shell's indicator does. */
+.spaces a.peek svg{transform:scale(.46);fill:var(--ink-2)}
 .spaces a[aria-current="true"] svg{transform:scale(.62);fill:var(--primary)}
+.spaces a:active svg{transform:scale(.36)}
+@keyframes pop{from{scale:0}}
 .papers{display:flex;gap:9px}
 .bar .papers{flex-direction:column;margin-top:auto}
 .chip{--ch:277;width:20px;height:20px;border-radius:50%;flex:none;
   background:radial-gradient(circle at 30% 28%,oklch(.86 .1 var(--ch)) 0 33%,transparent 35%),
     radial-gradient(circle at 72% 70%,oklch(.86 .095 calc(var(--ch) + 60)) 0 27%,transparent 29%),oklch(.3 .05 var(--ch));
-  box-shadow:0 0 0 0 var(--ink);transition:box-shadow .3s,scale .3s var(--spring)}
-.chip:hover{scale:1.15}
+  box-shadow:0 0 0 0 var(--ink);transition:box-shadow .3s,scale .35s var(--spring-fast),rotate .6s var(--spring)}
+.chip:hover{scale:1.2;rotate:40deg}
+.chip:active{scale:.85}
 .chip[aria-pressed="true"]{box-shadow:0 0 0 2px var(--shell),0 0 0 4px var(--ink)}
 @keyframes settle{from{inset:0;border-radius:0}}
 @keyframes slide{from{transform:translateX(calc(-1 * var(--bar)))}}
@@ -139,22 +165,26 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 .state::before{content:"";flex:none;width:9px;height:9px;border-radius:50%;background:oklch(.85 .14 155);box-shadow:0 0 0 5px oklch(.85 .14 155 / .2);animation:pulse 2.4s ease-in-out infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 9px oklch(.85 .14 155 / 0)}}
 .wall{display:flex;align-items:center;gap:12px;color:var(--ink-2);font-size:15px}
-.hint{color:var(--ink-3);font-size:15px}
+.hint{display:flex;align-items:center;gap:6px;padding:5px 7px 5px 14px;border-radius:99px;background:color-mix(in oklch,var(--surface) 78%,transparent);color:var(--ink-2);font-size:15px}
+.hint kbd{display:inline-grid;place-items:center;min-width:26px;height:26px;padding:0 6px;border-radius:9px;background:var(--high);color:var(--ink);font:600 13px/1 var(--font)}
 /* The four numbers sit in shapes along the bottom edge, bleeding off it. */
 .sats{position:absolute;inset:0;z-index:2;pointer-events:none;translate:calc(var(--px,0) * -1cqw) calc(var(--py,0) * -1.2cqh);transition:translate 1.4s var(--out)}
 .sat{--d:25cqw;position:absolute;left:calc(var(--x) * 1%);top:calc(var(--y) * 1%);width:var(--d);aspect-ratio:1;translate:-50% -50%;pointer-events:auto;
-  scale:.4;opacity:0;transition:scale 1.3s var(--spring) calc(1.1s + var(--i) * .1s),opacity .5s calc(1.1s + var(--i) * .1s),top .7s var(--spring)}
+  scale:.4;opacity:0;transition:scale 1.1s var(--spring-fast) calc(1.1s + var(--i) * .1s),opacity .4s calc(1.1s + var(--i) * .1s),transform .5s var(--spring-fast)}
 .on .sat{scale:1;opacity:1}
-.sat:hover{top:calc(var(--y) * 1% - 2.2cqh)}
+.sat:hover{transform:translateY(-2.4cqh)}
 .sat>svg{position:absolute;inset:0;width:100%;height:100%;fill:var(--c);animation:spin var(--rot) linear infinite}
 .sat>div{position:absolute;left:0;right:0;top:calc(var(--ty) * 1%);text-align:center;color:var(--on);pointer-events:none}
+/* Shapes lean toward the pointer, and their labels lean a little further. */
+.sat>svg,.orb>svg{translate:calc(var(--mx,0) * 9%) calc(var(--my,0) * 9%);transition:translate .6s var(--spring)}
+.sat>div,.orb>div{translate:calc(var(--mx,0) * 14%) calc(var(--my,0) * 14%);transition:translate .6s var(--spring)}
 .sat b{display:block;font-size:calc(var(--d) * .24);font-weight:300;font-stretch:112%;letter-spacing:-.045em;line-height:.9;font-variant-numeric:tabular-nums}
-.sat span{display:block;margin-top:.5em;font-size:clamp(13px,calc(var(--d) * .05),19px);font-weight:450;line-height:1.2}
+.sat>div>span{display:block;margin-top:.5em;font-size:clamp(13px,calc(var(--d) * .05),19px);font-weight:450;line-height:1.2}
 
 /* Cost */
 .cost .fig{font-size:min(13.5cqw,calc(33cqw / (var(--len) * .66)),26cqh)}
-.said{position:absolute;left:5.5cqw;bottom:8cqh;width:36cqw;z-index:2}
-.said p{font-size:clamp(32px,4.7cqw,78px);font-weight:300;font-stretch:112%;letter-spacing:-.03em;line-height:1.02;text-wrap:balance}
+.said{position:absolute;left:5.5cqw;bottom:8cqh;width:39cqw;z-index:2}
+.said p{font-size:clamp(30px,min(4.1cqw,7.4cqh),70px);font-weight:300;font-stretch:112%;letter-spacing:-.03em;line-height:1.02;text-wrap:balance}
 .strip{display:flex;gap:4px;height:16px;margin-top:3cqh}
 .strip i{flex:var(--v) 1 0;min-width:6px;border-radius:99px;background:var(--c);scale:0 1;transform-origin:left;transition:scale 1s var(--out) calc(.8s + var(--i) * .1s)}
 .on .strip i{scale:1 1}
@@ -176,6 +206,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 /* Tokens: the stars are drawn on a canvas, so they can arrive at warp speed. */
 .sky{position:absolute;inset:0;color:var(--ink-2)}
 .sky canvas{position:absolute;inset:0;width:100%;height:100%}
+.const{position:absolute;inset:0}
 .lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .lines polyline{fill:none;stroke:var(--primary);stroke-opacity:0;stroke-width:1.2;vector-effect:non-scaling-stroke;stroke-linejoin:round;transition:stroke-opacity 1.8s 2.2s}
 .on .lines polyline{stroke-opacity:.42}
@@ -248,7 +279,8 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   font-size:14px;font-weight:500;color:var(--ink-2)}
 .roster h3 svg{width:16px;height:16px;fill:var(--c);flex:none}
 .roster li{margin-top:.38em;font-size:clamp(18px,1.95cqw,32px);font-weight:300;font-stretch:104%;line-height:1.12;letter-spacing:-.012em;text-wrap:balance}
-.roster li span{color:var(--ink-3)}
+.roster li{font-weight:420}
+.roster li span{color:var(--ink-2);font-weight:300}
 .roster .rv{--rd:calc(.45s + var(--i) * .12s + var(--j,0) * .09s)}
 .tally{position:absolute;left:5.5cqw;right:5.5cqw;bottom:14cqh;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2.6cqw;z-index:2}
 .tally>div{display:flex;flex-direction:column-reverse;justify-content:flex-end}
@@ -281,7 +313,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .sat{--d:44cqw!important;position:relative;left:auto;top:auto;translate:none;justify-self:center}
   .sat:hover{top:auto}
   .sat b{font-size:calc(var(--d) * .27)}
-  .sat span{font-size:clamp(12px,3.2cqw,17px)}
+  .sat>div>span{font-size:clamp(12px,3.2cqw,17px)}
   .cost .fig,.tokens .fig,.agents .fig,.time .fig,.credits .fig{font-size:21cqw!important;text-shadow:none}
   .cap{font-size:clamp(18px,4.6cqw,28px);max-width:none}
   .said{position:relative!important;bottom:auto!important}
@@ -289,6 +321,8 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .stage{position:relative!important;height:min(112cqw,640px)!important;margin-inline:-4cqw}
   .tokens{min-height:100svh}
   .sky{position:absolute!important;inset:0!important;width:auto!important;height:auto!important}
+  /* the constellation moves into the gap between the two figures, clear of the text */
+  .const{inset:25% 0 38% -90%}
   .tokens .each{position:relative!important}
   .tokens .pct{flex-direction:column;align-items:flex-start;gap:12px;margin-top:auto}
   .tokens .pct .fig{font-size:30cqw!important}
@@ -310,6 +344,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .spaces{flex-direction:row;width:auto;height:36px;padding:0 6px}
   .bar .papers{display:none}
   .chip{width:18px;height:18px}
+  .wall{flex-wrap:wrap}
   main{margin:var(--top) var(--edge) var(--edge)}
   .ws{scroll-margin-top:var(--top)}
 }
@@ -320,6 +355,9 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .dsw{translate:calc((var(--x0) + (var(--x1) - var(--x0)) * var(--fr)) * 1cqw) calc((var(--y0) + (var(--y1) - var(--y0)) * var(--fr)) * 1cqh)}
 }
 @media (forced-colors:active){.frame{box-shadow:none;border:2px solid CanvasText}}
+/* In flow, scenes off screen stop their ambient motion. */
+html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
+.nojs{position:fixed;inset:0;z-index:7;display:grid;place-content:center;padding:24px;text-align:center;font-size:19px;color:var(--ink-2)}
 </style>
 </head>
 <body>
@@ -334,6 +372,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 </nav>
 
 <main id="app"></main>
+<noscript><p class="nojs">Caelestia for Windows. This page draws its figures with JavaScript; turn it on to see the build in numbers.</p></noscript>
 <div class="track" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
 
 <script>
@@ -342,11 +381,13 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c =>
     ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
   const isNum = n => typeof n === "number" && isFinite(n);
-  const int = n => isNum(n) ? Math.round(n).toLocaleString("en-US") : "?";
-  const usd = n => isNum(n) ? "$" + n.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "?";
-  const usd0 = n => isNum(n) ? "$" + Math.round(n).toLocaleString("en-US") : "?";
+  // A figure missing from the data shows as a quiet dash, never a guess or a stale count.
+  const NA = "–", NA_SAY = "not available";
+  const int = n => isNum(n) ? Math.round(n).toLocaleString("en-US") : NA;
+  const usd = n => isNum(n) ? "$" + n.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2}) : NA;
+  const usd0 = n => isNum(n) ? "$" + Math.round(n).toLocaleString("en-US") : NA;
   const sum = o => Object.values(o || {}).reduce((a, b) => a + (b || 0), 0);
-  const day = iso => new Date(iso).toLocaleDateString("en-US", {day: "numeric", month: "long"});
+  const day = iso => new Date(iso).toLocaleDateString("en-US", {day: "numeric", month: "long"}).replace(" ", "\u00a0");
   const words = n => ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"][n] ?? String(n);
   const cap1 = s => s.charAt(0).toUpperCase() + s.slice(1);
   const reduced = matchMedia("(prefers-reduced-motion:reduce)");
@@ -357,8 +398,8 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
     "gpt-6.1-terra": "GPT 6.1 Terra", "gpt-6.1-sol": "GPT 6.1 Sol", "gpt-6-astra": "GPT 6 Astra",
     "gpt-6-luna": "GPT 6 Luna", "deepseek-v4.1-flash": "DeepSeek V4.1 Flash", "gemini-4-argon": "Gemini 4 Argon",
     "gemini-3.8-flash": "Gemini 3.8 Flash", "gemini-3.8-flash-high": "Gemini 3.8 Flash High", "gemini-3.8-flash-medium": "Gemini 3.8 Flash Medium",
-    "GLM-5.3": "GLM 5.3"
-  }[id] || id);
+    "GLM-5.3": "GLM 5.3", "GLM-5.3-Flash": "GLM 5.3 Flash"
+  }[id] || String(id).replace(/-/g, " "));
   const roleName = {orchestrator: "Orchestration", implementation: "Implementation", review: "Review", audit: "Audit"};
   const mulberry = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   const pick = (a, not) => { let x; do x = a[Math.floor(Math.random() * a.length)]; while (x === not && a.length > 1); return x; };
@@ -410,10 +451,11 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   const blend = (a, b, t) => { const o = new Float32Array(N); for (let i = 0; i < N; i++) o[i] = Math.max(.25, a[i] + (b[i] - a[i]) * t); return o; };
   const live = new Set(); let raf = 0, last = 0;
   class Morph {
-    constructor(el, name) { this.el = el; this.name = name; this.a = this.b = SH[name]; this.t = 1; this.v = 0; el.setAttribute("d", pathOf(this.a)); el._m = this; }
+    constructor(el, name) { this.el = el; this.home = name; this.snap(name); el._m = this; }
+    snap(name) { live.delete(this); this.name = name; this.a = this.b = SH[name]; this.t = 1; this.v = 0; this.el.setAttribute("d", pathOf(this.a)); }
     to(name) {
       if (name === this.name) return;
-      if (reduced.matches) { this.name = name; this.a = this.b = SH[name]; this.el.setAttribute("d", pathOf(this.a)); return; }
+      if (reduced.matches) { this.snap(name); return; }
       this.a = blend(this.a, this.b, this.t); this.b = SH[name]; this.name = name; this.t = 0; this.v = 0;
       live.add(this); if (!raf) raf = requestAnimationFrame(tick);
     }
@@ -427,8 +469,19 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
     }
     if (live.size) raf = requestAnimationFrame(tick); else { raf = 0; last = 0; }
   }
-  const shapeSvg = (name, cls = "") => `<svg viewBox="-1 -1 2 2" aria-hidden="true" class="${cls}"><path d="${pathOf(SH[name])}" data-shape="${name}"/></svg>`;
-  const arm = root => root.querySelectorAll("path[data-shape]").forEach(p => { if (!p._m) new Morph(p, p.dataset.shape); });
+  const shapeSvg = (name, cls = "", attrs = "") => `<svg viewBox="-1 -1 2 2" aria-hidden="true" class="${cls}" ${attrs}><path d="${pathOf(SH[name])}" data-shape="${name}"/></svg>`;
+  // Shapes marked data-in wait as circles and bloom into their own shape when their scene arrives.
+  const arm = root => root.querySelectorAll("path[data-shape]").forEach(p => {
+    if (p._m) return; const m = new Morph(p, p.dataset.shape);
+    if (p.closest("[data-in]") && !reduced.matches && !p.closest(".ws.on")) m.snap("circle");
+  });
+  function bloom(ws, on) {
+    ws.querySelectorAll("[data-in]").forEach(h => {
+      const m = h.querySelector("path[data-shape]")?._m; if (!m || reduced.matches) return;
+      clearTimeout(h._bt);
+      if (on) h._bt = setTimeout(() => m.to(m.home), +h.dataset.in); else m.snap("circle");
+    });
+  }
 
   /* ---------- the wallpaper: one hue drives every colour ---------- */
   const SEEDS = [["Periwinkle", 277], ["Rose", 352], ["Apricot", 52], ["Moss", 148], ["Lagoon", 212]];
@@ -487,28 +540,49 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
     return P.map((p, i) => ({x: p.x, y: p.y, r: rs[i] * k}));
   }
 
-  /* ---------- numbers count up when their scene arrives, settling through the font's axes ---------- */
+  /* ---------- numbers roll in on reels when their scene arrives, settling through the font's axes ----------
+     Each digit is a reel. The left reel turns least and lands first, the right one spins most and lands
+     last; each overshoots a fraction of a digit and springs back. The final value is laid out from the
+     first frame, so nothing around a number shifts while it rolls. */
   const FMT = {usd0, int, b2: v => (v / 1e9).toFixed(2) + "B", pct: v => Math.round(v) + "%", hrs: v => Math.round(v) + " hours",
     add: v => "+" + int(v), del: v => "−" + int(v), d1: v => v.toFixed(1)};
-  const counter = (n, f) => `data-n="${n}" data-f="${f}"`;
-  const shown0 = (n, f) => FMT[f](reduced.matches ? n : 0);
+  const counter = (n, f, delay = 0) => `data-n="${n}" data-f="${f}"${delay ? ` data-cd="${delay}"` : ""}`;
+  const shown0 = (n, f) => isNum(n) ? FMT[f](reduced.matches ? n : 0) : NA;
+  const say = (n, f) => isNum(n) ? FMT[f](n) : NA_SAY;
   function countUp(el) {
     const n = +el.dataset.n, f = FMT[el.dataset.f];
     if (!isNum(n) || !f) return;
-    if (reduced.matches) { el.textContent = f(n); return; }
+    const s = f(n);
+    if (reduced.matches) { el.textContent = s; return; }
+    const delay = +(el.dataset.cd || 0), D = (s.match(/\d/g) || []).length;
+    let di = 0;
+    el.innerHTML = `<span class="odo" aria-hidden="true">${[...s].map(ch => {
+      if (!/\d/.test(ch)) return `<span><i>${esc(ch)}</i></span>`;
+      const turns = Math.min(di, 3) + (D > 2 ? 1 : 0), d = +ch, len = turns * 10 + d;
+      return `<span><i data-k="${len}" data-o="${di++}">${Array.from({length: len + 2}, (_, k) => k % 10).join("\n")}</i></span>`;
+    }).join("")}</span><span class="sr">${esc(s)}</span>`;
+    el.querySelectorAll("i[data-k]").forEach(c => {
+      const k = +c.dataset.k, o = +c.dataset.o, dur = 1150 + o * 170;
+      c.style.transform = `translateY(${-k}em)`;
+      if (k) c.animate([{transform: "translateY(0)", easing: "cubic-bezier(.45,.05,.2,1)"},
+        {transform: `translateY(${-(k + .16)}em)`, offset: .8, easing: "cubic-bezier(.3,0,.25,1)"}, {transform: `translateY(${-k}em)`}],
+        {duration: dur, delay, fill: "backwards"});
+    });
+    // the whole number arrives heavy and condensed, and relaxes to its resting weight and width
     el.style.fontWeight = el.style.fontStretch = "";
-    const cs = getComputedStyle(el), w0 = +cs.fontWeight || 300, s0 = parseFloat(cs.fontStretch) || 100, t0 = performance.now(), id = el._cu = {};
+    const cs = getComputedStyle(el), w0 = +cs.fontWeight || 300, s0 = parseFloat(cs.fontStretch) || 100, id = el._cu = {}, T = 1150 + D * 170;
+    let t0 = 0;
     const step = now => {
       if (el._cu !== id) return;
-      const t = Math.min(1, (now - t0) / 1900), e = 1 - Math.pow(1 - t, 4);
-      el.textContent = f(n * e);
+      t0 ||= now + delay;
+      const t = Math.min(1, Math.max(0, (now - t0) / T)), e = 1 - Math.pow(1 - t, 3);
       el.style.fontWeight = (w0 + (640 - w0) * (1 - e)).toFixed(0);
       el.style.fontStretch = (s0 - (s0 - 40) * (1 - e)).toFixed(1) + "%";
       if (t < 1) requestAnimationFrame(step); else el.style.fontWeight = el.style.fontStretch = "";
     };
     requestAnimationFrame(step);
   }
-  function zero(el) { el._cu = null; el.style.fontWeight = el.style.fontStretch = ""; const f = FMT[el.dataset.f]; if (f && !reduced.matches) el.textContent = f(0); }
+  function zero(el) { el._cu = null; el.style.fontWeight = el.style.fontStretch = ""; if (!reduced.matches && isNum(+el.dataset.n)) el.textContent = FMT[el.dataset.f](0); }
 
   /* ---------- scenes ---------- */
   const SCN = [["intro", "Caelestia", "cookie12"], ["cost", "Cost", "cookie9"], ["tokens", "Tokens", "sunny"],
@@ -517,7 +591,8 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   function render(d) {
     D = d;
     const p = d.project || {}, t3 = p.t3 || {}, u = d.usage || {}, t = u.totals || {}, code = p.code || {}, ses = u.session || {};
-    const agents = sum(t3.delegated) + (p.claudeAgents || 0);
+    const agents = t3.delegated || isNum(p.claudeAgents) ? sum(t3.delegated) + (p.claudeAgents || 0) : null;
+    const asOf = d.updatedAt ? `Figures as of ${esc(day(d.updatedAt))}. ` : "";
     const start = code.startedAt || t3.firstThreadAt;
     const hours = start ? Math.round((new Date(d.updatedAt) - new Date(start)) / 36e5) : null;
 
@@ -534,8 +609,8 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 
     // Tokens: 200 stars, each half a percent. The few bright ones are the new tokens.
     const fresh = (t.inputTokens || 0) + (t.outputTokens || 0) + (t.cacheWriteTokens || 0);
-    const freshShare = t.totalTokens ? fresh / t.totalTokens : 0;
-    const hot = Math.min(8, Math.max(1, Math.round(freshShare * 200)));
+    const freshShare = isNum(t.totalTokens) && t.totalTokens > 0 ? fresh / t.totalTokens : null;
+    const hot = Math.min(8, Math.max(1, Math.round((freshShare || 0) * 200)));
     const rnd = mulberry(11), hotCells = [[14, 2], [16, 1], [18, 3], [16, 4], [13, 4], [18, 6], [14, 7], [11, 2]].slice(0, hot).map(([c, r]) => c + r * 20);
     const stars = [], pts = []; let novae = "";
     for (let r = 0; r < 10; r++) for (let c = 0; c < 20; c++) {
@@ -565,50 +640,51 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
     const wave = "M-100 0q25-7 50 0t50 0t50 0t50 0t50 0t50 0V120H-100z";
     const moonXY = [[14, 59], [32, 52], [50, 45], [68, 38], [86, 31]], moonShapes = ["cookie12", "flower", "sunny", "clover", "cookie9"];
 
-    const sat = (i, x, y, dm, c, on, shape, n, label, ty, rot) => `<div class="sat" style="--i:${i};--x:${x};--y:${y};--d:${dm}cqw;--c:${c};--on:${on};--ty:${ty};--rot:${rot}s">${shapeSvg(shape)}<div><b ${counter(n, "int")}>${shown0(n, "int")}</b><span>${label}</span></div></div>`;
-    const prs = p.pullRequests || 97, commits = code.commits || 464;
+    // The four hero numbers sit in shapes along the bottom edge. A missing figure shows as a dash.
+    const satSlots = [[14, 92, 26, "var(--primary)", "var(--on-p)", "cookie9", 150], [38, 86, 24, "var(--tertiary)", "var(--on-t)", "flower", 120],
+      [62, 93, 26, "var(--quad)", "var(--on-q)", "sunny", 170], [87, 87, 25, "var(--secondary)", "var(--on-p)", "softburst", 140]];
+    const sats = [[agents, "Agents and subagents"], [t3.threads, "Threads triaged"], [p.pullRequests, "Pull requests landed"], [code.commits, "Git commits"]]
+      .map(([n, label], i) => {
+        const [x, y, dm, c, on, shape, rot] = satSlots[i];
+        return `<div class="sat" data-in="${1050 + i * 100}" style="--i:${i};--x:${x};--y:${y};--d:${dm}cqw;--c:${c};--on:${on};--ty:19;--rot:${rot}s">${shapeSvg(shape)}<div><b ${counter(n, "int", 1100 + i * 100)}${isNum(n) ? `>${shown0(n, "int")}` : ` title="Not available yet"><span aria-hidden="true">${NA}</span><span class="sr">${NA_SAY}</span>`}</b><span>${label}</span></div></div>`;
+      }).join("");
 
     document.getElementById("app").innerHTML = `
       <div class="scene"><section id="intro" class="ws hero" aria-label="Caelestia">
         <div class="drift" data-drift="5" data-shapes="12" aria-hidden="true"></div>
-        ${shapeSvg(pick(BLOOM), "shape sun")}${shapeSvg("flower", "shape moon")}
+        ${shapeSvg(pick(BLOOM), "shape sun", 'data-in="150"')}${shapeSvg("flower", "shape moon", 'data-in="380"')}
         <div class="copy">
           <h1 class="name" aria-label="Caelestia">${[..."Caelestia"].map((ch, i) => `<span aria-hidden="true" style="--i:${i}">${ch}</span>`).join("")}</h1>
           <p class="pitch rv" style="--rd:.9s">The Caelestia desktop shell, ported from Linux to Windows&nbsp;11 by a team of AI agents.</p>
-          <div class="meta rv" style="--rd:1.05s"><p class="state">Running as the desktop shell on this PC</p>
+          <div class="meta rv" style="--rd:1.05s"><p class="state">In daily use as the maintainer's desktop</p>
             <div class="wall"><span>Colours follow the wallpaper. Try one:</span><div class="papers" role="group" aria-label="Wallpaper" data-papers>${chips()}</div></div>
-            <p class="hint">Scroll, or press 1 to 6</p></div>
+            <p class="hint">Scroll, or press <kbd>1</kbd>to<kbd>${SCN.length}</kbd></p></div>
         </div>
-        <div class="sats">
-          ${sat(0, 14, 92, 26, "var(--primary)", "var(--on-p)", "cookie9", agents, "Agents and subagents", 19, 150)}
-          ${sat(1, 38, 86, 24, "var(--tertiary)", "var(--on-t)", "flower", t3.threads, "Threads triaged", 19, 120)}
-          ${sat(2, 62, 93, 26, "var(--quad)", "var(--on-q)", "sunny", prs, "Pull requests landed", 19, 170)}
-          ${sat(3, 87, 87, 25, "var(--secondary)", "var(--on-p)", "softburst", commits, "Git commits", 19, 140)}
-        </div>
+        <div class="sats">${sats}</div>
       </section></div>
 
       <div class="scene"><section id="cost" class="ws cost flood-p" aria-labelledby="cost-n">
         <div class="drift" data-drift="21" data-shapes="7" data-flood aria-hidden="true"></div>
-        <div class="lead"><h2 class="fig" id="cost-n" aria-label="${usd0(cost)}" style="--len:${usd0(cost).length}" ${counter(cost, "usd0")}>${shown0(cost, "usd0")}</h2>
-          <p class="cap rv">of API-equivalent compute, priced at public list rates.</p></div>
-        <div class="said rv" style="--rd:.6s"><p>Paid for with subscriptions.</p>
-          <div class="strip" role="img" aria-label="Spend by provider">${provs.map(([, v], i) => `<i style="--v:${v};--c:${provTone[i] ?? provTone[4]};--i:${i}"></i>`).join("")}</div>
-          <ul class="provs" aria-label="Spend by provider">${provs.map(([n, v], i) => `<li style="--c:${provTone[i] ?? provTone[4]}">${esc(n)} <b>${(v / provTotal * 100).toFixed(0)}%</b></li>`).join("")}</ul></div>
-        <div class="stage" id="bubbles" role="list" aria-label="Cost by model"></div>
+        <div class="lead"><h2 class="fig" id="cost-n" aria-label="Estimated API-equivalent cost: ${say(cost, "usd0")}" style="--len:${usd0(cost).length}" ${counter(cost, "usd0")}>${shown0(cost, "usd0")}</h2>
+          <p class="cap rv">is an estimate: this project's agent work, priced at <b>public API list rates.</b></p></div>
+        <div class="said rv" style="--rd:.6s"><p>Not money spent.<br>It all ran on subscriptions.</p>
+          <div class="strip" role="img" aria-label="Share of the estimate by provider">${provs.map(([, v], i) => `<i style="--v:${v};--c:${provTone[i] ?? provTone[4]};--i:${i}"></i>`).join("")}</div>
+          <ul class="provs" aria-label="Share of the estimate by provider">${provs.map(([n, v], i) => `<li style="--c:${provTone[i] ?? provTone[4]}">${esc(n)} <b>${(v / provTotal * 100).toFixed(0)}%</b></li>`).join("")}</ul></div>
+        <div class="stage" id="bubbles" role="list" aria-label="Estimated cost by model"></div>
       </section></div>
 
       <div class="scene"><section id="tokens" class="ws tokens" aria-labelledby="tok-n">
-        <div class="sky" aria-hidden="true"><canvas></canvas>${line}${novae}<p class="nova-l rv" style="--rd:2.4s;--x:${Math.min(lx, 74).toFixed(1)};--y:${Math.min(ly + 7, 82).toFixed(1)}">New input and output<br>${(freshShare * 100).toFixed(1)}% of tokens</p></div>
-        <div class="lead"><h2 class="fig" id="tok-n" aria-label="${isNum(t.totalTokens) ? FMT.b2(t.totalTokens) : "?"}" ${counter(t.totalTokens, "b2")}>${isNum(t.totalTokens) ? shown0(t.totalTokens, "b2") : "?"}</h2>
+        <div class="sky" aria-hidden="true"><canvas></canvas><div class="const">${line}${novae}<p class="nova-l rv" style="--rd:2.4s;--x:${Math.min(lx, 74).toFixed(1)};--y:${Math.min(ly + 7, 82).toFixed(1)}">New input and output<br>${isNum(freshShare) ? (freshShare * 100).toFixed(1) + "%" : NA} of tokens</p></div></div>
+        <div class="lead"><h2 class="fig" id="tok-n" aria-label="${say(t.totalTokens, "b2")}" ${counter(t.totalTokens, "b2")}>${shown0(t.totalTokens, "b2")}</h2>
           <p class="cap rv">tokens processed across the build.</p></div>
-        <div class="pct rv" style="--rd:.9s"><p class="fig">${(100 - freshShare * 100).toFixed(0)}%</p><p class="cap">were cache reads: <b>agents rereading code they had already seen.</b></p></div>
+        <div class="pct rv" style="--rd:.9s"><p class="fig">${isNum(freshShare) ? (100 - freshShare * 100).toFixed(0) + "%" : NA}</p><p class="cap">were cache reads: <b>agents rereading code they had already seen.</b></p></div>
         <p class="each rv" style="--rd:1.4s" aria-hidden="true">Each star is half a percent of the total.</p>
       </section></div>
 
       <div class="scene"><section id="agents" class="ws agents" aria-labelledby="ag-n">
         <div class="drift" data-drift="31" data-shapes="6" data-fade=".6" aria-hidden="true"></div>
-        <div class="lead"><h2 class="fig" id="ag-n" aria-label="${int(agents)}" ${counter(agents, "int")}>${shown0(agents, "int")}</h2>
-          <p class="cap rv">agents and subagents, across <b>${int(t3.threads)} threads</b> and ${int(sum(t3.runs))} runs.</p></div>
+        <div class="lead"><h2 class="fig" id="ag-n" aria-label="${say(agents, "int")}" ${counter(agents, "int")}>${shown0(agents, "int")}</h2>
+          <p class="cap rv">agents and subagents, across <b>${int(t3.threads)} threads</b> and ${t3.runs ? int(sum(t3.runs)) : NA} runs.</p></div>
         ${isNum(ses.concurrency) ? `<div class="pct rv" style="--rd:.8s"><p class="fig" ${counter(ses.concurrency, "d1")}>${shown0(ses.concurrency, "d1")}</p><p class="cap">agents at work at any moment, <b>on average.</b></p></div>` : ""}
         <div class="stage" id="chart" role="img" aria-label="Agents by tool: ${esc(crew.map(c => c.name + " " + c.n).join(", "))}"></div>
       </section></div>
@@ -616,22 +692,22 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
       <div class="scene"><section id="time" class="ws time flood-t" aria-labelledby="time-n">
         <div class="drift" data-drift="22" data-shapes="7" data-flood aria-hidden="true"></div>
         <svg class="orbit" aria-hidden="true"></svg>
-        <div class="lead"><h2 class="fig" id="time-n" aria-label="${hours ?? "?"} hours" ${counter(hours, "hrs")}>${isNum(hours) ? shown0(hours, "hrs") : "?"}</h2>
-          <p class="cap rv">from the first commit on <b>${start ? esc(day(start)) : "?"}</b> to Caelestia running as this PC's desktop.</p></div>
+        <div class="lead"><h2 class="fig" id="time-n" aria-label="${say(hours, "hrs")}" ${counter(hours, "hrs")}>${shown0(hours, "hrs")}</h2>
+          <p class="cap rv">since the first commit${start ? ` on <b>${esc(day(start))}</b>` : ""}, long enough for Caelestia to become the maintainer's daily desktop.</p></div>
         <ol class="moons" aria-label="Milestones">${ms.map((m, i) => {
           const done = m.progress?.done ?? 0, [num, ...name] = m.name.split(" "), [x, y] = moonXY[i] || [50, 50];
           const sh = moonShapes[i % moonShapes.length], tr = 'transform="translate(50 50) scale(50)"';
           // A finished milestone is a solid shape. One still in progress is an empty shape filling like a tide.
           const body = done >= 100 ? `<path class="solid" ${tr} d="${pathOf(SH[sh])}" data-shape="${sh}"/>` :
             `<defs><clipPath id="mc${i}"><path ${tr} d="${pathOf(SH[sh])}"/></clipPath></defs><path class="track" ${tr} d="${pathOf(SH[sh])}"/><g clip-path="url(#mc${i})"><g class="liq" style="--p:${done};--dl:${(1.2 + i * .4).toFixed(2)}s"><g class="wave"><path d="${wave}"/></g></g></g>`;
-          return `<li class="moon-l" style="--i:${i};--x:${x};--y:${y};--rot:${100 + i * 17}s"><div class="disc${done >= 100 ? " spin" : ""}"><svg viewBox="0 0 100 100" aria-hidden="true">${body}</svg></div>
+          return `<li class="moon-l" data-in="${700 + i * 400}" style="--i:${i};--x:${x};--y:${y};--rot:${100 + i * 17}s"><div class="disc${done >= 100 ? " spin" : ""}"><svg viewBox="0 0 100 100" aria-hidden="true">${body}</svg></div>
             <div class="mt"><span class="mn">${esc(num)}</span><b>${esc(name.join(" "))}</b><span class="small">${done >= 100 ? "Complete" : done + "% complete"}</span></div></li>`;
         }).join("")}</ol>
       </section></div>
 
       <div class="scene"><section id="credits" class="ws credits" aria-labelledby="cr-n">
         <div class="drift" data-drift="41" data-shapes="8" data-fade=".7" aria-hidden="true"></div>
-        ${shapeSvg("cookie12", "shape big")}
+        ${shapeSvg("cookie12", "shape big", 'data-in="80"')}
         <div class="lead"><h2 class="fig" id="cr-n">Credits</h2>
           <p class="cap rv">${cap1(words(cast.length))} models from ${words(labs)} labs, each with its own job.</p></div>
         <div class="roster">${Object.keys(roleName).filter(r => byRole[r]).map((r, i) => `<div style="--i:${i};--c:var(${roleTone[i]})">
@@ -639,16 +715,22 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
           <ul>${byRole[r].map((m, j) => { const [v, ...rest] = modelName(m.model).split(" "); return `<li class="rv" style="--j:${j + 1}"><span>${esc(v)}</span> ${esc(rest.join(" "))}</li>`; }).join("")}</ul></div>`).join("")}</div>
         <dl class="tally">${tally.map(([n, f, label, cls], i) => `<div class="rv ${cls || ""}" style="--rd:${(1.1 + i * .12).toFixed(2)}s"><dt>${esc(label)}</dt><dd><b ${counter(n, f)}>${shown0(n, f)}</b></dd></div>`).join("")}</dl>
         <footer class="foot rv" style="--rd:1.6s">
-          <p>Cost and tokens cover the measured build session, ${u.session?.start ? esc(day(u.session.start)) : "?"} to ${u.asOf ? esc(day(u.asOf)) : "?"}. Agents, threads and time cover the whole project. Caelestia Shell is by soramanew and contributors.</p>
+          <p>${asOf}Cost is an estimate at public API list rates, not money spent. Cost and tokens cover the measured build session${u.session?.start && u.asOf ? `, ${esc(day(u.session.start))} to ${esc(day(u.asOf))}` : ""}; agents, threads and time cover the whole project. Caelestia Shell is by soramanew and contributors.</p>
           <p class="sig"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="${spark}"/></svg>Caelestia, on Windows</p>
         </footer>
       </section></div>`;
 
     // the bar's workspace shapes
     document.getElementById("spaces").innerHTML = SCN
-      .map(([id, n], i) => `<a href="#${id}" aria-label="${n}" title="${n} (${i + 1})" aria-keyshortcuts="${i + 1}" aria-current="false">${shapeSvg("circle")}</a>`).join("");
+      .map(([id, n], i) => `<a href="#${id}" aria-label="${n}" title="${n} (${i + 1})" aria-keyshortcuts="${i + 1}" aria-current="false" style="--i:${i}">${shapeSvg("circle")}</a>`).join("");
     links = [...document.querySelectorAll("#spaces a")];
-    links.forEach(a => { const pa = a.querySelector("path"); pa._m = new Morph(pa, "circle"); });
+    links.forEach((a, j) => {
+      const pa = a.querySelector("path"); pa._m = new Morph(pa, "circle");
+      // pointing at a workspace, or tabbing to it, previews its shape
+      const peek = on => { if (a.getAttribute("aria-current") === "true") return; a.classList.toggle("peek", on); pa._m.to(on ? SCN[j][2] : "circle"); };
+      a.addEventListener("pointerenter", () => peek(true)); a.addEventListener("pointerleave", () => peek(false));
+      a.addEventListener("focus", () => a.matches(":focus-visible") && peek(true)); a.addEventListener("blur", () => peek(false));
+    });
     SECs = [...document.querySelectorAll("#app .ws")]; SCs = SECs.map(s => s.parentElement);
 
     document.querySelectorAll("[data-drift]").forEach(el => drift(el, +el.dataset.shapes, +el.dataset.drift, el.hasAttribute("data-flood"), +(el.dataset.fade || 1)));
@@ -666,7 +748,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
     const el = document.getElementById("bubbles"), W = el.clientWidth, H = el.clientHeight;
     if (!W || !H) return;
     const P = pack(orbs.map(o => Math.sqrt(o.v)), W, H, 14);
-    el.innerHTML = orbs.map((o, i) => `<div class="orb" role="listitem" style="left:${P[i].x.toFixed(1)}px;top:${P[i].y.toFixed(1)}px;--R:${P[i].r.toFixed(1)}px;--c:${o.tone[0]};--on:${o.tone[1]};--rot:${90 + i * 23}s;--dl:${(.45 + i * .13).toFixed(2)}s">
+    el.innerHTML = orbs.map((o, i) => `<div class="orb" role="listitem" data-in="${Math.round(450 + i * 130)}" style="left:${P[i].x.toFixed(1)}px;top:${P[i].y.toFixed(1)}px;--R:${P[i].r.toFixed(1)}px;--c:${o.tone[0]};--on:${o.tone[1]};--rot:${90 + i * 23}s;--dl:${(.45 + i * .13).toFixed(2)}s">
       ${shapeSvg(o.tone[2])}<div><span>${esc(o.name)}</span><b>${usd(o.v)}</b></div></div>`).join("");
     arm(el);
   }
@@ -750,6 +832,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   function setOn(ws, on) {
     if (on === ws.classList.contains("on")) return;
     ws.classList.toggle("on", on);
+    bloom(ws, on);
     if (on) {
       ws.querySelectorAll("[data-n]").forEach(countUp);
       if (ws.id === "tokens") sky?.warp();
@@ -762,7 +845,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   let cur = -1;
   function current(k) {
     if (k === cur || !links[k]) return; cur = k;
-    links.forEach((a, j) => { const on = j === k; a.setAttribute("aria-current", on); a.querySelector("path")._m.to(on ? SCN[j][2] : "circle"); });
+    links.forEach((a, j) => { const on = j === k; a.setAttribute("aria-current", on); if (on) a.classList.remove("peek"); if (!a.classList.contains("peek")) a.querySelector("path")._m.to(on ? SCN[j][2] : "circle"); });
   }
 
   /* ---------- workspaces: on a desktop, scrolling switches workspace ----------
@@ -811,7 +894,12 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   function startIntro() {
     if (!staged || progress() > .5) return;
     introF = -1; intro0 = 1e12; kick();
-    Promise.race([document.fonts?.ready, new Promise(r => setTimeout(r, 900))]).then(() => intro0 = performance.now() + 120);
+    Promise.race([document.fonts?.ready, new Promise(r => setTimeout(r, 900))]).then(() => {
+      intro0 = performance.now() + 120;
+      // the star flares as the desktop blooms out of it
+      mark.animate([{transform: "scale(1) rotate(0deg)"}, {transform: "scale(1.6) rotate(100deg)", offset: .4}, {transform: "scale(1) rotate(180deg)"}],
+        {duration: 1100, delay: 60, easing: "cubic-bezier(.38,1.21,.22,1)"});
+    });
   }
   addEventListener("scroll", () => { if (staged) { P = progress(); kick(); } }, {passive: true});
 
@@ -824,7 +912,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
       introF = null;
       SCs.forEach(sc => { sc.classList.remove("vis"); sc.style.clipPath = sc.style.zIndex = ""; sc.style.removeProperty("--dim"); sc.firstElementChild.style.transform = ""; });
       io = new IntersectionObserver(es => es.forEach(en => {
-        const ws = en.target; ws._in = en.isIntersecting;
+        const ws = en.target; ws._in = en.isIntersecting; ws.classList.toggle("in", en.isIntersecting);
         if (en.intersectionRatio >= .25) setOn(ws, true); else if (!en.isIntersecting) setOn(ws, false);
         if (ws._in && ws.id === "tokens") sky?.go();
       }), {threshold: [0, .25]});
@@ -860,8 +948,16 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   }, {passive: false});
   document.getElementById("spaces").addEventListener("click", e => { const a = e.target.closest("a"); if (a) { e.preventDefault(); go(links.indexOf(a)); } });
   // Number keys switch workspace, like Super+1 to 6 in the shell.
+  // On the staged desktop, the usual paging keys move one workspace at a time.
+  const PAGE = {ArrowDown: 1, PageDown: 1, " ": 1, ArrowUp: -1, PageUp: -1};
   addEventListener("keydown", e => {
-    if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey || /^(input|textarea|select)$/i.test(e.target.tagName)) return;
+    if (e.ctrlKey || e.metaKey || e.altKey || /^(input|textarea|select)$/i.test(e.target.tagName)) return;
+    if (staged && (e.key in PAGE || e.key === "Home" || e.key === "End") && !(e.key === " " && /^(button|a)$/i.test(e.target.tagName))) {
+      e.preventDefault();
+      go(e.key === "Home" ? 0 : e.key === "End" ? SECs.length - 1 : Math.max(0, Math.min(SECs.length - 1, Math.round(P) + PAGE[e.key] * (e.shiftKey ? -1 : 1))));
+      return;
+    }
+    if (e.shiftKey) return;
     if (/^[1-9]$/.test(e.key) && SECs[+e.key - 1]) { e.preventDefault(); go(+e.key - 1); }
   });
 
@@ -895,6 +991,17 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
       host._h = true; const pa = host.querySelector("path[data-shape]"); pa?._m?.to(pick(BLOOM, pa._m.name));
       setTimeout(() => host._h = false, 700);
     });
+    // a shape under the pointer leans toward it, and springs back when the pointer leaves
+    let lean = null;
+    if (fine.matches && !reduced.matches) app.addEventListener("pointermove", e => {
+      const host = e.target.closest(".sat,.orb");
+      if (host !== lean) { lean?.style.removeProperty("--mx"); lean?.style.removeProperty("--my"); lean = host; }
+      if (!host) return;
+      const r = host.getBoundingClientRect();
+      host.style.setProperty("--mx", ((e.clientX - r.left) / r.width - .5).toFixed(3));
+      host.style.setProperty("--my", ((e.clientY - r.top) / r.height - .5).toFixed(3));
+    }, {passive: true});
+    app.addEventListener("pointerleave", () => { lean?.style.removeProperty("--mx"); lean?.style.removeProperty("--my"); lean = null; });
     // the big shapes change on their own, every few seconds, while they are on screen
     if (!reduced.matches) [[".hero .sun path", 5200], [".credits .big path", 6100]].forEach(([sel, ms]) => {
       const pa = document.querySelector(sel); if (pa) setInterval(() => { if (shown(pa.closest(".ws"))) pa._m?.to(pick(BLOOM, pa._m.name)); }, ms);
@@ -918,8 +1025,10 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   let amb = 0;
   function ambient(now) {
     let busy = now - ptr.t < 1500;
-    document.querySelectorAll(staged ? ".scene.vis .dsw" : ".dsw").forEach(el => {
-      const ox = el._ox || 0, oy = el._oy || 0, r = el.getBoundingClientRect();
+    // read every position first, then write, so the frame lays out once
+    const els = [...document.querySelectorAll(staged ? ".scene.vis .dsw" : ".ws.in .dsw")], rs = els.map(el => el.getBoundingClientRect());
+    els.forEach((el, i) => {
+      const ox = el._ox || 0, oy = el._oy || 0, r = rs[i];
       if (r.bottom < 0 || r.top > innerHeight) return;
       const dx = r.left + r.width / 2 - ox - ptr.x, dy = r.top + r.height / 2 - oy - ptr.y, dd = Math.hypot(dx, dy) || 1, reach = r.width / 2 + 160;
       const push = dd < reach ? Math.pow(1 - dd / reach, 2) * 120 : 0, nx = ox + (dx / dd * push - ox) * .07, ny = oy + (dy / dd * push - oy) * .07;
@@ -941,7 +1050,8 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   const s = document.createElement("script");
   s.src = "status-data.js?t=" + Date.now();
   s.onload = () => window.__STATUS && render(window.__STATUS);
-  s.onerror = () => { const s2 = document.createElement('script'); s2.src = 'status-data.js'; s2.onload = () => window.__STATUS && render(window.__STATUS); document.body.appendChild(s2); };
+  const failed = () => { if (!D) document.body.insertAdjacentHTML("beforeend", `<p class="nojs" role="status">The build figures could not be loaded. Reload the page to try again.</p>`); };
+  s.onerror = () => { const s2 = document.createElement('script'); s2.src = 'status-data.js'; s2.onload = () => window.__STATUS ? render(window.__STATUS) : failed(); s2.onerror = failed; document.body.appendChild(s2); };
   document.body.appendChild(s);
   document.fonts?.ready.then(() => D && layout());
 })();
