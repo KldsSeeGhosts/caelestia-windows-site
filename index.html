@@ -4,20 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Caelestia for Windows</title>
-<meta name="description" content="The Caelestia desktop shell, ported from Linux to Windows 11 by a team of AI agents. The build in numbers: cost, tokens, agents, time and milestones.">
+<meta name="description" content="A port of Caelestia, the Hyprland desktop shell by caelestia-dots, to Windows 11, built by a team of AI agents. See it run, then the build in numbers.">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#1b1b24">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='10' fill='%231b1b24'/%3E%3Cpath fill='%23b8c3ff' d='M16 4.5l2.1 6.6a4 4 0 0 0 2.7 2.7L27.5 16l-6.7 2.1a4 4 0 0 0-2.7 2.7L16 27.5l-2.1-6.7a4 4 0 0 0-2.7-2.7L4.5 16l6.7-2.2a4 4 0 0 0 2.7-2.7z'/%3E%3C/svg%3E">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Caelestia for Windows">
-<meta property="og:description" content="The Caelestia desktop shell, ported from Linux to Windows 11 by a team of AI agents. The build in numbers.">
+<meta property="og:description" content="A port of Caelestia, the Hyprland desktop shell by caelestia-dots, to Windows 11, built by a team of AI agents. See it run, then the build in numbers.">
 <meta property="og:image" content="https://kldsseeghosts.github.io/caelestia-windows-site/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="The Caelestia wordmark among bold rounded shapes, with the build's agent, thread, pull request and commit counts.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Caelestia for Windows">
-<meta name="twitter:description" content="The Caelestia desktop shell, ported from Linux to Windows 11 by a team of AI agents. The build in numbers.">
+<meta name="twitter:description" content="A port of Caelestia, the Hyprland desktop shell by caelestia-dots, to Windows 11, built by a team of AI agents. See it run, then the build in numbers.">
 <meta name="twitter:image" content="https://kldsseeghosts.github.io/caelestia-windows-site/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,6 +29,7 @@
    and every colour on the page follows. On a desktop each scene is a workspace, and
    switching grows the next one out of its indicator in the bar. */
 @property --h{syntax:"<number>";inherits:true;initial-value:277}
+@property --mh{syntax:"<number>";inherits:true;initial-value:277}
 :root{
   --h:277;transition:--h 1.5s cubic-bezier(.2,.7,.2,1);
   --surface:oklch(.17 .018 var(--h));--shell:oklch(.215 .02 var(--h));
@@ -90,6 +91,7 @@ svg{display:block;overflow:visible}
 @keyframes pop{from{scale:0}}
 .papers{display:flex;gap:9px}
 .bar .papers{flex-direction:column;margin-top:auto}
+.bar .snd{margin-top:-6px}
 .chip{--ch:277;width:20px;height:20px;border-radius:50%;flex:none;
   background:radial-gradient(circle at 30% 28%,oklch(.86 .1 var(--ch)) 0 33%,transparent 35%),
     radial-gradient(circle at 72% 70%,oklch(.86 .095 calc(var(--ch) + 60)) 0 27%,transparent 29%),oklch(.3 .05 var(--ch));
@@ -152,15 +154,32 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   scale:.4;opacity:0;translate:calc(var(--px,0) * -4.5cqw) calc(var(--py,0) * -5cqh);
   transition:scale 1.6s var(--spring) .3s,opacity .7s .3s,translate 1.4s var(--out)}
 .hero.on .sun,.hero.on .moon{scale:1;opacity:1}
-.copy{position:absolute;left:5.5cqw;top:9.5cqh;width:min(86cqw,100%);display:flex;flex-direction:column;align-items:flex-start;z-index:2}
-.name{font-size:min(14cqw,26cqh);font-weight:300;font-stretch:125%;letter-spacing:-.03em;line-height:1;white-space:nowrap;margin:0 0 0 -.04em}
+.copy{position:absolute;left:5.5cqw;top:8cqh;width:35cqw;display:flex;flex-direction:column;align-items:flex-start;z-index:2}
+.name{font-size:min(10.5cqw,19cqh);font-weight:300;font-stretch:125%;letter-spacing:-.03em;line-height:1;white-space:nowrap;margin:0 0 0 -.04em}
 /* The wordmark unfolds through the font's axes: heavy and condensed, to light and extended. */
 .name span{display:inline-block;opacity:0;translate:0 .3em;font-weight:700;font-stretch:30%}
 .on .name span{opacity:1;translate:0 0;font-weight:var(--w,300);font-stretch:calc(var(--s,125) * 1%);
   transition:opacity .5s,translate 1.2s var(--out),font-weight 1.5s var(--out),font-stretch 1.5s var(--out);transition-delay:calc(.35s + var(--i) * 65ms)}
 .settled .name span{transition:none}
-.pitch{margin-top:1.6cqh;font-size:clamp(22px,2.7cqw,44px);font-weight:300;font-stretch:108%;line-height:1.14;letter-spacing:-.01em;max-width:21em;text-wrap:balance}
-.meta{display:flex;align-items:center;flex-wrap:wrap;gap:12px 28px;margin-top:2.6cqh}
+.pitch{margin-top:3.4cqh;font-size:clamp(21px,2.3cqw,38px);font-weight:300;font-stretch:108%;line-height:1.16;letter-spacing:-.01em;text-wrap:balance}
+/* Where it comes from, said plainly and early. */
+.credit{max-width:31em;margin-top:2.4cqh;font-size:clamp(15px,1.28cqw,19px);line-height:1.5;color:var(--ink-2);text-wrap:pretty}
+.credit a{color:var(--ink);font-weight:500;text-decoration:underline 1.5px color-mix(in oklch,var(--primary) 55%,transparent);text-underline-offset:.24em;transition:text-decoration-color .3s}
+.credit a:hover{text-decoration-color:var(--primary)}
+.credit svg{display:inline-block;width:.78em;height:.78em;margin-left:.28em;vertical-align:-.04em;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.meta{display:flex;align-items:center;flex-wrap:wrap;gap:12px 28px;margin-top:3.6cqh}
+/* A desktop inside the desktop: the living miniature, or the demo loop once it exists. */
+.screen{position:absolute;right:4cqw;bottom:9.5cqh;width:min(56cqw,92cqh);aspect-ratio:16/9;z-index:2;border-radius:clamp(14px,1.5cqw,26px);
+  box-shadow:0 3cqh 8cqh -3cqh oklch(.05 .04 var(--h) / .75);opacity:0;scale:.9;transition:opacity .6s .45s,scale 1.3s var(--spring) .45s}
+.on .screen{opacity:1;scale:1}
+.screen video,.pscreen video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;background:var(--shell);opacity:0;transition:opacity .6s}
+.has-video>video{opacity:1}
+.has-video>.mini{opacity:0;visibility:hidden;transition:opacity .6s,visibility 0s .6s}
+.hold{position:absolute;right:0;top:calc(100% + 1.4cqh);display:flex;align-items:center;gap:7px;padding:5px 12px 5px 9px;border-radius:99px;font-size:14px;font-weight:450;color:var(--ink-3);transition:color .3s,background-color .3s}
+.hold:hover{color:var(--ink);background:var(--mid)}
+.hold svg{width:14px;height:14px;fill:currentColor}
+.hold .i-play,.hold.held .i-pause{display:none}
+.hold.held .i-play{display:block}
 .state{display:flex;align-items:center;gap:11px;color:var(--ink-2);font-size:15px}
 .state::before{content:"";flex:none;width:9px;height:9px;border-radius:50%;background:oklch(.85 .14 155);box-shadow:0 0 0 5px oklch(.85 .14 155 / .2);animation:pulse 2.4s ease-in-out infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 9px oklch(.85 .14 155 / 0)}}
@@ -180,6 +199,178 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 .sat>div,.orb>div{translate:calc(var(--mx,0) * 14%) calc(var(--my,0) * 14%);transition:translate .6s var(--spring)}
 .sat b{display:block;font-size:calc(var(--d) * .24);font-weight:300;font-stretch:112%;letter-spacing:-.045em;line-height:.9;font-variant-numeric:tabular-nums}
 .sat>div>span{display:block;margin-top:.5em;font-size:clamp(13px,calc(var(--d) * .05),19px);font-weight:450;line-height:1.2}
+
+/* The living miniature: a Caelestia desktop drawn in code and sized by its own width. Its hue
+   follows the page, unless a step of the walkthrough picks a wallpaper of its own. */
+.mini{--mh:var(--h);transition:--mh 1.4s var(--out);position:absolute;inset:0;container-type:size;overflow:hidden;border-radius:inherit;
+  font-weight:450;line-height:1.2;color:var(--m-ink);background:var(--m-shell);
+  --m-shell:oklch(.2 .02 var(--mh));--m-surf:oklch(.255 .024 var(--mh));--m-surf2:oklch(.32 .032 var(--mh));
+  --m-ink:oklch(.93 .014 var(--mh));--m-ink2:oklch(.74 .03 var(--mh));--m-dim:oklch(.47 .036 var(--mh));
+  --m-p:oklch(.83 .1 var(--mh));--m-pc:oklch(.44 .14 var(--mh));--m-t:oklch(.84 .095 calc(var(--mh) + 60));
+  --m-q:oklch(.85 .09 calc(var(--mh) + 130));--m-s:oklch(.83 .1 calc(var(--mh) + 290));--m-u:oklch(.83 .09 calc(var(--mh) + 205));
+  --m-spring:cubic-bezier(.3,1.1,.3,1)}
+.mini p{margin:0}
+.m-bar{position:absolute;left:0;top:0;bottom:0;width:5.4cqw;display:flex;flex-direction:column;align-items:center;gap:1.3cqw;padding:1.7cqw 0 1.5cqw}
+.m-star{width:2.1cqw;height:2.1cqw;fill:var(--m-p);flex:none}
+.m-ws{position:relative;display:flex;flex-direction:column;align-items:center;gap:.95cqw;padding:1cqw .85cqw;border-radius:9cqw;background:var(--m-surf)}
+.m-ws b{width:.85cqw;height:.85cqw;border-radius:50%;background:var(--m-dim)}
+.m-ws i{position:absolute;left:50%;top:.55cqw;width:1.35cqw;height:1.75cqw;margin-left:-.675cqw;border-radius:9cqw;background:var(--m-p);
+  transform:translateY(calc((var(--ws,1) - 1) * 1.8cqw));transition:transform .6s var(--spring-fast)}
+.m-tray{margin-top:auto;display:flex;flex-direction:column;gap:.75cqw}
+.m-tray b{width:.8cqw;height:.8cqw;border-radius:50%;background:var(--m-ink2)}
+.m-clock{display:flex;flex-direction:column;align-items:center;font-size:1.4cqw;font-weight:550;line-height:1.1;font-variant-numeric:tabular-nums}
+.m-pow{width:1.7cqw;height:1.7cqw;border-radius:50%;border:.28cqw solid var(--m-t);flex:none}
+.m-desk{position:absolute;left:5.4cqw;top:1.25cqw;right:1.25cqw;bottom:1.25cqw;border-radius:2.1cqw;overflow:hidden;
+  background:radial-gradient(75% 95% at 86% 6%,oklch(.7 .13 var(--mh)),transparent 70%),radial-gradient(65% 85% at 4% 100%,oklch(.62 .13 calc(var(--mh) + 60)),transparent 72%),
+    linear-gradient(160deg,oklch(.42 .09 var(--mh)),oklch(.26 .06 calc(var(--mh) + 30)))}
+.m-wall{position:absolute;right:-10cqw;bottom:-20cqw;width:44cqw;height:44cqw}
+.m-wall svg{width:100%;height:100%;fill:oklch(.85 .1 calc(var(--mh) + 30) / .26);animation:spin 90s linear infinite}
+/* Windows tile by moving their clip; the content rides along with the top-left corner. */
+.m-win{position:absolute;inset:0;clip-path:inset(var(--t) var(--r) var(--b) var(--l) round 1.3cqw);transition:clip-path .9s var(--spring),opacity .45s}
+.m-win>.wc{position:absolute;inset:0;padding:1.4cqw 1.6cqw;transform:translate(var(--l),var(--t));transition:transform .9s var(--spring)}
+.w1{--t:3.4%;--r:2%;--b:3.4%;--l:2%;background:oklch(.17 .022 var(--mh) / .88)}
+.w2{--t:30%;--r:16%;--b:30%;--l:66%;opacity:0;background:oklch(.24 .026 var(--mh) / .9)}
+.w3{--t:66%;--r:16%;--b:12%;--l:66%;opacity:0;background:oklch(.23 .045 calc(var(--mh) + 60) / .9)}
+.mini[data-tile="2"] .w1,.mini[data-tile="3"] .w1{--r:51%}
+.mini[data-tile="2"] .w2{--t:3.4%;--r:2%;--b:3.4%;--l:51%;opacity:1}
+.mini[data-tile="3"] .w2{--t:3.4%;--r:2%;--b:51.8%;--l:51%;opacity:1}
+.mini[data-tile="3"] .w3,.mini[data-tile="3s"] .w3{--t:51.8%;--r:2%;--b:3.4%;--l:51%;opacity:1}
+.mini[data-tile="3s"] .w1{--t:3.4%;--r:2%;--b:51.8%;--l:51%}
+.mini[data-tile="3s"] .w2{--t:3.4%;--r:51%;--b:3.4%;--l:2%;opacity:1}
+.tb{display:flex;align-items:center;gap:.7cqw;margin-bottom:1.4cqw;font-size:1.2cqw;color:var(--m-ink2);white-space:nowrap}
+.tb b,.ll b,.nc b{width:1.2cqw;height:1.2cqw;border-radius:50%;background:var(--c);flex:none}
+.ln i{display:block;width:var(--w);height:.75cqw;margin-bottom:.95cqw;border-radius:9cqw;background:var(--c);opacity:.85}
+.hb{width:38cqw;height:9cqw;border-radius:1.2cqw;background:linear-gradient(120deg,var(--m-pc),oklch(.52 .12 calc(var(--mh) + 60)))}
+.cards{display:flex;gap:1cqw;margin:1.2cqw 0 1.4cqw}
+.cards i{width:12cqw;height:6.6cqw;border-radius:1cqw;background:var(--m-surf2)}
+.alb{width:10cqw;height:10cqw;margin-bottom:1.3cqw;border-radius:1.2cqw;
+  background:radial-gradient(circle at 30% 28%,var(--m-t) 0 22%,transparent 48%),linear-gradient(135deg,oklch(.56 .14 calc(var(--mh) + 60)),oklch(.4 .12 calc(var(--mh) + 110)))}
+.prog{width:20cqw;height:.5cqw;border-radius:9cqw;background:var(--m-dim)}
+.prog i{display:block;width:45%;height:100%;border-radius:inherit;background:var(--m-t)}
+.m-scrim{position:absolute;inset:0;background:oklch(.1 .03 var(--mh) / .5);opacity:0;transition:opacity .5s}
+.mini[data-nx="1"] .m-scrim{opacity:1}
+.m-nexus{position:absolute;left:17%;top:9%;width:66%;height:82%;display:flex;overflow:hidden;border-radius:1.8cqw;background:var(--m-shell);
+  box-shadow:0 2cqw 5cqw oklch(.05 .03 var(--mh) / .5);opacity:0;transform:scale(.88);transition:opacity .35s,transform .75s var(--spring)}
+.mini[data-nx="1"] .m-nexus{opacity:1;transform:none}
+.nx-side{width:32%;padding:1.8cqw 1.2cqw;background:var(--m-surf)}
+.nx-h{margin:0 0 1.5cqw .9cqw!important;font-size:1.9cqw;font-weight:500;font-stretch:112%}
+.nx-list{position:relative}
+.nx-list p{position:relative;display:flex;align-items:center;gap:.8cqw;height:3.1cqw;padding:0 .9cqw;font-size:1.22cqw;color:var(--m-ink2);white-space:nowrap}
+.nx-list b{width:1.1cqw;height:1.1cqw;border-radius:.35cqw;background:var(--m-dim);flex:none}
+.nx-hl{position:absolute;left:0;right:0;top:0;height:3.1cqw;border-radius:9cqw;background:var(--m-pc);transform:translateY(calc(var(--nsel,0) * 3.1cqw));transition:transform .55s var(--spring-fast)}
+.nx-main{flex:1;padding:1.9cqw 2.2cqw}
+.nx-t{margin-bottom:1.5cqw!important;font-size:2.2cqw;font-weight:400;font-stretch:112%}
+.nx-sw{display:flex;gap:1cqw;margin-bottom:1.8cqw}
+.nx-sw i{width:2.9cqw;height:2.9cqw;border-radius:50%;background:oklch(.78 .11 calc(var(--mh) + var(--o)))}
+.nx-sw i:first-child{box-shadow:0 0 0 .3cqw var(--m-shell),0 0 0 .55cqw var(--m-ink)}
+.nx-row{display:flex;align-items:center;justify-content:space-between;height:4cqw;border-top:1px solid var(--m-surf2);font-size:1.25cqw;color:var(--m-ink2)}
+.sw{position:relative;width:4cqw;height:2.2cqw;border-radius:9cqw;background:var(--m-surf2);transition:background-color .3s}
+.sw::after{content:"";position:absolute;left:.35cqw;top:.35cqw;width:1.5cqw;height:1.5cqw;border-radius:50%;background:var(--m-ink2);transition:transform .45s var(--spring-fast),background-color .3s}
+.sw.lit,.mini[data-tog="1"] .t2{background:var(--m-p)}
+.sw.lit::after,.mini[data-tog="1"] .t2::after{transform:translateX(1.8cqw);background:var(--m-shell)}
+.sl{position:relative;width:12cqw;height:.5cqw;border-radius:9cqw;background:var(--m-surf2)}
+.sl b{position:absolute;left:0;top:0;width:62%;height:100%;border-radius:inherit;background:var(--m-p)}
+.sl b::after{content:"";position:absolute;right:-.8cqw;top:-.55cqw;width:1.6cqw;height:1.6cqw;border-radius:50%;background:var(--m-p)}
+/* Panels grow out of the frame, as in the shell: same colour, with concave corners where they meet it. */
+.m-dr{position:absolute;background:var(--m-shell);transition:transform .75s var(--m-spring)}
+.m-dr::before,.m-dr::after{content:"";position:absolute;width:1.6cqw;height:1.6cqw;--g:transparent 1.6cqw,var(--m-shell) calc(1.6cqw + .5px)}
+.m-dr.b{left:50%;bottom:-2cqw;padding:1.4cqw 1.4cqw 3.4cqw;border-radius:1.8cqw 1.8cqw 0 0;transform:translate(-50%,calc(100% + 1.7cqw))}
+.m-dr.b::before{right:100%;bottom:2cqw;background:radial-gradient(circle at 0 0,var(--g))}
+.m-dr.b::after{left:100%;bottom:2cqw;background:radial-gradient(circle at 100% 0,var(--g))}
+.m-dr.t{left:50%;top:-2cqw;padding:3.4cqw 1.8cqw 1.5cqw;border-radius:0 0 1.8cqw 1.8cqw;transform:translate(-50%,calc(-100% - 1.7cqw))}
+.m-dr.t::before{right:100%;top:2cqw;background:radial-gradient(circle at 0 100%,var(--g))}
+.m-dr.t::after{left:100%;top:2cqw;background:radial-gradient(circle at 100% 100%,var(--g))}
+.m-dr.r{right:-2cqw;top:50%;padding:1.3cqw 3.3cqw 1.3cqw 1.3cqw;border-radius:1.8cqw 0 0 1.8cqw;transform:translate(calc(100% + 1.7cqw),-50%)}
+.m-dr.r::before{bottom:100%;right:2cqw;background:radial-gradient(circle at 0 0,var(--g))}
+.m-dr.r::after{top:100%;right:2cqw;background:radial-gradient(circle at 0 100%,var(--g))}
+.m-dr.tr{right:-2cqw;top:-2cqw;padding:3.3cqw 3.4cqw 1.4cqw 1.4cqw;border-radius:0 0 0 1.8cqw;transform:translateX(calc(100% + 1.7cqw))}
+.m-dr.tr::before{right:100%;top:2cqw;background:radial-gradient(circle at 0 100%,var(--g))}
+.m-dr.tr::after{top:100%;right:2cqw;background:radial-gradient(circle at 0 100%,var(--g))}
+.mini[data-d="wall"] .d-wall,.mini[data-d="launch"] .d-launch,.mini[data-d="dash"] .d-dash{transform:translate(-50%,0)}
+.mini[data-d="sess"] .d-sess{transform:translate(0,-50%)}
+.mini:not([data-note="0"]) .d-note{transform:none}
+.d-launch{width:40%}
+.ll{position:relative;margin-bottom:1cqw}
+.ll p{position:relative;display:flex;align-items:center;gap:1cqw;height:3.2cqw;padding:0 1.2cqw;font-size:1.35cqw;color:var(--m-ink2)}
+.ll b{width:1.7cqw;height:1.7cqw}
+.hl{position:absolute;left:0;right:0;top:0;height:3.2cqw;border-radius:9cqw;background:var(--m-surf2);transform:translateY(calc(var(--sel,0) * 3.2cqw));transition:transform .5s var(--spring-fast)}
+.srch{display:flex;align-items:center;gap:.9cqw;height:3.6cqw;padding:0 1.3cqw;border-radius:9cqw;background:var(--m-surf);font-size:1.4cqw}
+.srch svg{width:1.6cqw;height:1.6cqw;fill:none;stroke:var(--m-ink2);stroke-width:2.4;stroke-linecap:round}
+.q:empty::before{content:"Search apps";color:var(--m-dim)}
+.caret{width:.18cqw;height:1.7cqw;margin-left:-.6cqw;background:var(--m-p);animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.ths{position:relative;display:flex;gap:1.2cqw}
+.th{width:11cqw;height:6.9cqw;border-radius:1cqw;
+  background:radial-gradient(80% 100% at 82% 8%,oklch(.72 .13 var(--wh)),transparent 70%),linear-gradient(160deg,oklch(.44 .09 var(--wh)),oklch(.27 .06 calc(var(--wh) + 30)))}
+.th-ring{position:absolute;left:-.45cqw;top:-.45cqw;width:11.9cqw;height:7.8cqw;border-radius:1.35cqw;box-shadow:0 0 0 .3cqw var(--m-p);
+  transform:translateX(calc(var(--wsel,0) * 12.2cqw));transition:transform .55s var(--spring-fast)}
+.d-dash{display:flex;align-items:center;gap:2.4cqw}
+.m-tm{font-size:4.6cqw;font-weight:300;font-stretch:115%;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.m-dt{margin-top:.6cqw!important;font-size:1.25cqw;color:var(--m-ink2);white-space:nowrap}
+.cal{display:grid;grid-template-columns:repeat(7,1cqw);gap:.6cqw}
+.cal i{width:1cqw;height:1cqw;border-radius:50%;background:var(--m-dim)}
+.cal i:nth-child(12){background:var(--m-p);box-shadow:0 0 0 .3cqw var(--m-pc)}
+.med{display:flex;align-items:center;gap:1cqw;padding:1cqw;border-radius:1.4cqw;background:var(--m-surf)}
+.med b{width:4.4cqw;height:4.4cqw;border-radius:1cqw;background:linear-gradient(135deg,var(--m-t),var(--m-pc))}
+.med span{display:block;width:9cqw;height:.5cqw;border-radius:9cqw;background:var(--m-dim)}
+.med span i{display:block;width:60%;height:100%;border-radius:inherit;background:var(--m-p)}
+.d-note{display:grid;width:29cqw}
+.nc{grid-area:1/1;display:flex;gap:1.1cqw;align-items:flex-start;transition:opacity .4s,transform .6s var(--spring)}
+.nc b{width:2.7cqw;height:2.7cqw}
+.nc p{font-size:1.4cqw;font-weight:500;white-space:nowrap}
+.nc div i{display:block;width:17cqw;height:.7cqw;margin-top:.9cqw;border-radius:9cqw;background:var(--m-dim)}
+.nb,.mini[data-note="2"] .na{opacity:0;transform:translateY(-1.6cqw)}
+.mini[data-note="2"] .nb{opacity:1;transform:none}
+.d-sess{display:flex;flex-direction:column;gap:1cqw}
+.d-sess b{display:grid;place-items:center;width:4.4cqw;height:4.4cqw;border-radius:1.4cqw;background:var(--m-surf)}
+.d-sess svg{width:2cqw;height:2cqw;fill:none;stroke:var(--m-ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ss-hl{position:absolute;left:1.3cqw;top:1.3cqw;width:4.4cqw;height:4.4cqw;border-radius:1.4cqw;box-shadow:0 0 0 .3cqw var(--m-p);
+  transform:translateY(calc(var(--ssel,0) * 5.4cqw));transition:transform .5s var(--spring-fast)}
+
+/* See it run: a darker room, so the picture carries the scene. */
+.run{background:oklch(.135 .016 var(--h))}
+.run .lead{width:30cqw}
+.run .fig{font-size:min(5cqw,9.4cqh)}
+/* Every chapter is on the page; the one playing is shown, so the block never changes height. */
+.cues{display:grid}
+.cues li{grid-area:1/1;opacity:0;translate:0 10px;transition:opacity .45s,translate .7s var(--out);pointer-events:none}
+.cues li.now{opacity:1;translate:0 0;transition-delay:.12s;pointer-events:auto}
+.cues h3{font-size:clamp(22px,2.3cqw,38px);font-weight:400;font-stretch:108%;letter-spacing:-.012em;line-height:1.15;text-wrap:balance}
+.cues p{margin-top:.6em;font-size:clamp(17px,1.62cqw,27px);font-weight:300;font-stretch:104%;line-height:1.38;color:var(--ink-2);text-wrap:pretty}
+.note{color:var(--ink-3);max-width:24em}
+.run.has-video .note{display:none}
+.player{position:absolute;right:4cqw;top:6cqh;width:min(60cqw,92cqh);z-index:3}
+.pscreen{position:relative;aspect-ratio:16/9;border-radius:clamp(14px,1.5cqw,26px);box-shadow:0 3cqh 8cqh -3cqh oklch(.03 .03 var(--h) / .8)}
+.pbar{display:flex;align-items:center;gap:clamp(12px,1.4cqw,22px);margin-top:clamp(12px,2.2cqh,24px)}
+.pplay{position:relative;width:52px;height:52px;flex:none;color:var(--on-p)}
+.pplay>svg:first-child{position:absolute;inset:0;width:100%;height:100%;fill:var(--primary);transition:scale .35s var(--spring-fast)}
+.pplay:active>svg:first-child{scale:.88}
+.pplay .ic{position:absolute;inset:0;margin:auto;width:20px;height:20px;fill:currentColor}
+.pplay .ic-pause,.pplay.playing .ic-play{display:none}
+.pplay.playing .ic-pause{display:block}
+.pplay:focus-visible{border-radius:50%}
+.segs{flex:1;display:flex;gap:6px;min-width:0}
+.seg{flex:var(--len) 1 0;min-width:0;padding:8px 0 0;text-align:left;font-size:13.5px;font-weight:450;color:var(--ink-3);transition:color .3s}
+.seg:hover{color:var(--ink-2)}
+.seg[aria-current="true"]{color:var(--ink)}
+.seg>i{display:block;height:4px;border-radius:99px;overflow:hidden;background:color-mix(in oklch,var(--ink) 15%,transparent)}
+.seg>i>i{display:block;height:100%;background:var(--primary);transform:scaleX(0);transform-origin:left}
+.seg span{display:block;margin-top:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ptime{flex:none;font-size:14px;font-weight:450;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.pmute{display:grid;place-items:center;width:40px;height:40px;flex:none;border-radius:50%;color:var(--ink-2);transition:background-color .3s,color .3s}
+.pmute:hover{background:var(--mid);color:var(--ink)}
+.pmute[hidden]{display:none}
+.pmute svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pmute .w,.pmute[aria-pressed="true"] .x{display:none}
+.pmute[aria-pressed="true"] .w{display:block}
+
+/* Sound: four dots in the bar that wake into a quiet level meter. */
+.snd{display:flex;align-items:center;justify-content:center;gap:3px;width:36px;height:36px;flex:none;border-radius:50%;color:var(--ink-3);transition:color .3s,background-color .3s}
+.snd:hover{color:var(--ink-2);background:var(--mid)}
+.snd i{width:3.5px;height:16px;border-radius:99px;background:currentColor;transform:scaleY(.22);transition:transform .5s var(--spring-fast)}
+.snd[aria-pressed="true"]{color:var(--primary)}
+.snd[aria-pressed="true"] i{transform:scaleY(var(--s));animation:eq 1.7s ease-in-out calc(var(--k) * -.43s) infinite}
+@keyframes eq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
 
 /* Cost */
 .cost .fig{font-size:min(13.5cqw,calc(33cqw / (var(--len) * .66)),26cqh)}
@@ -290,6 +481,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 .tally .del b{color:oklch(.76 .14 25)}
 .foot{position:absolute;left:5.5cqw;right:3.2cqw;bottom:3cqh;display:flex;justify-content:space-between;align-items:flex-end;gap:12px 32px;font-size:13.5px;font-weight:450;color:var(--ink-3);z-index:2}
 .foot p{max-width:96ch}
+.foot a{color:var(--ink-2);text-decoration:underline 1px color-mix(in oklch,var(--primary) 50%,transparent);text-underline-offset:.22em}
 .sig{display:flex;align-items:center;gap:10px;flex:none;color:var(--ink-2);font-size:15px}
 .sig svg{width:20px;height:20px;color:var(--primary)}
 
@@ -309,6 +501,9 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .name{font-size:17.8cqw}
   .pitch{font-size:clamp(22px,5.4cqw,38px);margin-top:14px}
   .hint{display:none}
+  .screen{margin-bottom:34px}
+  .run .fig{font-size:clamp(44px,13cqw,84px)!important}
+  .player{margin-top:4px}
   .sats{position:relative!important;display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,2.5cqw,20px);margin-top:10px;translate:none}
   .sat{--d:44cqw!important;position:relative;left:auto;top:auto;translate:none;justify-self:center}
   .sat:hover{top:auto}
@@ -345,6 +540,9 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .bar .papers{display:none}
   .chip{width:18px;height:18px}
   .wall{flex-wrap:wrap}
+  .bar .snd{margin:0 0 0 auto}
+  .seg span,.ptime{display:none}
+  .pplay{width:46px;height:46px}
   main{margin:var(--top) var(--edge) var(--edge)}
   .ws{scroll-margin-top:var(--top)}
 }
@@ -369,11 +567,12 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 2.5l2.6 8.2a5 5 0 0 0 3.3 3.3L30 16.5l-8.1 2.5a5 5 0 0 0-3.3 3.3L16 30.5l-2.6-8.2a5 5 0 0 0-3.3-3.3L2 16.5l8.1-2.5a5 5 0 0 0 3.3-3.3z"/></svg>
   <div class="spaces" id="spaces"></div>
   <div class="papers" role="group" aria-label="Wallpaper" data-papers></div>
+  <button class="snd" id="snd" aria-pressed="false" aria-label="Sound" title="Sound: off"><i style="--k:0;--s:.55"></i><i style="--k:1;--s:.9"></i><i style="--k:2;--s:.7"></i><i style="--k:3;--s:.45"></i></button>
 </nav>
 
 <main id="app"></main>
 <noscript><p class="nojs">Caelestia for Windows. This page draws its figures with JavaScript; turn it on to see the build in numbers.</p></noscript>
-<div class="track" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div class="track" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 
 <script>
 (() => {
@@ -483,13 +682,112 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     });
   }
 
+  /* ---------- sound: off until asked for, then synthesised, never played from files ----------
+     A slow pad follows the scene and the wallpaper's hue (a new hue moves the chord's root), and
+     small sounds answer the motion: a swell as a workspace opens, a tick as each reel lands, a
+     press on the wallpaper chips. Everything passes through one limiter, and every note fades. */
+  const Snd = (() => {
+    const KEY = "caelestia-sound", btn = document.getElementById("snd");
+    const CHORDS = [[0, 7, 14, 16, 23], [0, 5, 12, 14, 19], [0, 7, 12, 15, 22], [0, 7, 14, 19, 26], [0, 4, 11, 14, 21], [0, 7, 10, 14, 17], [0, 5, 9, 14, 16]];
+    let ctx = null, out, bus, padBus, noise, pad = null, want = false, live = false, ducked = false, scn = 0, h = 277, rt = 0, gl = 0, lastTick = 0;
+    try { want = localStorage.getItem(KEY) === "1"; } catch {}
+    const iv = () => CHORDS[scn % CHORDS.length];
+    // the hue picks the key: each 30 degrees of the colour wheel is a semitone above G
+    const hz = (semi, oct = 0) => 98 * Math.pow(2, Math.round((((h % 360) + 360) % 360) / 30) / 12 + semi / 12 + oct);
+    const hold = (p, t) => { if (p.cancelAndHoldAtTime) p.cancelAndHoldAtTime(t); else { p.cancelScheduledValues(t); p.setValueAtTime(p.value, t); } };
+    function boot() {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const lim = ctx.createDynamicsCompressor();
+      lim.threshold.value = -18; lim.knee.value = 8; lim.ratio.value = 20; lim.attack.value = .004; lim.release.value = .3;
+      out = ctx.createGain(); out.gain.value = 0; out.connect(lim); lim.connect(ctx.destination);
+      // UI sounds share a soft, darkening echo, which reads as a room rather than an effect
+      bus = ctx.createGain(); bus.connect(out);
+      const dl = ctx.createDelay(1.5), fb = ctx.createGain(), lp = ctx.createBiquadFilter(), wet = ctx.createGain();
+      dl.delayTime.value = .43; fb.gain.value = .4; lp.type = "lowpass"; lp.frequency.value = 1800; wet.gain.value = .45;
+      bus.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl); lp.connect(wet); wet.connect(out);
+      padBus = ctx.createGain(); padBus.gain.value = ducked ? 0 : .5; padBus.connect(out);
+      const n = ctx.sampleRate * 2, b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+      noise = b;
+    }
+    function tone(f, peak, a, d, type = "sine", f2 = 0) {
+      const t = ctx.currentTime + .01, o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + a + d * .25);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(.0001, t + a + d);
+      o.connect(g); g.connect(bus); o.start(t); o.stop(t + a + d + .05);
+    }
+    function chord() {
+      const t = ctx.currentTime, g = ctx.createGain(), f = ctx.createBiquadFilter(), lfo = ctx.createOscillator(), lg = ctx.createGain(), oscs = [lfo];
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(1, t + 3.5);
+      f.type = "lowpass"; f.frequency.value = 640 + (scn % 3) * 110; f.Q.value = .3;
+      lfo.frequency.value = .045 + Math.random() * .03; lg.gain.value = 230; lfo.connect(lg); lg.connect(f.frequency); lfo.start(t);
+      iv().forEach((s, i) => [["sine", 3, .055], ["triangle", 6, .014]].forEach(([type, det, amp]) => {
+        const o = ctx.createOscillator(), og = ctx.createGain();
+        o.type = type; o.frequency.value = hz(s); o.detune.value = det * (i % 2 ? 1 : -1); og.gain.value = amp / (1 + i * .3);
+        o.connect(og); og.connect(f); o.start(t); oscs.push(o);
+      }));
+      f.connect(g); g.connect(padBus);
+      return {g, oscs};
+    }
+    function fade(v, s) { const t = ctx.currentTime; hold(v.g.gain, t); v.g.gain.linearRampToValueAtTime(0, t + s); v.oscs.forEach(o => o.stop(t + s + .1)); }
+    // the old chord fades out as the new one fades in
+    function retune() { if (!live) return; const old = pad; pad = chord(); if (old) fade(old, 3.2); }
+    function glint() {
+      clearTimeout(gl); if (!live) return;
+      gl = setTimeout(glint, 2600 + Math.random() * 4400);
+      if (!ducked && !document.hidden) tone(hz(iv()[Math.floor(Math.random() * 5)], 2), .02, .03, 2.6);
+    }
+    function start() {
+      if (!ctx) boot();
+      ctx.resume(); live = true;
+      const t = ctx.currentTime; hold(out.gain, t); out.gain.linearRampToValueAtTime(.8, t + 1.2);
+      if (!pad) pad = chord();
+      glint();
+      tone(hz(7, 2), .03, .01, 1.4); setTimeout(() => live && tone(hz(14, 2), .024, .01, 1.8), 140);
+    }
+    function stop() {
+      live = false; clearTimeout(gl); if (!ctx) return;
+      const t = ctx.currentTime; hold(out.gain, t); out.gain.linearRampToValueAtTime(0, t + .6);
+      const p = pad; pad = null; if (p) fade(p, .6);
+      setTimeout(() => { if (!live) ctx.suspend(); }, 900);
+    }
+    const ui = () => { btn.setAttribute("aria-pressed", want); btn.title = "Sound: " + (want ? "on" : "off"); };
+    btn.addEventListener("click", () => { want = !want; try { localStorage.setItem(KEY, want ? "1" : "0"); } catch {} ui(); want ? start() : stop(); });
+    // a visitor who left sound on hears it again from their first click or key press here
+    const first = e => {
+      if (e.target.closest?.("#snd")) return;
+      removeEventListener("pointerdown", first, true); removeEventListener("keydown", first, true);
+      if (want && !live) start();
+    };
+    if (want) { addEventListener("pointerdown", first, true); addEventListener("keydown", first, true); }
+    document.addEventListener("visibilitychange", () => { if (ctx && live) document.hidden ? ctx.suspend() : ctx.resume(); });
+    ui();
+    return {
+      get live() { return live; },
+      scene(k) {
+        if (k === scn) return; scn = k; if (!live) return;
+        clearTimeout(rt); rt = setTimeout(retune, 180);
+        const t = ctx.currentTime + .01, src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain();
+        src.buffer = noise; bp.type = "bandpass"; bp.Q.value = 2.4;
+        bp.frequency.setValueAtTime(240, t); bp.frequency.exponentialRampToValueAtTime(2400, t + .55); bp.frequency.exponentialRampToValueAtTime(800, t + 1.4);
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.07, t + .4); g.gain.exponentialRampToValueAtTime(.0001, t + 1.5);
+        src.connect(bp); bp.connect(g); g.connect(bus); src.start(t); src.stop(t + 1.6);
+        tone(hz(iv()[2], 1), .028, .35, 1.8);
+      },
+      hue(x) { h = x; if (live) { clearTimeout(rt); rt = setTimeout(retune, 150); } },
+      tick(i) { if (!live) return; const n = performance.now(); if (n - lastTick < 40) return; lastTick = n; tone(hz(iv()[i % 5], 2), .018, .004, .17); },
+      press() { if (live) { tone(hz(0, 3), .045, .006, .3, "sine", hz(0, 2)); tone(hz(7, 1), .02, .012, 1); } },
+      duck(on) { ducked = on; if (!ctx) return; const t = ctx.currentTime; hold(padBus.gain, t); padBus.gain.setTargetAtTime(on ? 0 : .5, t, .45); }
+    };
+  })();
+
   /* ---------- the wallpaper: one hue drives every colour ---------- */
   const SEEDS = [["Periwinkle", 277], ["Rose", 352], ["Apricot", 52], ["Moss", 148], ["Lagoon", 212]];
   let hue = 277;
   const root = document.documentElement, fx = document.querySelector(".fx");
   function setHue(h, save = true) {
     hue = h + 360 * Math.round((hue - h) / 360);        // take the short way round
-    root.style.setProperty("--h", hue);
+    root.style.setProperty("--h", hue); Snd.hue(hue);
     document.querySelectorAll("[data-papers] .chip").forEach(c => c.setAttribute("aria-pressed", String(+c.dataset.h === ((h % 360) + 360) % 360)));
     if (save) try { localStorage.setItem("caelestia-hue", h); } catch {}
   }
@@ -504,7 +802,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     s.animate([{transform: "scale(.01) rotate(0deg)", opacity: .7}, {opacity: .45, offset: .45}, {transform: "scale(1) rotate(70deg)", opacity: 0}],
       {duration: 1500, easing: "cubic-bezier(.3,.7,.2,1)"}).onfinish = () => s.remove();
   }
-  document.addEventListener("click", e => { const c = e.target.closest(".chip"); if (c) { ripple(c, +c.dataset.h); setHue(+c.dataset.h); } });
+  document.addEventListener("click", e => { const c = e.target.closest(".chip"); if (c) { ripple(c, +c.dataset.h); setHue(+c.dataset.h); Snd.press(); } });
   document.querySelector(".bar [data-papers]").innerHTML = chips();
 
   /* ---------- drifting shapes (the shell's dashboard backdrop) ---------- */
@@ -571,6 +869,8 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     // the whole number arrives heavy and condensed, and relaxes to its resting weight and width
     el.style.fontWeight = el.style.fontStretch = "";
     const cs = getComputedStyle(el), w0 = +cs.fontWeight || 300, s0 = parseFloat(cs.fontStretch) || 100, id = el._cu = {}, T = 1150 + D * 170;
+    // with sound on, each reel ticks as it lands
+    if (Snd.live) el.querySelectorAll("i[data-k]").forEach(c => +c.dataset.k && setTimeout(() => el._cu === id && Snd.tick(+c.dataset.o), delay + 1150 + +c.dataset.o * 170));
     let t0 = 0;
     const step = now => {
       if (el._cu !== id) return;
@@ -584,8 +884,190 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   }
   function zero(el) { el._cu = null; el.style.fontWeight = el.style.fontStretch = ""; if (!reduced.matches && isNum(+el.dataset.n)) el.textContent = FMT[el.dataset.f](0); }
 
+  /* ---------- the demo: chapters, a living miniature of the shell, and the footage once it exists ---------- */
+  const UP = `<a href="https://github.com/caelestia-dots/shell" target="_blank" rel="noopener">`;
+  const EXT = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5h9.5V15M18.5 5.5L6 18"/></svg><span class="sr"> (opens in a new tab)</span>`;
+  // Footage sits next to the page under these names (.webm, then .mp4, plus a poster .jpg).
+  // The page asks for the .mp4; when it is there the video replaces the drawing, with no code change.
+  const CLIPS = {loop: ["demo-loop", "demo-poster.jpg"], full: ["demo-full", "demo-full-poster.jpg"]};
+  // The demo's chapters. `t` is the second each one starts in demo-full: edit these after recording.
+  // `dur`, `pose` and `steps` drive the drawing, which plays the same chapters when there is no footage.
+  const CH = [
+    {t: 0, label: "Theming", title: "Colour follows the wallpaper", text: "Pick a wallpaper and the whole shell takes its colours from it, down to the last surface.",
+      dur: 10.5, pose: 4, steps: [[.8, {d: "wall", wsel: 0}], [2.4, {wsel: 1, mh: 75}], [4.2, {wsel: 2, mh: 150}], [6, {wsel: 3, mh: 230}], [7.8, {wsel: 0, mh: 0}], [9.3, {d: ""}]]},
+    {t: 11, label: "Launcher", title: "The launcher", text: "Start typing to find an app. Like every panel, it grows out of the edge of the screen.",
+      dur: 8.5, pose: 2.4, steps: [[0, {d: "launch", q: "", sel: 0}], [1.1, {q: "m"}], [1.35, {q: "mu", sel: 2}], [1.6, {q: "mus"}], [1.85, {q: "musi"}], [3.6, {d: "", tile: "3"}], [5, {q: "", sel: 0}]]},
+    {t: 20, label: "Tiling", title: "Windows tile themselves", text: "New windows take their share of the screen. Swap them around, or move to another workspace.",
+      dur: 9.5, pose: 2, steps: [[1.2, {tile: "3s"}], [3.6, {tile: "3"}], [5.2, {ws: 2, tile: "1"}], [7.4, {ws: 1, tile: "3"}]]},
+    {t: 30, label: "Notifications", title: "Notifications and the dashboard", text: "Notifications slide in from the corner. The dashboard drops from the top with the time, a calendar and what is playing.",
+      dur: 10.5, pose: 1.4, steps: [[.4, {n: 1}], [2.8, {n: 2}], [5, {n: 0}], [5.6, {d: "dash"}], [9.4, {d: ""}]]},
+    {t: 41, label: "Nexus", title: "Nexus, the settings app", text: "Appearance, the bar, notifications and the session, all in one place, applied as you change them.",
+      dur: 10.5, pose: 2.6, steps: [[0, {nx: 1, nsel: 0}], [1.6, {tog: 1}], [3.4, {nsel: 1}], [5, {nsel: 0}], [6.2, {mh: 60}], [8, {mh: 0}], [9.4, {nx: 0, tog: 0}]]},
+    {t: 52, label: "Session", title: "The session menu", text: "Lock, sleep, restart and shut down wait at the right edge of the screen.",
+      dur: 8, pose: 2, steps: [[0, {d: "sess", ssel: 0}], [1.3, {ssel: 1}], [2.6, {ssel: 2}], [3.9, {ssel: 3}], [5.4, {d: "", ssel: 0}], [6.4, {tile: "2"}]]}
+  ];
+  const INIT = {ws: 1, tile: "2", d: "", wsel: 0, sel: 0, q: "", n: 0, nx: 0, nsel: 0, tog: 0, ssel: 0, mh: 0};
+  const EV = []; let TT = 0;
+  CH.forEach(c => { c.s = TT; c.steps.forEach(([at, p]) => EV.push({at: TT + at, p})); TT += c.dur; });
+  const stateAt = t => { const s = {...INIT}; for (const e of EV) { if (e.at > t + 1e-6) break; Object.assign(s, e.p); } return s; };
+  const chAt = t => CH.reduce((k, c, i) => t >= c.s - 1e-6 ? i : k, 0);
+  const NXL = ["Appearance", "Bar", "Notifications", "Session"];
+  const SPARK = "M16 2.5l2.6 8.2a5 5 0 0 0 3.3 3.3L30 16.5l-8.1 2.5a5 5 0 0 0-3.3 3.3L16 30.5l-2.6-8.2a5 5 0 0 0-3.3-3.3L2 16.5l8.1-2.5a5 5 0 0 0 3.3-3.3z";
+  const PWR = ["M7 11V8a5 5 0 0 1 10 0v3M6 11h12v9H6z", "M19.5 14.5A8 8 0 1 1 9.5 4.5a6.2 6.2 0 0 0 10 10z", "M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4.5v4.5H15", "M12 3.5v8M6.6 7a7.5 7.5 0 1 0 10.8 0"];
+  const LN = [[20, "--m-p"], [30, "--m-ink2"], [14, "--m-t"], [33, "--m-ink2"], [24, "--m-q"], [11, "--m-dim"], [27, "--m-ink2"], [18, "--m-u"], [31, "--m-ink2"], [16, "--m-p"], [25, "--m-ink2"], [12, "--m-s"], [29, "--m-ink2"]];
+  const miniHtml = label => `<div class="mini" role="img" aria-label="${esc(label)}" data-tile="2" data-d="" data-note="0" data-nx="0" data-tog="0">
+    <div class="m-bar"><svg class="m-star" viewBox="0 0 32 32"><path d="${SPARK}"/></svg><div class="m-ws"><i></i><b></b><b></b><b></b><b></b></div>
+      <div class="m-tray"><b></b><b></b><b></b></div><p class="m-clock"><span></span><span></span></p><i class="m-pow"></i></div>
+    <div class="m-desk"><div class="m-wall">${shapeSvg("cookie12")}</div>
+      <div class="m-win w1"><div class="wc"><p class="tb"><b style="--c:var(--m-p)"></b>Code</p><div class="ln">${LN.map(([w, c]) => `<i style="--w:${w}cqw;--c:var(${c})"></i>`).join("")}</div></div></div>
+      <div class="m-win w2"><div class="wc"><p class="tb"><b style="--c:var(--m-t)"></b>Browser</p><div class="hb"></div><div class="cards"><i></i><i></i><i></i></div>
+        <div class="ln"><i style="--w:30cqw;--c:var(--m-dim)"></i><i style="--w:22cqw;--c:var(--m-dim)"></i><i style="--w:26cqw;--c:var(--m-dim)"></i></div></div></div>
+      <div class="m-win w3"><div class="wc"><p class="tb"><b style="--c:var(--m-q)"></b>Music</p><div class="alb"></div><div class="prog"><i></i></div></div></div>
+      <div class="m-scrim"></div>
+      <div class="m-nexus"><div class="nx-side"><p class="nx-h">Nexus</p><div class="nx-list"><i class="nx-hl"></i>${NXL.map(n => `<p><b></b>${n}</p>`).join("")}</div></div>
+        <div class="nx-main"><p class="nx-t">Appearance</p><div class="nx-sw">${[0, 60, 130, 205, 290].map(o => `<i style="--o:${o}"></i>`).join("")}</div>
+          <div class="nx-row">Transparency<i class="sw lit"></i></div><div class="nx-row">Focus follows the mouse<i class="sw t2"></i></div><div class="nx-row">Gaps<i class="sl"><b></b></i></div></div></div>
+      <div class="m-dr b d-wall"><div class="ths">${[0, 75, 150, 230].map(o => `<i class="th" style="--wh:calc(var(--h) + ${o})"></i>`).join("")}<i class="th-ring"></i></div></div>
+      <div class="m-dr b d-launch"><div class="ll"><i class="hl"></i>${[["Files", "--m-p"], ["Terminal", "--m-u"], ["Music", "--m-q"], ["Nexus", "--m-s"]].map(([n, c]) => `<p><b style="--c:var(${c})"></b>${n}</p>`).join("")}</div>
+        <div class="srch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><span class="q"></span><i class="caret"></i></div></div>
+      <div class="m-dr t d-dash"><div><p class="m-tm"></p><p class="m-dt"></p></div><div class="cal">${"<i></i>".repeat(35)}</div><div class="med"><b></b><span><i></i></span></div></div>
+      <div class="m-dr tr d-note"><div class="nc na"><b style="--c:var(--m-t)"></b><div><p>Screenshot saved</p><i></i></div></div><div class="nc nb"><b style="--c:var(--m-q)"></b><div><p>Now playing</p><i></i></div></div></div>
+      <div class="m-dr r d-sess">${PWR.map(d => `<b><svg viewBox="0 0 24 24"><path d="${d}"/></svg></b>`).join("")}<i class="ss-hl"></i></div>
+    </div></div>`;
+  function paintMini(el, s) {
+    const d = el.dataset, st = el.style;
+    d.tile = s.tile; d.d = s.d; d.note = s.n; d.nx = s.nx; d.tog = s.tog;
+    for (const k of ["ws", "wsel", "sel", "nsel", "ssel"]) st.setProperty("--" + k, s[k]);
+    if (s.mh) st.setProperty("--mh", `calc(var(--h) + ${s.mh})`); else st.removeProperty("--mh");
+    const q = el.querySelector(".q"), nt = el.querySelector(".nx-t");
+    if (q.textContent !== s.q) q.textContent = s.q;
+    if (nt.textContent !== NXL[s.nsel]) nt.textContent = NXL[s.nsel];
+  }
+  // the drawing keeps the visitor's own time
+  function clock(el) {
+    const n = new Date(), hh = String(n.getHours()).padStart(2, "0"), mm = String(n.getMinutes()).padStart(2, "0"), sp = el.querySelectorAll(".m-clock span");
+    if (sp[0].textContent === hh && sp[1].textContent === mm) return;
+    sp[0].textContent = hh; sp[1].textContent = mm; el.querySelector(".m-tm").textContent = hh + ":" + mm;
+    el.querySelector(".m-dt").textContent = n.toLocaleDateString("en-US", {weekday: "long", month: "long", day: "numeric"});
+  }
+  // Plays the chapters on a loop with one timer per step, and does nothing at all while paused.
+  function walker(el, onCh) {
+    let playing = false, base = 0, at = 0, timer = 0, ch = -1;
+    const now = () => playing ? (performance.now() - base) / 1000 : at;
+    const show = t => { clock(el); paintMini(el, stateAt(t)); const c = chAt(t); if (c !== ch) { ch = c; onCh?.(c); } };
+    const next = () => {
+      clearTimeout(timer); if (!playing) return;
+      let t = now(); if (t >= TT) { base += TT * 1000; t -= TT; show(t); }
+      const e = EV.find(e => e.at > t + 1e-3), nt = e ? e.at : TT;
+      timer = setTimeout(() => { show(Math.min(now(), TT - 1e-3)); next(); }, Math.max(16, (nt - t) * 1000 + 12));
+    };
+    show(0);
+    return {
+      play() { if (playing) return; playing = true; base = performance.now() - at * 1000; show(at); next(); },
+      pause() { if (!playing) return; at = now() % TT; playing = false; clearTimeout(timer); },
+      seek(t) { at = t; if (playing) base = performance.now() - t * 1000; show(t); next(); },
+      pose(s) { clock(el); paintMini(el, s); },
+      get t() { return now() % TT; }, get playing() { return playing; }
+    };
+  }
+  // Published copies say which clips exist (export_site.py rewrites this line), so the
+  // public page never asks for a missing file. Locally it is null and the page probes.
+  const MEDIA = {"demo-loop": false, "demo-full": false};
+  // Uses the footage when it exists. Only the .mp4 is asked about; the .webm, listed first, wins where it plays.
+  function footage([name, poster], v, ok) {
+    if (!/^https?:$/.test(location.protocol)) return;
+    if (MEDIA && !MEDIA[name]) return;
+    fetch(name + ".mp4", {method: "HEAD", cache: "no-store"}).then(r => {
+      if (!r.ok) return;
+      v.addEventListener("loadeddata", ok, {once: true});
+      v.poster = poster;
+      v.innerHTML = `<source src="${name}.webm" type="video/webm"><source src="${name}.mp4" type="video/mp4">`;
+      v.load();
+    }).catch(() => {});
+  }
+  const hidden = () => document.hidden;
+
+  // The hero: the drawing loops quietly, or the silent demo loop does once it exists.
+  function heroDemo() {
+    const box = document.getElementById("hero-screen"), v = box.querySelector("video"), btn = box.querySelector(".hold");
+    const w = walker(box.querySelector(".mini"));
+    let on = false, held = reduced.matches, vid = false;
+    if (reduced.matches) w.pose({...INIT, tile: "3", n: 1});
+    const sync = () => {
+      const go = on && !held && !hidden();
+      if (vid) { w.pause(); go ? v.play().catch(() => {}) : v.pause(); } else go ? w.play() : w.pause();
+      btn.classList.toggle("held", held); btn.querySelector("span").textContent = held ? "Play" : "Pause";
+      btn.setAttribute("aria-label", (held ? "Play" : "Pause") + (vid ? " the demo loop" : " the drawing"));
+    };
+    btn.addEventListener("click", () => { held = !held; sync(); });
+    footage(CLIPS.loop, v, () => { vid = true; box.classList.add("has-video"); sync(); });
+    sync();
+    return {set(o) { on = o; sync(); }, sync};
+  }
+
+  // See it run: the full demo with chapters, or the drawing stepping through the same chapters.
+  function runDemo() {
+    const sec = document.getElementById("run"), box = sec.querySelector(".pscreen"), v = box.querySelector("video");
+    const btn = sec.querySelector(".pplay"), shape = btn.querySelector("path[data-shape]"), mute = sec.querySelector(".pmute"), time = sec.querySelector(".ptime");
+    const segs = [...sec.querySelectorAll(".seg")], fills = segs.map(s => s.querySelector("i i")), cues = [...sec.querySelectorAll(".cues li")];
+    let on = false, held = reduced.matches, vid = false, raf = 0, k = -1, lastS = -1;
+    const chapter = c => {
+      if (c === k) return; k = c;
+      cues.forEach((li, i) => li.classList.toggle("now", i === c));
+      segs.forEach((s, i) => s.setAttribute("aria-current", i === c));
+    };
+    const w = walker(box.querySelector(".mini"), chapter);
+    const total = () => vid ? v.duration || TT : TT;
+    const starts = () => vid ? CH.map(c => Math.min(c.t, total())) : CH.map(c => c.s);
+    const playing = () => vid ? !v.paused : w.playing;
+    const fmt = x => Math.floor(x / 60) + ":" + String(Math.floor(x % 60)).padStart(2, "0");
+    const draw = () => {
+      const t = vid ? v.currentTime : w.t, S = starts(), T = total();
+      if (vid) chapter(S.reduce((c, s, i) => t >= s ? i : c, 0));
+      fills.forEach((f, i) => { const a = S[i], b = S[i + 1] ?? T; f.style.transform = `scaleX(${Math.max(0, Math.min(1, (t - a) / (b - a || 1))).toFixed(4)})`; });
+      const s = Math.floor(t); if (s !== lastS) { lastS = s; time.textContent = fmt(t) + " / " + fmt(T); }
+    };
+    const loop = () => { draw(); raf = on && playing() && !hidden() ? requestAnimationFrame(loop) : 0; };
+    const look = () => {
+      const p = playing();
+      btn.classList.toggle("playing", p); btn.setAttribute("aria-label", p ? "Pause" : "Play"); shape?._m?.to(p ? "cookie9" : "circle");
+      mute.setAttribute("aria-pressed", !v.muted);
+      Snd.duck(vid && p && !v.muted);
+      draw(); if (!raf && p && on) raf = requestAnimationFrame(loop);
+    };
+    const sync = () => {
+      const go = on && !held && !hidden();
+      // if the browser refuses sound, play on silently rather than not at all
+      if (vid) { w.pause(); go ? v.play().catch(() => { v.muted = true; v.play().catch(() => {}); }) : v.pause(); } else go ? w.play() : w.pause();
+      look();
+    };
+    btn.addEventListener("click", () => {
+      held = playing();
+      if (vid && !held) v.muted = false;            // pressing play turns the video's sound on
+      sync();
+    });
+    mute.addEventListener("click", () => { v.muted = !v.muted; look(); });
+    // a chapter on its own shows a representative moment; while playing, it starts from the top
+    segs.forEach((s, i) => s.addEventListener("click", () => {
+      if (vid) v.currentTime = starts()[i]; else { w.seek(CH[i].s + (w.playing ? 0 : CH[i].pose)); chapter(i); }
+      draw();
+    }));
+    ["play", "pause", "volumechange"].forEach(e => v.addEventListener(e, look));
+    v.addEventListener("ended", () => { held = true; v.currentTime = 0; sync(); });
+    footage(CLIPS.full, v, () => {
+      vid = true; box.classList.add("has-video"); sec.classList.add("has-video"); mute.hidden = false;
+      const S = starts(), T = total(); segs.forEach((s, i) => s.style.setProperty("--len", Math.max(.5, (S[i + 1] ?? T) - S[i]).toFixed(1)));
+      sync();
+    });
+    if (reduced.matches) w.seek(CH[0].pose);
+    sync();
+    return {set(o) { on = o; sync(); }, sync};
+  }
+  let hero = null, run = null;
+  document.addEventListener("visibilitychange", () => { hero?.sync(); run?.sync(); });
+
   /* ---------- scenes ---------- */
-  const SCN = [["intro", "Caelestia", "cookie12"], ["cost", "Cost", "cookie9"], ["tokens", "Tokens", "sunny"],
+  const SCN = [["intro", "Caelestia", "cookie12"], ["run", "See it run", "cookie6"], ["cost", "Cost", "cookie9"], ["tokens", "Tokens", "sunny"],
     ["agents", "Agents", "flower"], ["time", "Time and milestones", "verysunny"], ["credits", "Credits", "clover"]];
   let D = null, builders = [], sky = null, SECs = [], SCs = [], links = [];
   function render(d) {
@@ -640,13 +1122,14 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     const wave = "M-100 0q25-7 50 0t50 0t50 0t50 0t50 0t50 0V120H-100z";
     const moonXY = [[14, 59], [32, 52], [50, 45], [68, 38], [86, 31]], moonShapes = ["cookie12", "flower", "sunny", "clover", "cookie9"];
 
-    // The four hero numbers sit in shapes along the bottom edge. A missing figure shows as a dash.
-    const satSlots = [[14, 92, 26, "var(--primary)", "var(--on-p)", "cookie9", 150], [38, 86, 24, "var(--tertiary)", "var(--on-t)", "flower", 120],
-      [62, 93, 26, "var(--quad)", "var(--on-q)", "sunny", 170], [87, 87, 25, "var(--secondary)", "var(--on-p)", "softburst", 140]];
+    // The four headline numbers sit in shapes bleeding off the bottom edge. A missing figure shows as a dash.
+    // In See it run they sit low along the bottom edge, under the player.
+    const satSlots = [[13, 95, 16, "var(--primary)", "var(--on-p)", "cookie9", 150], [36, 93, 15, "var(--tertiary)", "var(--on-t)", "flower", 120],
+      [60, 96, 16, "var(--quad)", "var(--on-q)", "sunny", 170], [84, 93.5, 15.5, "var(--secondary)", "var(--on-p)", "softburst", 140]];
     const sats = [[agents, "Agents and subagents"], [t3.threads, "Threads triaged"], [p.pullRequests, "Pull requests landed"], [code.commits, "Git commits"]]
       .map(([n, label], i) => {
         const [x, y, dm, c, on, shape, rot] = satSlots[i];
-        return `<div class="sat" data-in="${1050 + i * 100}" style="--i:${i};--x:${x};--y:${y};--d:${dm}cqw;--c:${c};--on:${on};--ty:19;--rot:${rot}s">${shapeSvg(shape)}<div><b ${counter(n, "int", 1100 + i * 100)}${isNum(n) ? `>${shown0(n, "int")}` : ` title="Not available yet"><span aria-hidden="true">${NA}</span><span class="sr">${NA_SAY}</span>`}</b><span>${label}</span></div></div>`;
+        return `<div class="sat" data-in="${1050 + i * 100}" style="--i:${i};--x:${x};--y:${y};--d:${dm}cqw;--c:${c};--on:${on};--ty:22;--rot:${rot}s">${shapeSvg(shape)}<div><b ${counter(n, "int", 1100 + i * 100)}${isNum(n) ? `>${shown0(n, "int")}` : ` title="Not available yet"><span aria-hidden="true">${NA}</span><span class="sr">${NA_SAY}</span>`}</b><span>${label}</span></div></div>`;
       }).join("");
 
     document.getElementById("app").innerHTML = `
@@ -655,11 +1138,28 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
         ${shapeSvg(pick(BLOOM), "shape sun", 'data-in="150"')}${shapeSvg("flower", "shape moon", 'data-in="380"')}
         <div class="copy">
           <h1 class="name" aria-label="Caelestia">${[..."Caelestia"].map((ch, i) => `<span aria-hidden="true" style="--i:${i}">${ch}</span>`).join("")}</h1>
-          <p class="pitch rv" style="--rd:.9s">The Caelestia desktop shell, ported from Linux to Windows&nbsp;11 by a team of AI agents.</p>
+          <p class="pitch rv" style="--rd:.75s">The Caelestia desktop, on Windows&nbsp;11. Ported from Linux by a team of AI agents.</p>
+          <p class="credit rv" style="--rd:.9s">Based on ${UP}Caelestia, the Hyprland desktop shell by caelestia-dots${EXT}</a>. Its look, components and motion are theirs; this port carries them to Windows.</p>
           <div class="meta rv" style="--rd:1.05s"><p class="state">In daily use as the maintainer's desktop</p>
             <div class="wall"><span>Colours follow the wallpaper. Try one:</span><div class="papers" role="group" aria-label="Wallpaper" data-papers>${chips()}</div></div>
             <p class="hint">Scroll, or press <kbd>1</kbd>to<kbd>${SCN.length}</kbd></p></div>
         </div>
+        <div class="screen" id="hero-screen"><video muted loop playsinline preload="auto" aria-label="Caelestia running on Windows 11"></video>
+          ${miniHtml("A live drawing of the Caelestia shell: the bar with workspace dots and a clock, tiled windows, and panels sliding out of the screen's edges.")}
+          <button class="hold" aria-pressed="false"><svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg><svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><span>Pause</span></button></div>
+      </section></div>
+
+      <div class="scene"><section id="run" class="ws run" aria-labelledby="run-h">
+        <div class="drift" data-drift="13" data-shapes="6" data-fade=".45" aria-hidden="true"></div>
+        <div class="lead"><h2 class="fig" id="run-h">See it run</h2>
+          <ol class="cues" aria-label="What the demo shows">${CH.map((c, i) => `<li${i ? "" : ' class="now"'}><h3>${esc(c.title)}</h3><p>${esc(c.text)}</p></li>`).join("")}</ol>
+          <p class="small note rv" style="--rd:.8s">This is a live drawing of the shell's layout, made in code, not a screenshot.</p></div>
+        <div class="player rv" style="--rd:.25s"><div class="pscreen"><video playsinline muted preload="metadata" aria-label="Demo of Caelestia running on Windows 11"></video>
+            ${miniHtml("A larger drawing of the Caelestia shell, stepping through each chapter of the demo.")}</div>
+          <div class="pbar"><button class="pplay" aria-label="Play">${shapeSvg("circle")}<svg class="ic ic-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><svg class="ic ic-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg></button>
+            <div class="segs" role="group" aria-label="Chapters">${CH.map((c, i) => `<button class="seg" style="--len:${c.dur}" aria-label="${esc(c.title)}" aria-current="${!i}"><i><i></i></i><span aria-hidden="true">${esc(c.label)}</span></button>`).join("")}</div>
+            <span class="ptime" aria-hidden="true"></span>
+            <button class="pmute" hidden aria-pressed="false" aria-label="Video sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path class="x" d="M16 9.5l5 5M21 9.5l-5 5"/><path class="w" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg></button></div></div>
         <div class="sats">${sats}</div>
       </section></div>
 
@@ -715,7 +1215,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
           <ul>${byRole[r].map((m, j) => { const [v, ...rest] = modelName(m.model).split(" "); return `<li class="rv" style="--j:${j + 1}"><span>${esc(v)}</span> ${esc(rest.join(" "))}</li>`; }).join("")}</ul></div>`).join("")}</div>
         <dl class="tally">${tally.map(([n, f, label, cls], i) => `<div class="rv ${cls || ""}" style="--rd:${(1.1 + i * .12).toFixed(2)}s"><dt>${esc(label)}</dt><dd><b ${counter(n, f)}>${shown0(n, f)}</b></dd></div>`).join("")}</dl>
         <footer class="foot rv" style="--rd:1.6s">
-          <p>${asOf}Cost is an estimate at public API list rates, not money spent. Cost and tokens cover the measured build session${u.session?.start && u.asOf ? `, ${esc(day(u.session.start))} to ${esc(day(u.asOf))}` : ""}; agents, threads and time cover the whole project. Caelestia Shell is by soramanew and contributors.</p>
+          <p>${asOf}Cost is an estimate at public API list rates, not money spent. Cost and tokens cover the measured build session${u.session?.start && u.asOf ? `, ${esc(day(u.session.start))} to ${esc(day(u.asOf))}` : ""}; agents, threads and time cover the whole project. ${UP}Caelestia Shell<span class="sr"> (opens in a new tab)</span></a> is by soramanew and the caelestia-dots contributors; its design, components and motion are theirs.</p>
           <p class="sig"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="${spark}"/></svg>Caelestia, on Windows</p>
         </footer>
       </section></div>`;
@@ -737,6 +1237,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     arm(document.getElementById("app"));
     sky = makeSky(document.querySelector("#tokens .sky"), stars);
     builders = [() => layoutBubbles(orbs), () => layoutChart(crew), layoutOrbit];
+    hero = heroDemo(); run = runDemo();
     wordmark(); hoverShapes();
     setHue(hue, false);
     setMode();
@@ -833,6 +1334,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     if (on === ws.classList.contains("on")) return;
     ws.classList.toggle("on", on);
     bloom(ws, on);
+    if (ws.id === "intro") hero?.set(on); else if (ws.id === "run") run?.set(on);
     if (on) {
       ws.querySelectorAll("[data-n]").forEach(countUp);
       if (ws.id === "tokens") sky?.warp();
@@ -844,7 +1346,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   }
   let cur = -1;
   function current(k) {
-    if (k === cur || !links[k]) return; cur = k;
+    if (k === cur || !links[k]) return; cur = k; Snd.scene(k);
     links.forEach((a, j) => { const on = j === k; a.setAttribute("aria-current", on); if (on) a.classList.remove("peek"); if (!a.classList.contains("peek")) a.querySelector("path")._m.to(on ? SCN[j][2] : "circle"); });
   }
 
@@ -1008,7 +1510,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     });
     // a click on the desktop throws out a handful of shapes
     app.addEventListener("pointerdown", e => {
-      if (reduced.matches || e.button !== 0 || e.target.closest("a,button,.orb,.sat,.cl,.moon-l,p,h1,h2,h3,li,dd")) return;
+      if (reduced.matches || e.button !== 0 || e.target.closest("a,button,.orb,.sat,.cl,.moon-l,.screen,.player,p,h1,h2,h3,li,dd")) return;
       const cols = ["--primary", "--tertiary", "--quad", "--quin", "--sext", "--p-cont", "--t-cont"];
       for (let i = 0; i < 10; i++) {
         const sz = 12 + Math.random() * 30, a = i / 10 * TAU + Math.random() * .6, dist = 80 + Math.random() * 130;
