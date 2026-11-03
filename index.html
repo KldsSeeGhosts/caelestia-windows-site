@@ -972,7 +972,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   }
   // Published copies say which clips exist (export_site.py rewrites this line), so the
   // public page never asks for a missing file. Locally it is null and the page probes.
-  const MEDIA = {"demo-loop": true, "demo-full": true};
+  const MEDIA = {"demo-loop": false, "demo-full": true};
   // Uses the footage when it exists. Only the .mp4 is asked about; the .webm, listed first, wins where it plays.
   function footage([name, poster], v, ok) {
     if (!/^https?:$/.test(location.protocol)) return;
@@ -1000,7 +1000,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       btn.setAttribute("aria-label", (held ? "Play" : "Pause") + (vid ? " the demo loop" : " the drawing"));
     };
     btn.addEventListener("click", () => { held = !held; sync(); });
-    footage(CLIPS.loop, v, () => { vid = true; box.classList.add("has-video"); sync(); });
+    // The hero stays the stylised drawing on purpose; real footage lives in See it run.
     sync();
     return {set(o) { on = o; sync(); }, sync};
   }
