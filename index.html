@@ -4,20 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Caelestia for Windows</title>
-<meta name="description" content="A port of Caelestia, the Hyprland desktop shell by caelestia-dots, to Windows 11, built by a team of AI agents. See it run, then the build in numbers.">
+<meta name="description" content="Caelestia, the Hyprland desktop shell, ported to Windows 11: a new bar, launcher, dashboard, notifications and window tiling, coloured by your wallpaper.">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#1b1b24">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='10' fill='%231b1b24'/%3E%3Cpath fill='%23b8c3ff' d='M16 4.5l2.1 6.6a4 4 0 0 0 2.7 2.7L27.5 16l-6.7 2.1a4 4 0 0 0-2.7 2.7L16 27.5l-2.1-6.7a4 4 0 0 0-2.7-2.7L4.5 16l6.7-2.2a4 4 0 0 0 2.7-2.7z'/%3E%3C/svg%3E">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Caelestia for Windows">
-<meta property="og:description" content="A port of Caelestia, the Hyprland desktop shell by caelestia-dots, to Windows 11, built by a team of AI agents. See it run, then the build in numbers.">
+<meta property="og:description" content="Caelestia, the Hyprland desktop shell, ported to Windows 11: a new bar, launcher, dashboard, notifications and window tiling, coloured by your wallpaper.">
 <meta property="og:image" content="https://kldsseeghosts.github.io/caelestia-windows-site/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="The Caelestia wordmark among bold rounded shapes, with the build's agent, thread, pull request and commit counts.">
+<meta property="og:image:alt" content="The Caelestia wordmark among bold rounded shapes.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Caelestia for Windows">
-<meta name="twitter:description" content="A port of Caelestia, the Hyprland desktop shell by caelestia-dots, to Windows 11, built by a team of AI agents. See it run, then the build in numbers.">
+<meta name="twitter:description" content="Caelestia, the Hyprland desktop shell, ported to Windows 11: a new bar, launcher, dashboard, notifications and window tiling, coloured by your wallpaper.">
 <meta name="twitter:image" content="https://kldsseeghosts.github.io/caelestia-windows-site/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,6 +47,7 @@
   /* The shell's own curves: expressive default and fast spatial springs, emphasized decelerate. */
   --spring:cubic-bezier(.38,1.21,.22,1);--spring-fast:cubic-bezier(.42,1.67,.21,.9);--out:cubic-bezier(.05,.7,.1,1);
   --font:"Google Sans Flex","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+  --mono:"Cascadia Code","Cascadia Mono",Consolas,ui-monospace,monospace;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -61,7 +62,9 @@ a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 ::selection{background:color-mix(in oklch,var(--primary) 40%,transparent)}
 :focus-visible{outline:2px solid var(--primary);outline-offset:3px;border-radius:8px}
+.flood-p :focus-visible,.flood-t :focus-visible{outline-color:var(--fg)}
 .chip:focus-visible,.spaces a:focus-visible{border-radius:50%}
+.ws:focus{outline:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 /* Numbers land on rolling reels, one per digit, like an odometer. */
 .odo{display:inline-flex;vertical-align:top;line-height:1}
@@ -139,12 +142,26 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 .rv{opacity:0;translate:0 18px;transition:opacity .8s var(--rd,.35s),translate 1.1s var(--out) var(--rd,.35s)}
 .on .rv{opacity:1;translate:0 0}
 
-.fig{font-weight:300;font-stretch:118%;letter-spacing:-.045em;line-height:.85;color:var(--fg);white-space:nowrap;font-variant-numeric:tabular-nums}
-.cap{font-size:clamp(19px,2.15cqw,34px);font-weight:300;font-stretch:108%;line-height:1.28;letter-spacing:-.005em;color:var(--fg2);max-width:23em;text-wrap:balance}
-.cap b{color:var(--fg);font-weight:400}
-.small{font-size:15px;font-weight:450;color:var(--fg2);line-height:1.35}
-.lead{position:absolute;left:5.5cqw;top:7cqh;display:flex;flex-direction:column;gap:3cqh;z-index:2}
-.lead .cap{width:min(var(--cw,30cqw),100%)}
+/* One heading style for every scene: sentence case, set in the font's wide cut. */
+.title{font-size:clamp(34px,min(4.3cqw,7.8cqh),72px);font-weight:350;font-stretch:112%;letter-spacing:-.03em;line-height:1.02;color:var(--fg);text-wrap:balance}
+.cap{font-size:clamp(18px,1.75cqw,28px);font-weight:300;font-stretch:106%;line-height:1.32;color:var(--fg2);max-width:24em;text-wrap:pretty}
+.small{font-size:15px;font-weight:450;color:var(--fg2);line-height:1.4}
+.lead{position:absolute;left:5.5cqw;top:7cqh;display:flex;flex-direction:column;gap:2.6cqh;z-index:2}
+.flood-p .cap,.flood-t .cap{font-weight:350}
+
+/* Buttons are M3 expressive: round at rest, and they square off as you press them. */
+.cta{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:56px;padding:0 28px;border-radius:999px;white-space:nowrap;
+  font-size:17px;font-weight:550;font-stretch:106%;letter-spacing:.005em;
+  transition:border-radius .5s var(--spring-fast),scale .4s var(--spring-fast),background-color .3s,color .3s}
+.btn:hover{border-radius:22px}
+.btn:active{border-radius:14px;scale:.95}
+.btn.pri{background:var(--primary);color:var(--on-p)}
+.btn.ton{background:var(--mid);color:var(--ink)}
+.btn.ton:hover{background:var(--high)}
+.flood-p .btn.pri{background:var(--on-p);color:var(--primary)}
+.btn.off{cursor:default;opacity:.75}
+.btn.off:hover,.btn.off:active{border-radius:999px;scale:1}
 
 /* Hero */
 .hero .sun{right:-8cqw;top:-16cqh;width:min(48cqw,92cqh);aspect-ratio:1;fill:var(--p-cont);animation:spin 160s linear infinite;
@@ -154,25 +171,22 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   scale:.4;opacity:0;translate:calc(var(--px,0) * -4.5cqw) calc(var(--py,0) * -5cqh);
   transition:scale 1.6s var(--spring) .3s,opacity .7s .3s,translate 1.4s var(--out)}
 .hero.on .sun,.hero.on .moon{scale:1;opacity:1}
-.copy{position:absolute;left:5.5cqw;top:8cqh;width:35cqw;display:flex;flex-direction:column;align-items:flex-start;z-index:2}
+.copy{position:absolute;left:5.5cqw;top:8cqh;width:36cqw;display:flex;flex-direction:column;align-items:flex-start;z-index:2}
 .name{font-size:min(10.5cqw,19cqh);font-weight:300;font-stretch:125%;letter-spacing:-.03em;line-height:1;white-space:nowrap;margin:0 0 0 -.04em}
 /* The wordmark unfolds through the font's axes: heavy and condensed, to light and extended. */
 .name span{display:inline-block;opacity:0;translate:0 .3em;font-weight:700;font-stretch:30%}
 .on .name span{opacity:1;translate:0 0;font-weight:var(--w,300);font-stretch:calc(var(--s,125) * 1%);
   transition:opacity .5s,translate 1.2s var(--out),font-weight 1.5s var(--out),font-stretch 1.5s var(--out);transition-delay:calc(.35s + var(--i) * 65ms)}
 .settled .name span{transition:none}
-.pitch{margin-top:3.4cqh;font-size:clamp(21px,2.3cqw,38px);font-weight:300;font-stretch:108%;line-height:1.16;letter-spacing:-.01em;text-wrap:balance}
-/* Where it comes from, said plainly and early. */
-.credit{max-width:31em;margin-top:2.4cqh;font-size:clamp(15px,1.28cqw,19px);line-height:1.5;color:var(--ink-2);text-wrap:pretty}
-.credit a{color:var(--ink);font-weight:500;text-decoration:underline 1.5px color-mix(in oklch,var(--primary) 55%,transparent);text-underline-offset:.24em;transition:text-decoration-color .3s}
-.credit a:hover{text-decoration-color:var(--primary)}
-.credit svg{display:inline-block;width:.78em;height:.78em;margin-left:.28em;vertical-align:-.04em;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
-.meta{display:flex;align-items:center;flex-wrap:wrap;gap:12px 28px;margin-top:3.6cqh}
-/* A desktop inside the desktop: the living miniature, or the demo loop once it exists. */
+.pitch{margin-top:3.2cqh;font-size:clamp(22px,2.3cqw,38px);font-weight:350;font-stretch:108%;line-height:1.16;letter-spacing:-.01em;text-wrap:balance}
+.sub{margin-top:1.8cqh;max-width:27em;font-size:clamp(16px,1.3cqw,20px);line-height:1.5;color:var(--ink-2);text-wrap:pretty}
+.hero .cta{margin-top:3.6cqh}
+.wall{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:3.6cqh;color:var(--ink-2);font-size:15px}
+/* A desktop inside the desktop: a living drawing of the shell, sized by its own width. */
 .screen{position:absolute;right:4cqw;bottom:9.5cqh;width:min(56cqw,92cqh);aspect-ratio:16/9;z-index:2;border-radius:clamp(14px,1.5cqw,26px);
   box-shadow:0 3cqh 8cqh -3cqh oklch(.05 .04 var(--h) / .75);opacity:0;scale:.9;transition:opacity .6s .45s,scale 1.3s var(--spring) .45s}
 .on .screen{opacity:1;scale:1}
-.screen video,.pscreen video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;background:var(--shell);opacity:0;transition:opacity .6s}
+.pscreen video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;background:var(--shell);opacity:0;transition:opacity .6s}
 .has-video>video{opacity:1}
 .has-video>.mini{opacity:0;visibility:hidden;transition:opacity .6s,visibility 0s .6s}
 .hold{position:absolute;right:0;top:calc(100% + 1.4cqh);display:flex;align-items:center;gap:7px;padding:5px 12px 5px 9px;border-radius:99px;font-size:14px;font-weight:450;color:var(--ink-3);transition:color .3s,background-color .3s}
@@ -180,25 +194,6 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 .hold svg{width:14px;height:14px;fill:currentColor}
 .hold .i-play,.hold.held .i-pause{display:none}
 .hold.held .i-play{display:block}
-.state{display:flex;align-items:center;gap:11px;color:var(--ink-2);font-size:15px}
-.state::before{content:"";flex:none;width:9px;height:9px;border-radius:50%;background:oklch(.85 .14 155);box-shadow:0 0 0 5px oklch(.85 .14 155 / .2);animation:pulse 2.4s ease-in-out infinite}
-@keyframes pulse{50%{box-shadow:0 0 0 9px oklch(.85 .14 155 / 0)}}
-.wall{display:flex;align-items:center;gap:12px;color:var(--ink-2);font-size:15px}
-.hint{display:flex;align-items:center;gap:6px;padding:5px 7px 5px 14px;border-radius:99px;background:color-mix(in oklch,var(--surface) 78%,transparent);color:var(--ink-2);font-size:15px}
-.hint kbd{display:inline-grid;place-items:center;min-width:26px;height:26px;padding:0 6px;border-radius:9px;background:var(--high);color:var(--ink);font:600 13px/1 var(--font)}
-/* The four numbers sit in shapes along the bottom edge, bleeding off it. */
-.sats{position:absolute;inset:0;z-index:2;pointer-events:none;translate:calc(var(--px,0) * -1cqw) calc(var(--py,0) * -1.2cqh);transition:translate 1.4s var(--out)}
-.sat{--d:25cqw;position:absolute;left:calc(var(--x) * 1%);top:calc(var(--y) * 1%);width:var(--d);aspect-ratio:1;translate:-50% -50%;pointer-events:auto;
-  scale:.4;opacity:0;transition:scale 1.1s var(--spring-fast) calc(1.1s + var(--i) * .1s),opacity .4s calc(1.1s + var(--i) * .1s),transform .5s var(--spring-fast)}
-.on .sat{scale:1;opacity:1}
-.sat:hover{transform:translateY(-2.4cqh)}
-.sat>svg{position:absolute;inset:0;width:100%;height:100%;fill:var(--c);animation:spin var(--rot) linear infinite}
-.sat>div{position:absolute;left:0;right:0;top:calc(var(--ty) * 1%);text-align:center;color:var(--on);pointer-events:none}
-/* Shapes lean toward the pointer, and their labels lean a little further. */
-.sat>svg,.orb>svg{translate:calc(var(--mx,0) * 9%) calc(var(--my,0) * 9%);transition:translate .6s var(--spring)}
-.sat>div,.orb>div{translate:calc(var(--mx,0) * 14%) calc(var(--my,0) * 14%);transition:translate .6s var(--spring)}
-.sat b{display:block;font-size:calc(var(--d) * .24);font-weight:300;font-stretch:112%;letter-spacing:-.045em;line-height:.9;font-variant-numeric:tabular-nums}
-.sat>div>span{display:block;margin-top:.5em;font-size:clamp(13px,calc(var(--d) * .05),19px);font-weight:450;line-height:1.2}
 
 /* The living miniature: a Caelestia desktop drawn in code and sized by its own width. Its hue
    follows the page, unless a step of the walkthrough picks a wallpaper of its own. */
@@ -211,6 +206,9 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   --m-spring:cubic-bezier(.3,1.1,.3,1)}
 .mini p{margin:0}
 .m-bar{position:absolute;left:0;top:0;bottom:0;width:5.4cqw;display:flex;flex-direction:column;align-items:center;gap:1.3cqw;padding:1.7cqw 0 1.5cqw}
+/* Lit when the edge map points at the bar. */
+.m-bar::after{content:"";position:absolute;inset:.7cqw .45cqw;border-radius:3cqw;box-shadow:0 0 0 .3cqw var(--m-p);opacity:0;scale:.92;transition:opacity .35s,scale .6s var(--spring-fast)}
+.mini.bar-lit .m-bar::after{opacity:1;scale:1}
 .m-star{width:2.1cqw;height:2.1cqw;fill:var(--m-p);flex:none}
 .m-ws{position:relative;display:flex;flex-direction:column;align-items:center;gap:.95cqw;padding:1cqw .85cqw;border-radius:9cqw;background:var(--m-surf)}
 .m-ws b{width:.85cqw;height:.85cqw;border-radius:50%;background:var(--m-dim)}
@@ -329,17 +327,14 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 
 /* See it run: a darker room, so the picture carries the scene. */
 .run{background:oklch(.135 .016 var(--h))}
-.run .lead{width:30cqw}
-.run .fig{font-size:min(5cqw,9.4cqh)}
+.run .lead{width:27cqw}
 /* Every chapter is on the page; the one playing is shown, so the block never changes height. */
-.cues{display:grid}
+.cues{display:grid;margin-top:1cqh}
 .cues li{grid-area:1/1;opacity:0;translate:0 10px;transition:opacity .45s,translate .7s var(--out);pointer-events:none}
 .cues li.now{opacity:1;translate:0 0;transition-delay:.12s;pointer-events:auto}
-.cues h3{font-size:clamp(22px,2.3cqw,38px);font-weight:400;font-stretch:108%;letter-spacing:-.012em;line-height:1.15;text-wrap:balance}
-.cues p{margin-top:.6em;font-size:clamp(17px,1.62cqw,27px);font-weight:300;font-stretch:104%;line-height:1.38;color:var(--ink-2);text-wrap:pretty}
-.note{color:var(--ink-3);max-width:24em}
-.run.has-video .note{display:none}
-.player{position:absolute;right:4cqw;top:6cqh;width:min(60cqw,92cqh);z-index:3}
+.cues h3{font-size:clamp(22px,2.1cqw,34px);font-weight:400;font-stretch:108%;letter-spacing:-.012em;line-height:1.15;text-wrap:balance}
+.cues p{margin-top:.6em;font-size:clamp(17px,1.5cqw,25px);font-weight:300;font-stretch:104%;line-height:1.38;color:var(--ink-2);text-wrap:pretty}
+.player{--pw:min(62cqw,calc((100cqh - 170px) * 1.62));position:absolute;right:3cqw;top:max(6cqh,calc(50cqh - var(--pw) * .28125 - 44px));width:var(--pw);z-index:3}
 .pscreen{position:relative;aspect-ratio:16/9;border-radius:clamp(14px,1.5cqw,26px);box-shadow:0 3cqh 8cqh -3cqh oklch(.03 .03 var(--h) / .8)}
 .pbar{display:flex;align-items:center;gap:clamp(12px,1.4cqw,22px);margin-top:clamp(12px,2.2cqh,24px)}
 .pplay{position:relative;width:52px;height:52px;flex:none;color:var(--on-p)}
@@ -363,125 +358,121 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 .pmute svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .pmute .w,.pmute[aria-pressed="true"] .x{display:none}
 .pmute[aria-pressed="true"] .w{display:block}
+.note{color:var(--ink-3);max-width:24em}
+.run.has-video .note{display:none}
 
-/* Sound: four dots in the bar that wake into a quiet level meter. */
+/* Sound: four bars in the shell's bar. They dance while sound plays, and rest when it is off. */
 .snd{display:flex;align-items:center;justify-content:center;gap:3px;width:36px;height:36px;flex:none;border-radius:50%;color:var(--ink-3);transition:color .3s,background-color .3s}
 .snd:hover{color:var(--ink-2);background:var(--mid)}
 .snd i{width:3.5px;height:16px;border-radius:99px;background:currentColor;transform:scaleY(.22);transition:transform .5s var(--spring-fast)}
 .snd[aria-pressed="true"]{color:var(--primary)}
-.snd[aria-pressed="true"] i{transform:scaleY(var(--s));animation:eq 1.7s ease-in-out calc(var(--k) * -.43s) infinite}
+.snd[aria-pressed="true"] i{transform:scaleY(var(--s))}
+.snd.live i{animation:eq 1.7s ease-in-out calc(var(--k) * -.43s) infinite}
 @keyframes eq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
 
-/* Cost */
-.cost .fig{font-size:min(13.5cqw,calc(33cqw / (var(--len) * .66)),26cqh)}
-.said{position:absolute;left:5.5cqw;bottom:8cqh;width:39cqw;z-index:2}
-.said p{font-size:clamp(30px,min(4.1cqw,7.4cqh),70px);font-weight:300;font-stretch:112%;letter-spacing:-.03em;line-height:1.02;text-wrap:balance}
-.strip{display:flex;gap:4px;height:16px;margin-top:3cqh}
-.strip i{flex:var(--v) 1 0;min-width:6px;border-radius:99px;background:var(--c);scale:0 1;transform-origin:left;transition:scale 1s var(--out) calc(.8s + var(--i) * .1s)}
-.on .strip i{scale:1 1}
-.provs{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:12px;font-size:14px;font-weight:450;color:var(--fg2)}
-.provs b{font-weight:600;color:var(--fg)}
-.provs li{display:inline-flex;align-items:center;gap:7px}
-.provs li::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c)}
-.stage{position:absolute}
-.cost .stage{left:46cqw;right:2cqw;top:3cqh;bottom:3cqh}
-.orb{--R:100px;position:absolute;width:calc(var(--R) * 2);height:calc(var(--R) * 2);translate:-50% -50%;scale:var(--sc,.2);opacity:var(--op,0);
-  transition:scale 1.1s var(--spring) var(--dl,0s),opacity .5s var(--dl,0s)}
-.on .orb{--sc:1;--op:1}
-.on .orb:hover{--sc:1.05;transition-delay:0s}
-.orb>svg{position:absolute;inset:0;width:100%;height:100%;fill:var(--c);animation:spin var(--rot) linear infinite}
-.orb>div{position:absolute;inset:0;display:grid;place-content:center;text-align:center;color:var(--on);padding:0 14%;pointer-events:none}
-.orb b{font-size:calc(var(--R) * .34);font-weight:300;font-stretch:112%;letter-spacing:-.045em;line-height:.95}
-.orb span{font-size:clamp(12px,calc(var(--R) * .115),20px);font-weight:450;line-height:1.2;margin-bottom:.35em}
+/* Every edge: the panels, labelled at the edge of the screen they grow out of. */
+.emap{position:absolute;left:5.5cqw;right:3cqw;top:6cqh;bottom:4cqh;z-index:2;display:grid;
+  grid-template-columns:minmax(0,1.45fr) auto minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto minmax(0,1fr);
+  grid-template-areas:"h t ." "l s r" ". b ."}
+.emap .h{grid-area:h;align-self:start;display:flex;flex-direction:column;gap:2cqh;padding-right:2cqw}
+.edges .title{font-size:clamp(30px,min(3.3cqw,6.2cqh),56px)}
+.escreen{grid-area:s;position:relative;width:min(48cqw,calc((100cqh - 10cqh - 230px) * 1.778));aspect-ratio:16/9;border-radius:clamp(14px,1.5cqw,26px);
+  box-shadow:0 3cqh 8cqh -3cqh oklch(.35 .09 calc(var(--h) + 60) / .7);opacity:0;scale:.92;transition:opacity .6s .2s,scale 1.2s var(--spring) .2s}
+.on .escreen{opacity:1;scale:1}
+.el{display:flex;flex-direction:column;gap:3px;max-width:17em;padding:10px 16px 12px;border-radius:22px;text-align:inherit;color:var(--fg2);
+  transition:background-color .3s,border-radius .5s var(--spring-fast)}
+.el b{font-size:clamp(20px,1.8cqw,30px);font-weight:450;font-stretch:108%;letter-spacing:-.01em;color:var(--fg)}
+.el span{font-size:clamp(14px,1.1cqw,18px);line-height:1.35}
+.el:hover{background:color-mix(in oklch,var(--fg) 6%,transparent)}
+.el[aria-pressed="true"]{background:color-mix(in oklch,var(--fg) 12%,transparent);border-radius:14px}
+.el-t{grid-area:t;justify-self:center;align-self:end;text-align:center;margin-bottom:1.4cqh}
+.el-b{grid-area:b;justify-self:center;align-self:start;text-align:center;margin-top:1.4cqh}
+.el-l{grid-area:l;justify-self:end;align-self:center;text-align:right;margin-right:1.4cqw}
+.er{grid-area:r;display:grid;grid-template-rows:repeat(3,minmax(0,1fr));align-items:center;justify-items:start;margin-left:1.4cqw}
 
-/* Tokens: the stars are drawn on a canvas, so they can arrive at warp speed. */
-.sky{position:absolute;inset:0;color:var(--ink-2)}
-.sky canvas{position:absolute;inset:0;width:100%;height:100%}
-.const{position:absolute;inset:0}
-.lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.lines polyline{fill:none;stroke:var(--primary);stroke-opacity:0;stroke-width:1.2;vector-effect:non-scaling-stroke;stroke-linejoin:round;transition:stroke-opacity 1.8s 2.2s}
-.on .lines polyline{stroke-opacity:.42}
-.nova{position:absolute;left:calc(var(--x) * 1%);top:calc(var(--y) * 1%);width:var(--s);translate:-50% -50%;fill:var(--primary);scale:.2;opacity:0;
-  transition:scale 1s var(--spring) var(--dl),opacity .4s var(--dl)}
-.on .nova{scale:1;opacity:1}
-.nova>path{transform-origin:16px 16px;animation:spin 14s linear infinite}
-.nova-l{position:absolute;left:calc(var(--x) * 1%);top:calc(var(--y) * 1%);font-size:15px;font-weight:450;color:var(--primary);line-height:1.3;max-width:15em}
-.tokens .fig{font-size:min(16cqw,28cqh);text-shadow:0 0 40px var(--surface)}
-.tokens .lead{--cw:28cqw}
-.tokens .cap{text-shadow:0 0 24px var(--surface)}
-.tokens .pct{position:absolute;left:5.5cqw;bottom:8cqh;width:min(50cqw,100%);display:flex;align-items:flex-end;gap:2.4cqw;z-index:2;text-shadow:0 0 28px var(--surface)}
-.tokens .pct .fig{flex:none;font-size:min(10cqw,18cqh);text-shadow:none}
-.tokens .pct .cap{flex:1;font-size:clamp(17px,1.9cqw,30px);padding-bottom:.35em;text-shadow:none}
-.tokens .each{position:absolute;right:3.2cqw;bottom:4cqh;font-size:14px;font-weight:450;color:var(--ink-3)}
+/* Tiling: the four windows are real buttons, laid out by the same rules the tiler uses. */
+.tiling .lead{width:30cqw}
+.seg3{display:flex;flex-wrap:wrap;gap:4px}
+.seg3 button{height:48px;padding:0 20px;border-radius:10px;background:var(--mid);color:var(--ink-2);font-size:16px;font-weight:500;
+  transition:border-radius .5s var(--spring-fast),background-color .3s,color .3s}
+.seg3 button:first-child{border-radius:999px 10px 10px 999px}
+.seg3 button:last-child{border-radius:10px 999px 999px 10px}
+.seg3 button:hover{background:var(--high);color:var(--ink)}
+.seg3 button[aria-pressed="true"]{border-radius:999px;background:var(--primary);color:var(--on-p)}
+.tstage{position:absolute;left:38cqw;right:3cqw;top:7cqh;bottom:7cqh;border-radius:clamp(14px,1.5cqw,26px);overflow:hidden;
+  background:radial-gradient(75% 95% at 86% 6%,oklch(.6 .12 var(--h)),transparent 70%),radial-gradient(65% 85% at 4% 100%,oklch(.55 .12 calc(var(--h) + 60)),transparent 72%),
+    linear-gradient(160deg,oklch(.36 .08 var(--h)),oklch(.22 .05 calc(var(--h) + 30)));
+  box-shadow:0 3cqh 8cqh -3cqh oklch(.05 .04 var(--h) / .75);opacity:0;scale:.94;transition:opacity .6s .2s,scale 1.2s var(--spring) .2s}
+.on .tstage{opacity:1;scale:1}
+.tarea{position:absolute;inset:5px}
+.tw{position:absolute;left:calc(var(--x) * 1%);top:calc(var(--y) * 1%);width:calc(var(--w) * 1%);height:calc(var(--h) * 1%);text-align:left;
+  transition:left .85s var(--spring),top .85s var(--spring),width .85s var(--spring),height .85s var(--spring)}
+.tw:focus-visible{outline:none}
+.tw:focus-visible .win{outline:2px solid var(--ink);outline-offset:3px}
+.win{position:absolute;inset:5px;display:flex;flex-direction:column;gap:.7em;padding:clamp(12px,1.3cqw,22px);border-radius:clamp(10px,1cqw,16px);overflow:hidden;
+  container-type:inline-size;background:oklch(.18 .022 var(--h) / .9);box-shadow:inset 0 0 0 1.5px oklch(.42 .03 var(--h));transition:box-shadow .3s}
+.tw.focus .win{box-shadow:inset 0 0 0 2.5px var(--primary)}
+.tt{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:450;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt b{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
+.tx{position:relative;z-index:1;max-width:14em;font-size:clamp(15px,6.4cqw,27px);font-weight:350;font-stretch:104%;line-height:1.25;color:var(--ink);text-wrap:balance}
+.tsh{position:absolute;right:-14px;bottom:-14px;height:clamp(56px,40%,200px);width:auto;aspect-ratio:1;fill:var(--c);opacity:.9;animation:spin var(--rot) linear infinite}
+@container (max-width:150px){.tx{display:none}}
 
-/* Agents: every dot flies out of the big number into its tool's cluster. */
-.agents .fig{font-size:min(14cqw,25cqh)}
-.agents .pct{position:absolute;left:5.5cqw;bottom:8cqh;width:34cqw;display:flex;flex-direction:column;gap:2cqh;z-index:2}
-.agents .pct .fig{font-size:min(9cqw,16cqh)}
-.agents .pct .cap{font-size:clamp(17px,1.8cqw,28px)}
-.agents .lead{--cw:27cqw}
-.agents .stage{left:42cqw;right:2cqw;top:4cqh;bottom:5cqh}
-.chart{position:absolute;inset:0;width:100%;height:100%}
-.cl{transition:opacity .35s;cursor:default}
-.stage:has(.cl:hover) .cl:not(:hover){opacity:.28}
-.cl .d{fill:var(--c);translate:var(--fx) var(--fy);opacity:0;transition:translate 1.7s cubic-bezier(.16,.9,.3,1) var(--dl),opacity .3s var(--dl)}
-.on .cl .d{translate:0 0;opacity:1}
-.on .cl .sp{animation:spin var(--rot) linear 3.2s infinite}
-.cl .ring{fill:none;stroke:var(--c);stroke-opacity:.35;stroke-width:1;stroke-dasharray:2 6}
-.cl .link{stroke:var(--c);stroke-opacity:.55;stroke-width:1;fill:none}
-.cl .ring,.cl .link,.cl text{opacity:0;transition:opacity 1s 2.4s}
-.on .cl .ring,.on .cl .link,.on .cl text{opacity:1}
-.cl text{fill:var(--ink);font-size:15px;font-weight:450;text-anchor:middle}
-.cl text tspan{fill:var(--c);font-weight:600}
+/* Install: three steps on the primary colour, joined by a line drawn as the scene arrives. */
+.install .lead{width:60cqw}
+.ipath{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.ipath path{fill:none;stroke:var(--on-p);stroke-opacity:.25;stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 2.4s cubic-bezier(.45,0,.2,1) .4s}
+.on .ipath path{stroke-dashoffset:0}
+.steps{position:absolute;left:5.5cqw;right:5.5cqw;top:27cqh;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3.5cqw;z-index:2}
+.step{display:flex;flex-direction:column;align-items:flex-start}
+.sn{position:relative;width:clamp(72px,min(8cqw,14cqh),130px);aspect-ratio:1;margin-bottom:2.6cqh;scale:.5;opacity:0;
+  transition:scale 1.1s var(--spring-fast) calc(.3s + var(--i) * .15s),opacity .4s calc(.3s + var(--i) * .15s)}
+.on .sn{scale:1;opacity:1}
+.sn svg{position:absolute;inset:0;width:100%;height:100%;fill:var(--on-p);animation:spin var(--rot) linear infinite}
+.sn>svg{translate:calc(var(--mx,0) * 9%) calc(var(--my,0) * 9%);transition:translate .6s var(--spring)}
+.sn span{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(30px,min(3.4cqw,6cqh),56px);font-weight:400;font-stretch:112%;color:var(--primary);pointer-events:none}
+.step h3{font-size:clamp(22px,2cqw,34px);font-weight:450;font-stretch:108%;letter-spacing:-.012em;line-height:1.15}
+.step p{margin-top:.5em;max-width:21em;font-size:clamp(16px,1.3cqw,21px);font-weight:350;line-height:1.42;color:var(--fg2);text-wrap:pretty}
+.step .btn{margin-top:2.2cqh}
+.cmd{display:flex;align-items:center;gap:8px;width:100%;max-width:30em;margin-top:2cqh;padding:6px 6px 6px 16px;border-radius:16px;background:var(--on-p);color:var(--primary)}
+/* the command wraps only between its words, so a flag like -File never splits at its hyphen */
+.cmd code{flex:1;min-width:0;font:500 14px/1.4 var(--mono)}
+.cmd code span{white-space:nowrap}
+.cpy{flex:none;height:38px;padding:0 16px;border-radius:12px;background:color-mix(in oklch,var(--primary) 18%,transparent);color:var(--primary);font-size:14px;font-weight:550;
+  transition:border-radius .5s var(--spring-fast),background-color .3s}
+.cpy:hover{background:color-mix(in oklch,var(--primary) 28%,transparent)}
+.cpy:active{border-radius:8px}
+.fine{position:absolute;left:5.5cqw;right:5.5cqw;bottom:6cqh;display:flex;flex-direction:column;gap:6px;font-size:15px;font-weight:450;line-height:1.45;color:var(--fg2);z-index:2}
 
-/* Time */
-.time .fig{font-size:min(15cqw,27cqh)}
-.time .lead{--cw:40cqw}
-.time .cap{font-size:clamp(19px,2cqw,32px)}
-.orbit{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.orbit path{fill:none;stroke:var(--on-t);stroke-opacity:.3;stroke-width:1.5;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 2.6s cubic-bezier(.45,0,.2,1) .3s}
-.on .orbit path{stroke-dashoffset:0}
-.moon-l{--d:11.8cqw;position:absolute;left:calc(var(--x) * 1%);top:calc(var(--y) * 1%);width:var(--d);translate:-50% 0;
-  opacity:0;scale:.5;transition:opacity .5s calc(.6s + var(--i) * .4s),scale 1.2s var(--spring) calc(.6s + var(--i) * .4s)}
-.on .moon-l{opacity:1;scale:1}
-.disc{position:relative;width:100%;aspect-ratio:1;transition:translate .6s var(--spring)}
-.moon-l:hover .disc{translate:0 -1.4cqh}
-.disc svg{width:100%;height:100%}
-.disc.spin svg{animation:spin var(--rot) linear infinite}
-.disc .solid{fill:var(--on-t)}
-.disc .track{fill:color-mix(in oklch,var(--on-t) 17%,transparent)}
-.disc .liq{translate:0 calc((100 - var(--pp,0)) * 1px);transition:translate 2.8s cubic-bezier(.2,.8,.2,1) var(--dl);fill:var(--on-t)}
-.on .disc .liq{--pp:var(--p)}
-.disc .wave{animation:slosh 7s linear infinite}
-@keyframes slosh{to{translate:-50px 0}}
-.mt{margin-top:14px;text-align:center}
-.mt .mn{display:block;font-size:14px;font-weight:600;color:var(--fg2)}
-.mt b{display:block;margin-top:2px;font-size:clamp(16px,1.5cqw,22px);font-weight:450;line-height:1.2}
-.mt .small{margin-top:3px}
+/* How it was built: one sentence, with the figures rolling in it, and a dot for every agent. */
+.ledger{position:absolute;left:5.5cqw;top:10cqh;width:46cqw;z-index:2}
+.ledger>p:first-child{font-size:clamp(26px,min(3.2cqw,6cqh),54px);font-weight:300;font-stretch:108%;line-height:1.18;letter-spacing:-.015em;color:var(--ink-2);text-wrap:pretty}
+.num{color:var(--ink);font-weight:450;font-variant-numeric:tabular-nums;white-space:nowrap}
+.num .odo{vertical-align:baseline}
+.ledger .cap{margin-top:4cqh;max-width:26em}
+.galaxy{position:absolute;left:54cqw;right:3cqw;top:5cqh;bottom:10cqh}
+.gx{position:absolute;inset:0;width:100%;height:100%}
+.gx .d{fill:var(--primary);fill-opacity:var(--o);translate:var(--fx) var(--fy);opacity:0;transition:translate 1.7s cubic-bezier(.16,.9,.3,1) var(--dl),opacity .3s var(--dl)}
+.gx .d.t{fill:var(--tertiary)}
+.on .gx .d{translate:0 0;opacity:1}
+.on .gx .sp{animation:spin 260s linear 3.4s infinite}
+.gcap{position:absolute;right:3.2cqw;bottom:4.5cqh;font-size:14px;font-weight:450;color:var(--ink-3)}
+.bnote{position:absolute;left:5.5cqw;bottom:4.5cqh;max-width:46cqw;font-size:13.5px;font-weight:450;line-height:1.45;color:var(--ink-3)}
 
 /* Credits */
 .credits .big{right:-16cqw;top:-36cqh;width:min(62cqw,118cqh);aspect-ratio:1;fill:var(--s-cont);animation:spin 220s linear infinite reverse;
   scale:.5;opacity:0;transition:scale 2s var(--spring),opacity 1s}
 .credits.on .big{scale:1;opacity:1}
-.credits .fig{font-size:min(11cqw,20cqh)}
-.credits .lead{--cw:44cqw}
-.roster{position:absolute;left:5.5cqw;right:5.5cqw;top:39cqh;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2.6cqw;z-index:2}
-.roster h3{display:flex;align-items:center;gap:10px;padding-bottom:12px;margin-bottom:6px;border-bottom:1px solid var(--outline);
-  font-size:14px;font-weight:500;color:var(--ink-2)}
-.roster h3 svg{width:16px;height:16px;fill:var(--c);flex:none}
-.roster li{margin-top:.38em;font-size:clamp(18px,1.95cqw,32px);font-weight:300;font-stretch:104%;line-height:1.12;letter-spacing:-.012em;text-wrap:balance}
-.roster li{font-weight:420}
-.roster li span{color:var(--ink-2);font-weight:300}
-.roster .rv{--rd:calc(.45s + var(--i) * .12s + var(--j,0) * .09s)}
-.tally{position:absolute;left:5.5cqw;right:5.5cqw;bottom:14cqh;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2.6cqw;z-index:2}
-.tally>div{display:flex;flex-direction:column-reverse;justify-content:flex-end}
-.tally b{display:block;font-size:min(4.4cqw,8cqh);font-weight:300;font-stretch:112%;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
-.tally dt{margin-top:10px;font-size:15px;font-weight:450;color:var(--ink-2)}
-.tally .add b{color:oklch(.85 .15 150)}
-.tally .del b{color:oklch(.76 .14 25)}
-.foot{position:absolute;left:5.5cqw;right:3.2cqw;bottom:3cqh;display:flex;justify-content:space-between;align-items:flex-end;gap:12px 32px;font-size:13.5px;font-weight:450;color:var(--ink-3);z-index:2}
-.foot p{max-width:96ch}
-.foot a{color:var(--ink-2);text-decoration:underline 1px color-mix(in oklch,var(--primary) 50%,transparent);text-underline-offset:.22em}
+.who{position:absolute;left:5.5cqw;top:10cqh;width:56cqw;z-index:2}
+.who h2{font-size:clamp(28px,min(3.4cqw,6.4cqh),58px);font-weight:300;font-stretch:108%;line-height:1.14;letter-spacing:-.02em;text-wrap:balance}
+.who a,.roles a,.foot a{text-decoration:underline 1.5px color-mix(in oklch,var(--primary) 55%,transparent);text-underline-offset:.2em;transition:text-decoration-color .3s}
+.who a:hover,.roles a:hover,.foot a:hover{text-decoration-color:var(--primary)}
+.roles{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);gap:2.6cqw;margin-top:6cqh}
+.roles a{white-space:nowrap}
+.roles dt{font-size:14px;font-weight:450;color:var(--ink-3)}
+.roles dd{margin-top:6px;font-size:clamp(16px,1.3cqw,21px);line-height:1.4;color:var(--ink);text-wrap:pretty}
+.credits .cta{margin-top:6cqh}
+.foot{position:absolute;left:5.5cqw;right:3.2cqw;bottom:4cqh;display:flex;justify-content:space-between;align-items:flex-end;gap:12px 32px;font-size:13.5px;font-weight:450;color:var(--ink-3);z-index:2}
 .sig{display:flex;align-items:center;gap:10px;flex:none;color:var(--ink-2);font-size:15px}
 .sig svg{width:20px;height:20px;color:var(--primary)}
 
@@ -490,46 +481,34 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .ws{container-type:inline-size;height:auto;min-height:0;padding:clamp(26px,7cqw,56px) clamp(20px,5.5cqw,48px);display:flex;flex-direction:column;gap:clamp(18px,4cqw,34px)}
   .ws>*{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:auto!important}
   .ws>.drift{position:absolute!important;left:0!important;top:0!important;right:0!important;bottom:0!important}
-  .ws>.orbit{display:none}
+  .ws>.ipath{display:none}
   .lead{gap:14px}
-  .lead .cap{width:auto}
-  .hero{padding-bottom:clamp(20px,4cqw,34px)}
+  .title{font-size:clamp(34px,9cqw,60px)!important}
+  .cap{font-size:clamp(18px,4.6cqw,26px);max-width:none}
   .hero .sun{position:absolute!important;right:-26cqw!important;top:-22cqw!important;width:80cqw!important}
   .hero .moon{position:absolute!important;left:-14cqw!important;top:auto!important;bottom:-10cqw!important;width:40cqw!important}
   .credits .big{position:absolute!important;right:-34cqw!important;top:-26cqw!important;width:90cqw!important}
   .copy{padding:0}
   .name{font-size:17.8cqw}
-  .pitch{font-size:clamp(22px,5.4cqw,38px);margin-top:14px}
-  .hint{display:none}
+  .pitch{font-size:clamp(22px,5.6cqw,38px);margin-top:14px}
+  .sub{font-size:clamp(16px,4cqw,20px)}
+  .hero .cta,.wall{margin-top:22px}
   .screen{margin-bottom:34px}
-  .run .fig{font-size:clamp(44px,13cqw,84px)!important}
-  .player{margin-top:4px}
-  .sats{position:relative!important;display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,2.5cqw,20px);margin-top:10px;translate:none}
-  .sat{--d:44cqw!important;position:relative;left:auto;top:auto;translate:none;justify-self:center}
-  .sat:hover{top:auto}
-  .sat b{font-size:calc(var(--d) * .27)}
-  .sat>div>span{font-size:clamp(12px,3.2cqw,17px)}
-  .cost .fig,.tokens .fig,.agents .fig,.time .fig,.credits .fig{font-size:21cqw!important;text-shadow:none}
-  .cap{font-size:clamp(18px,4.6cqw,28px);max-width:none}
-  .said{position:relative!important;bottom:auto!important}
-  .said p{font-size:clamp(28px,8cqw,48px)}
-  .stage{position:relative!important;height:min(112cqw,640px)!important;margin-inline:-4cqw}
-  .tokens{min-height:100svh}
-  .sky{position:absolute!important;inset:0!important;width:auto!important;height:auto!important}
-  /* the constellation moves into the gap between the two figures, clear of the text */
-  .const{inset:25% 0 38% -90%}
-  .tokens .each{position:relative!important}
-  .tokens .pct{flex-direction:column;align-items:flex-start;gap:12px;margin-top:auto}
-  .tokens .pct .fig{font-size:30cqw!important}
-  .tokens .pct .cap{padding:0}
-  .moons{position:relative!important;display:flex;flex-direction:column;gap:22px;margin-top:6px}
-  .moon-l{position:relative!important;left:auto!important;top:auto!important;translate:none;width:100%!important;display:grid;grid-template-columns:clamp(76px,20cqw,120px) 1fr;align-items:center;gap:18px}
-  .mt{margin:0;text-align:left}
-  .roster,.tally{grid-template-columns:1fr 1fr;gap:26px 18px}
-  .tally{margin-top:14px}
-  .roster li{font-size:clamp(18px,4.6cqw,26px)}
-  .tally b{font-size:clamp(28px,8.5cqw,48px)}
-  .foot{flex-direction:column;align-items:flex-start;margin-top:6px}
+  .player{top:auto!important;margin-top:4px}
+  .emap{display:flex;flex-direction:column;align-items:stretch;gap:10px}
+  .emap .h{padding:0;margin-bottom:8px}
+  .escreen{width:100%!important;margin-bottom:10px}
+  .er{display:contents}
+  .el{max-width:none;text-align:left!important;margin:0!important;align-self:stretch!important}
+  .tstage{height:min(118cqw,560px)}
+  .steps{display:flex;flex-direction:column;gap:34px}
+  .sn{width:84px}
+  .fine{margin-top:6px}
+  .ledger>p:first-child{font-size:clamp(26px,7cqw,44px)}
+  .galaxy{height:min(96cqw,520px)}
+  .gcap,.bnote{max-width:none}
+  .roles{grid-template-columns:1fr;gap:18px}
+  .foot{flex-direction:column;align-items:flex-start;margin-top:10px}
 }
 @media (max-width:700px){
   :root{--bar:0px;--edge:6px;--top:54px;--corner:22px}
@@ -539,14 +518,13 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .spaces{flex-direction:row;width:auto;height:36px;padding:0 6px}
   .bar .papers{display:none}
   .chip{width:18px;height:18px}
-  .wall{flex-wrap:wrap}
   .bar .snd{margin:0 0 0 auto}
   .seg span,.ptime{display:none}
   .pplay{width:46px;height:46px}
+  .btn{height:52px;padding:0 22px}
   main{margin:var(--top) var(--edge) var(--edge)}
   .ws{scroll-margin-top:var(--top)}
 }
-@media (hover:none){.hint{display:none}}
 @media (prefers-reduced-motion:reduce){
   :root{transition:none}
   *,*::before,*::after{animation:none!important;transition-duration:0s!important;transition-delay:0s!important}
@@ -567,11 +545,11 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 2.5l2.6 8.2a5 5 0 0 0 3.3 3.3L30 16.5l-8.1 2.5a5 5 0 0 0-3.3 3.3L16 30.5l-2.6-8.2a5 5 0 0 0-3.3-3.3L2 16.5l8.1-2.5a5 5 0 0 0 3.3-3.3z"/></svg>
   <div class="spaces" id="spaces"></div>
   <div class="papers" role="group" aria-label="Wallpaper" data-papers></div>
-  <button class="snd" id="snd" aria-pressed="false" aria-label="Sound" title="Sound: off"><i style="--k:0;--s:.55"></i><i style="--k:1;--s:.9"></i><i style="--k:2;--s:.7"></i><i style="--k:3;--s:.45"></i></button>
+  <button class="snd" id="snd" aria-pressed="false" aria-label="Sound effects" title="Sound: off"><i style="--k:0;--s:.55"></i><i style="--k:1;--s:.9"></i><i style="--k:2;--s:.7"></i><i style="--k:3;--s:.45"></i></button>
 </nav>
 
 <main id="app"></main>
-<noscript><p class="nojs">Caelestia for Windows. This page draws its figures with JavaScript; turn it on to see the build in numbers.</p></noscript>
+<noscript><p class="nojs">Caelestia for Windows. Turn on JavaScript to see the shell in action.</p></noscript>
 <div class="track" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 
 <script>
@@ -581,29 +559,25 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
   const isNum = n => typeof n === "number" && isFinite(n);
   // A figure missing from the data shows as a quiet dash, never a guess or a stale count.
-  const NA = "–", NA_SAY = "not available";
+  const NA = "–";
   const int = n => isNum(n) ? Math.round(n).toLocaleString("en-US") : NA;
-  const usd = n => isNum(n) ? "$" + n.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2}) : NA;
   const usd0 = n => isNum(n) ? "$" + Math.round(n).toLocaleString("en-US") : NA;
   const sum = o => Object.values(o || {}).reduce((a, b) => a + (b || 0), 0);
-  const day = iso => new Date(iso).toLocaleDateString("en-US", {day: "numeric", month: "long"}).replace(" ", "\u00a0");
-  const words = n => ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"][n] ?? String(n);
-  const cap1 = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const day = iso => new Date(iso).toLocaleDateString("en-US", {day: "numeric", month: "long"}).replace(" ", " ");
   const reduced = matchMedia("(prefers-reduced-motion:reduce)");
   const fine = matchMedia("(hover:hover) and (pointer:fine)");
   const narrow = matchMedia("(max-width:999px)");
-  const modelName = id => ({
-    "claude-opus-5-5": "Claude Opus 5.5", "claude-sonnet-5-5": "Claude Sonnet 5.5",
-    "gpt-6.1-terra": "GPT 6.1 Terra", "gpt-6.1-sol": "GPT 6.1 Sol", "gpt-6-astra": "GPT 6 Astra",
-    "gpt-6-luna": "GPT 6 Luna", "deepseek-v4.1-flash": "DeepSeek V4.1 Flash", "gemini-4-argon": "Gemini 4 Argon",
-    "gemini-3.8-flash": "Gemini 3.8 Flash", "gemini-3.8-flash-high": "Gemini 3.8 Flash High", "gemini-3.8-flash-medium": "Gemini 3.8 Flash Medium",
-    "GLM-5.3": "GLM 5.3", "GLM-5.3-Flash": "GLM 5.3 Flash"
-  }[id] || String(id).replace(/-/g, " "));
-  const roleName = {orchestrator: "Orchestration", implementation: "Implementation", review: "Review", audit: "Audit"};
   const mulberry = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   const pick = (a, not) => { let x; do x = a[Math.floor(Math.random() * a.length)]; while (x === not && a.length > 1); return x; };
   const rel = (el, anc) => { let x = 0, y = 0; for (let e = el; e && e !== anc; e = e.offsetParent) { x += e.offsetLeft; y += e.offsetTop; } return [x, y]; };
   const ptr = {x: -1e4, y: -1e4, t: 0};
+  const hidden = () => document.hidden;
+
+  // Where visitors download the port. The repository stays private until its first public
+  // release: set RELEASED to true then, and every download button links to the latest release.
+  const REPO = "https://github.com/KldsSeeGhosts/caelestia-windows", RELEASED = false;
+  const UPSTREAM = "https://github.com/caelestia-dots/shell";
+  const INSTALL_CMD = "powershell -ExecutionPolicy Bypass -File .\\Install-Caelestia.ps1";
 
   /* ---------- expressive shapes ----------
      Each shape is a radius for every angle, so any two shapes can morph by blending
@@ -682,18 +656,23 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     });
   }
 
-  /* ---------- sound: off until asked for, then synthesised, never played from files ----------
-     A slow pad follows the scene and the wallpaper's hue (a new hue moves the chord's root), and
-     small sounds answer the motion: a swell as a workspace opens, a tick as each reel lands, a
-     press on the wallpaper chips. Everything passes through one limiter, and every note fades. */
+  /* ---------- sound: synthesised, never played from files ----------
+     On by default, but browsers only allow audio after the visitor's first click or key press,
+     so nothing plays before that. Every sound answers something the visitor did: a pop as the
+     pointer finds a workspace, a chime in the new wallpaper's key, a whoosh as a panel opens,
+     windows that slide into their tiles, a boing when one swaps, and a wordmark that plays like
+     a harp. A quiet pad follows the scene underneath. One limiter guards it all, and the bar's
+     sound button mutes everything; that choice is remembered. */
   const Snd = (() => {
     const KEY = "caelestia-sound", btn = document.getElementById("snd");
     const CHORDS = [[0, 7, 14, 16, 23], [0, 5, 12, 14, 19], [0, 7, 12, 15, 22], [0, 7, 14, 19, 26], [0, 4, 11, 14, 21], [0, 7, 10, 14, 17], [0, 5, 9, 14, 16]];
-    let ctx = null, out, bus, padBus, noise, pad = null, want = false, live = false, ducked = false, scn = 0, h = 277, rt = 0, gl = 0, lastTick = 0;
-    try { want = localStorage.getItem(KEY) === "1"; } catch {}
+    const PENT = [0, 2, 4, 7, 9], PAD = .3;
+    let ctx = null, out, bus, padBus, noise, pad = null, want = true, live = false, ducked = false, scn = 0, h = 277, rt = 0, gl = 0, lastTick = 0, lastPop = 0;
+    try { want = localStorage.getItem(KEY) !== "0"; } catch {}
     const iv = () => CHORDS[scn % CHORDS.length];
     // the hue picks the key: each 30 degrees of the colour wheel is a semitone above G
     const hz = (semi, oct = 0) => 98 * Math.pow(2, Math.round((((h % 360) + 360) % 360) / 30) / 12 + semi / 12 + oct);
+    const pent = (i, oct = 1) => hz(PENT[((i % 5) + 5) % 5] + 12 * Math.floor(i / 5), oct);
     const hold = (p, t) => { if (p.cancelAndHoldAtTime) p.cancelAndHoldAtTime(t); else { p.cancelScheduledValues(t); p.setValueAtTime(p.value, t); } };
     function boot() {
       ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -703,19 +682,44 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       // UI sounds share a soft, darkening echo, which reads as a room rather than an effect
       bus = ctx.createGain(); bus.connect(out);
       const dl = ctx.createDelay(1.5), fb = ctx.createGain(), lp = ctx.createBiquadFilter(), wet = ctx.createGain();
-      dl.delayTime.value = .43; fb.gain.value = .4; lp.type = "lowpass"; lp.frequency.value = 1800; wet.gain.value = .45;
+      dl.delayTime.value = .43; fb.gain.value = .32; lp.type = "lowpass"; lp.frequency.value = 1800; wet.gain.value = .35;
       bus.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl); lp.connect(wet); wet.connect(out);
-      padBus = ctx.createGain(); padBus.gain.value = ducked ? 0 : .5; padBus.connect(out);
+      padBus = ctx.createGain(); padBus.gain.value = ducked ? 0 : PAD; padBus.connect(out);
       const n = ctx.sampleRate * 2, b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0);
       for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
       noise = b;
     }
-    function tone(f, peak, a, d, type = "sine", f2 = 0) {
-      const t = ctx.currentTime + .01, o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + a + d * .25);
+    // One oscillator voice. `glide` lists [seconds, Hz] points the pitch bends through.
+    function voice(type, f, glide, peak, a, d, at = 0) {
+      const t = ctx.currentTime + .01 + at, o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t);
+      for (const [dt, f2] of glide) o.frequency.exponentialRampToValueAtTime(f2, t + dt);
       g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(.0001, t + a + d);
       o.connect(g); g.connect(bus); o.start(t); o.stop(t + a + d + .05);
     }
+    const tone = (f, peak, a, d, type = "sine", f2 = 0, at = 0) => voice(type, f, f2 ? [[a + d * .25, f2]] : [], peak, a, d, at);
+    // Filtered noise swept from one band to another: the air of something moving.
+    function hiss(f0, f1, dur, peak, at = 0, q = 2.4) {
+      const t = ctx.currentTime + .01 + at, src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain();
+      src.buffer = noise; bp.type = "bandpass"; bp.Q.value = q;
+      bp.frequency.setValueAtTime(f0, t); bp.frequency.exponentialRampToValueAtTime(f1, t + dur * .8);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + dur * .35); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+      src.connect(bp); bp.connect(g); g.connect(bus); src.start(t, Math.random() * .4); src.stop(t + dur + .05);
+    }
+    const FX = {
+      // a bubble: a short sine that jumps up as it bursts
+      pop(i = 0) { const n = performance.now(); if (n - lastPop < 45) return; lastPop = n; const f = pent(i, 2); tone(f, .05, .003, .13, "sine", f * 1.5); },
+      click() { tone(hz(0, 3), .03, .002, .07, "triangle"); hiss(5000, 3500, .06, .025, 0, .9); },
+      // a panel growing out of the frame: air rising, a soft thump, a note to land on
+      open() { hiss(320, 2600, .5, .06); tone(hz(0, -1) * 2, .07, .01, .28, "sine", hz(0, -1)); tone(pent(4), .028, .02, .9, "sine", 0, .14); },
+      chime() { [5, 7, 9].forEach((d, i) => { tone(pent(d), .045 - i * .007, .004, 1.3, "sine", 0, i * .075); tone(pent(d, 2), .012, .004, .7, "triangle", 0, i * .075); }); },
+      // a spring: the pitch dips and bounces back, like the shapes it plays for
+      boing() { const f = pent(2); voice("sine", f, [[.06, f * .6], [.24, f * 1.08], [.42, f]], .06, .005, .5); voice("triangle", f * 2, [[.06, f * 1.2], [.24, f * 2.1]], .012, .005, .35); },
+      slide(i = 0) { tone(pent(i + 2), .035, .012, .32, "sine", pent(i + 4), i * .055); hiss(900 + i * 300, 2400 + i * 300, .3, .018, i * .055); },
+      harp(i = 0) { tone(pent(i), .042, .004, 1.7, "triangle"); tone(pent(i, 2), .014, .004, 1, "sine"); },
+      burst() { for (let i = 0; i < 6; i++) { const f = pent(Math.floor(Math.random() * 10), 2); tone(f, .028, .002, .12, "sine", f * 1.6, Math.random() * .22); } },
+      copy() { tone(pent(7), .045, .004, .5, "sine", 0, 0); tone(pent(10), .045, .004, .9, "sine", 0, .09); }
+    };
     function chord() {
       const t = ctx.currentTime, g = ctx.createGain(), f = ctx.createBiquadFilter(), lfo = ctx.createOscillator(), lg = ctx.createGain(), oscs = [lfo];
       g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(1, t + 3.5);
@@ -735,25 +739,28 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     function glint() {
       clearTimeout(gl); if (!live) return;
       gl = setTimeout(glint, 2600 + Math.random() * 4400);
-      if (!ducked && !document.hidden) tone(hz(iv()[Math.floor(Math.random() * 5)], 2), .02, .03, 2.6);
+      if (!ducked && !document.hidden) tone(hz(iv()[Math.floor(Math.random() * 5)], 2), .016, .03, 2.6);
     }
     function start() {
       if (!ctx) boot();
-      ctx.resume(); live = true;
-      const t = ctx.currentTime; hold(out.gain, t); out.gain.linearRampToValueAtTime(.8, t + 1.2);
+      ctx.resume(); live = true; ui();
+      const t = ctx.currentTime; hold(out.gain, t); out.gain.linearRampToValueAtTime(.8, t + .25);
       if (!pad) pad = chord();
       glint();
-      tone(hz(7, 2), .03, .01, 1.4); setTimeout(() => live && tone(hz(14, 2), .024, .01, 1.8), 140);
     }
     function stop() {
-      live = false; clearTimeout(gl); if (!ctx) return;
+      live = false; clearTimeout(gl); ui(); if (!ctx) return;
       const t = ctx.currentTime; hold(out.gain, t); out.gain.linearRampToValueAtTime(0, t + .6);
       const p = pad; pad = null; if (p) fade(p, .6);
       setTimeout(() => { if (!live) ctx.suspend(); }, 900);
     }
-    const ui = () => { btn.setAttribute("aria-pressed", want); btn.title = "Sound: " + (want ? "on" : "off"); };
-    btn.addEventListener("click", () => { want = !want; try { localStorage.setItem(KEY, want ? "1" : "0"); } catch {} ui(); want ? start() : stop(); });
-    // a visitor who left sound on hears it again from their first click or key press here
+    function ui() { btn.setAttribute("aria-pressed", want); btn.classList.toggle("live", live); btn.title = "Sound: " + (want ? "on" : "off"); }
+    btn.addEventListener("click", () => {
+      want = !want; try { localStorage.setItem(KEY, want ? "1" : "0"); } catch {}
+      if (want) { start(); FX.chime(); } else stop();
+      ui();
+    });
+    // The first click or key press anywhere wakes the sound, and that same press is heard.
     const first = e => {
       if (e.target.closest?.("#snd")) return;
       removeEventListener("pointerdown", first, true); removeEventListener("keydown", first, true);
@@ -767,17 +774,13 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       scene(k) {
         if (k === scn) return; scn = k; if (!live) return;
         clearTimeout(rt); rt = setTimeout(retune, 180);
-        const t = ctx.currentTime + .01, src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain();
-        src.buffer = noise; bp.type = "bandpass"; bp.Q.value = 2.4;
-        bp.frequency.setValueAtTime(240, t); bp.frequency.exponentialRampToValueAtTime(2400, t + .55); bp.frequency.exponentialRampToValueAtTime(800, t + 1.4);
-        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.07, t + .4); g.gain.exponentialRampToValueAtTime(.0001, t + 1.5);
-        src.connect(bp); bp.connect(g); g.connect(bus); src.start(t); src.stop(t + 1.6);
-        tone(hz(iv()[2], 1), .028, .35, 1.8);
+        hiss(240, 2400, 1.5, .06); tone(hz(iv()[2], 1), .026, .35, 1.8);
+        tone(pent(k + 3, 2), .03, .004, .5, "sine", 0, .32);
       },
       hue(x) { h = x; if (live) { clearTimeout(rt); rt = setTimeout(retune, 150); } },
       tick(i) { if (!live) return; const n = performance.now(); if (n - lastTick < 40) return; lastTick = n; tone(hz(iv()[i % 5], 2), .018, .004, .17); },
-      press() { if (live) { tone(hz(0, 3), .045, .006, .3, "sine", hz(0, 2)); tone(hz(7, 1), .02, .012, 1); } },
-      duck(on) { ducked = on; if (!ctx) return; const t = ctx.currentTime; hold(padBus.gain, t); padBus.gain.setTargetAtTime(on ? 0 : .5, t, .45); }
+      sfx(name, arg) { if (live && !document.hidden) FX[name]?.(arg); },
+      duck(on) { ducked = on; if (!ctx) return; const t = ctx.currentTime; hold(padBus.gain, t); padBus.gain.setTargetAtTime(on ? 0 : PAD, t, .45); }
     };
   })();
 
@@ -802,7 +805,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     s.animate([{transform: "scale(.01) rotate(0deg)", opacity: .7}, {opacity: .45, offset: .45}, {transform: "scale(1) rotate(70deg)", opacity: 0}],
       {duration: 1500, easing: "cubic-bezier(.3,.7,.2,1)"}).onfinish = () => s.remove();
   }
-  document.addEventListener("click", e => { const c = e.target.closest(".chip"); if (c) { ripple(c, +c.dataset.h); setHue(+c.dataset.h); Snd.press(); } });
+  document.addEventListener("click", e => { const c = e.target.closest(".chip"); if (c) { ripple(c, +c.dataset.h); setHue(+c.dataset.h); Snd.sfx("chime"); } });
   document.querySelector(".bar [data-papers]").innerHTML = chips();
 
   /* ---------- drifting shapes (the shell's dashboard backdrop) ---------- */
@@ -815,38 +818,14 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     }).join("");
   }
 
-  /* ---------- circle packing: bubbles and clusters sized by their value ---------- */
-  function pack(rs, W, H, pad) {
-    const n = rs.length, tot = rs.reduce((a, r) => a + r * r, 0);
-    let k = Math.sqrt(.7 * W * H / (Math.PI * tot));
-    const P = rs.map((_, i) => ({x: W / 2 + Math.cos(i * 2.4) * W * .22, y: H / 2 + Math.sin(i * 2.4) * H * .22}));
-    for (let attempt = 0; attempt < 48; attempt++) {
-      const R = rs.map(r => r * k + pad / 2);
-      for (let it = 0; it < 280; it++) {
-        for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
-          const dx = P[j].x - P[i].x, dy = P[j].y - P[i].y, d = Math.hypot(dx, dy) || .01, o = R[i] + R[j] - d;
-          if (o > 0) { const ux = dx / d, uy = dy / d, wi = R[j] / (R[i] + R[j]); P[i].x -= ux * o * wi; P[i].y -= uy * o * wi; P[j].x += ux * o * (1 - wi); P[j].y += uy * o * (1 - wi); }
-        }
-        for (let i = 0; i < n; i++) {       // drift to the middle, but let the last passes only separate
-          if (it < 220) { P[i].x += (W / 2 - P[i].x) * .01; P[i].y += (H / 2 - P[i].y) * .01; }
-          P[i].x = Math.min(W - R[i], Math.max(R[i], P[i].x)); P[i].y = Math.min(H - R[i], Math.max(R[i], P[i].y));
-        }
-      }
-      let bad = 0; for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) bad = Math.max(bad, R[i] + R[j] - Math.hypot(P[j].x - P[i].x, P[j].y - P[i].y));
-      if (bad < 1.5) break; k *= .96;
-    }
-    return P.map((p, i) => ({x: p.x, y: p.y, r: rs[i] * k}));
-  }
-
   /* ---------- numbers roll in on reels when their scene arrives, settling through the font's axes ----------
      Each digit is a reel. The left reel turns least and lands first, the right one spins most and lands
      last; each overshoots a fraction of a digit and springs back. The final value is laid out from the
-     first frame, so nothing around a number shifts while it rolls. */
-  const FMT = {usd0, int, b2: v => (v / 1e9).toFixed(2) + "B", pct: v => Math.round(v) + "%", hrs: v => Math.round(v) + " hours",
-    add: v => "+" + int(v), del: v => "−" + int(v), d1: v => v.toFixed(1)};
+     first frame, so nothing around a number shifts while it rolls. Numbers inside a sentence (data-flat)
+     skip the weight and width change, which would reflow the line. */
+  const FMT = {usd0, int, bn: v => (v / 1e9).toFixed(2) + " billion"};
   const counter = (n, f, delay = 0) => `data-n="${n}" data-f="${f}"${delay ? ` data-cd="${delay}"` : ""}`;
   const shown0 = (n, f) => isNum(n) ? FMT[f](reduced.matches ? n : 0) : NA;
-  const say = (n, f) => isNum(n) ? FMT[f](n) : NA_SAY;
   function countUp(el) {
     const n = +el.dataset.n, f = FMT[el.dataset.f];
     if (!isNum(n) || !f) return;
@@ -866,11 +845,13 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
         {transform: `translateY(${-(k + .16)}em)`, offset: .8, easing: "cubic-bezier(.3,0,.25,1)"}, {transform: `translateY(${-k}em)`}],
         {duration: dur, delay, fill: "backwards"});
     });
-    // the whole number arrives heavy and condensed, and relaxes to its resting weight and width
-    el.style.fontWeight = el.style.fontStretch = "";
-    const cs = getComputedStyle(el), w0 = +cs.fontWeight || 300, s0 = parseFloat(cs.fontStretch) || 100, id = el._cu = {}, T = 1150 + D * 170;
+    const id = el._cu = {};
     // with sound on, each reel ticks as it lands
     if (Snd.live) el.querySelectorAll("i[data-k]").forEach(c => +c.dataset.k && setTimeout(() => el._cu === id && Snd.tick(+c.dataset.o), delay + 1150 + +c.dataset.o * 170));
+    if (el.hasAttribute("data-flat")) return;
+    // the whole number arrives heavy and condensed, and relaxes to its resting weight and width
+    el.style.fontWeight = el.style.fontStretch = "";
+    const cs = getComputedStyle(el), w0 = +cs.fontWeight || 300, s0 = parseFloat(cs.fontStretch) || 100, T = 1150 + D * 170;
     let t0 = 0;
     const step = now => {
       if (el._cu !== id) return;
@@ -885,25 +866,23 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   function zero(el) { el._cu = null; el.style.fontWeight = el.style.fontStretch = ""; if (!reduced.matches && isNum(+el.dataset.n)) el.textContent = FMT[el.dataset.f](0); }
 
   /* ---------- the demo: chapters, a living miniature of the shell, and the footage once it exists ---------- */
-  const UP = `<a href="https://github.com/caelestia-dots/shell" target="_blank" rel="noopener">`;
-  const EXT = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5h9.5V15M18.5 5.5L6 18"/></svg><span class="sr"> (opens in a new tab)</span>`;
   // Footage sits next to the page under these names (.webm, then .mp4, plus a poster .jpg).
   // The page asks for the .mp4; when it is there the video replaces the drawing, with no code change.
-  const CLIPS = {loop: ["demo-loop", "demo-poster.jpg"], full: ["demo-full", "demo-full-poster.jpg"]};
+  const CLIPS = {full: ["demo-full", "demo-full-poster.jpg"]};
   // The demo's chapters. `t` is the second each one starts in demo-full: edit these after recording.
   // `dur`, `pose` and `steps` drive the drawing, which plays the same chapters when there is no footage.
   const CH = [
-    {t: 0, label: "Theming", title: "Colour follows the wallpaper", text: "Pick a wallpaper and the whole shell takes its colours from it, down to the last surface.",
+    {t: 0, label: "Theming", title: "Colour from your wallpaper", text: "Pick a wallpaper and every surface takes its colours from it.",
       dur: 10.5, pose: 4, steps: [[.8, {d: "wall", wsel: 0}], [2.4, {wsel: 1, mh: 75}], [4.2, {wsel: 2, mh: 150}], [6, {wsel: 3, mh: 230}], [7.8, {wsel: 0, mh: 0}], [9.3, {d: ""}]]},
-    {t: 12, label: "Launcher", title: "The launcher", text: "Start typing to find an app. Like every panel, it grows out of the edge of the screen.",
+    {t: 15.5, label: "Launcher", title: "Launcher", text: "Tap Super or click the logo, then type. Apps, maths and wallpapers, all in one search.",
       dur: 8.5, pose: 2.4, steps: [[0, {d: "launch", q: "", sel: 0}], [1.1, {q: "m"}], [1.35, {q: "mu", sel: 2}], [1.6, {q: "mus"}], [1.85, {q: "musi"}], [3.6, {d: "", tile: "3"}], [5, {q: "", sel: 0}]]},
-    {t: 15, label: "Tiling", title: "Windows tile themselves", text: "New windows take their share of the screen. Swap them around, or move to another workspace.",
+    {t: 19.5, label: "Tiling", title: "Tiling", text: "Windows tile as they open, and the others fill the space when one closes.",
       dur: 9.5, pose: 2, steps: [[1.2, {tile: "3s"}], [3.6, {tile: "3"}], [5.2, {ws: 2, tile: "1"}], [7.4, {ws: 1, tile: "3"}]]},
-    {t: 23.5, label: "Notifications", title: "Notifications and the dashboard", text: "Notifications slide in from the corner. The dashboard drops from the top with the time, a calendar and what is playing.",
+    {t: 31.5, label: "Notifications", title: "Notifications and dashboard", text: "Notifications slide in at the corner. The dashboard drops from the top edge with live system stats, your calendar, weather and music.",
       dur: 10.5, pose: 1.4, steps: [[.4, {n: 1}], [2.8, {n: 2}], [5, {n: 0}], [5.6, {d: "dash"}], [9.4, {d: ""}]]},
-    {t: 35.5, label: "Nexus", title: "Nexus, the settings app", text: "Appearance, the bar, notifications and the session, all in one place, applied as you change them.",
+    {t: 43.5, label: "Settings", title: "Settings", text: "Nexus, the settings app, applies each change as you make it.",
       dur: 10.5, pose: 2.6, steps: [[0, {nx: 1, nsel: 0}], [1.6, {tog: 1}], [3.4, {nsel: 1}], [5, {nsel: 0}], [6.2, {mh: 60}], [8, {mh: 0}], [9.4, {nx: 0, tog: 0}]]},
-    {t: 45, label: "Session", title: "The session menu", text: "Lock, sleep, restart and shut down wait at the right edge of the screen.",
+    {t: 53.5, label: "Session", title: "Session menu", text: "Lock, sleep, restart and shut down from the right edge.",
       dur: 8, pose: 2, steps: [[0, {d: "sess", ssel: 0}], [1.3, {ssel: 1}], [2.6, {ssel: 2}], [3.9, {ssel: 3}], [5.4, {d: "", ssel: 0}], [6.4, {tile: "2"}]]}
   ];
   const INIT = {ws: 1, tile: "2", d: "", wsel: 0, sel: 0, q: "", n: 0, nx: 0, nsel: 0, tog: 0, ssel: 0, mh: 0};
@@ -985,22 +964,19 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       v.load();
     }).catch(() => {});
   }
-  const hidden = () => document.hidden;
 
-  // The hero: the drawing loops quietly, or the silent demo loop does once it exists.
+  // The hero: the drawing loops quietly.
   function heroDemo() {
-    const box = document.getElementById("hero-screen"), v = box.querySelector("video"), btn = box.querySelector(".hold");
+    const box = document.getElementById("hero-screen"), btn = box.querySelector(".hold");
     const w = walker(box.querySelector(".mini"));
-    let on = false, held = reduced.matches, vid = false;
+    let on = false, held = reduced.matches;
     if (reduced.matches) w.pose({...INIT, tile: "3", n: 1});
     const sync = () => {
-      const go = on && !held && !hidden();
-      if (vid) { w.pause(); go ? v.play().catch(() => {}) : v.pause(); } else go ? w.play() : w.pause();
+      on && !held && !hidden() ? w.play() : w.pause();
       btn.classList.toggle("held", held); btn.querySelector("span").textContent = held ? "Play" : "Pause";
-      btn.setAttribute("aria-label", (held ? "Play" : "Pause") + (vid ? " the demo loop" : " the drawing"));
+      btn.setAttribute("aria-label", held ? "Play the drawing" : "Pause the drawing");
     };
     btn.addEventListener("click", () => { held = !held; sync(); });
-    // The hero stays the stylised drawing on purpose; real footage lives in See it run.
     sync();
     return {set(o) { on = o; sync(); }, sync};
   }
@@ -1063,160 +1039,200 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     sync();
     return {set(o) { on = o; sync(); }, sync};
   }
-  let hero = null, run = null;
-  document.addEventListener("visibilitychange", () => { hero?.sync(); run?.sync(); });
+
+  /* ---------- every edge: pointing at a panel's name opens it in the drawing ----------
+     Until the visitor picks one, the panels take turns. After that the choice is theirs. */
+  const EDGES = [
+    ["bar", "l", "Bar", "Workspaces, your open apps, the tray, clock and status.", {ws: 3}],
+    ["dash", "t", "Dashboard", "Time, calendar, weather, music and live system graphs.", {d: "dash"}],
+    ["note", "n", "Notifications", "Popups, a history sidebar and quick toggles.", {n: 1}],
+    ["sess", "s", "Session", "Lock, sleep, restart or shut down.", {d: "sess", ssel: 1}],
+    ["launch", "b", "Launcher", "Apps as you type, quick maths and wallpapers.", {d: "launch", q: "mus", sel: 2}]
+  ];
+  function edgeMap() {
+    const sec = document.getElementById("edges"), mini = sec.querySelector(".mini"), btns = [...sec.querySelectorAll(".el")];
+    let on = false, k = -1, timer = 0, auto = !reduced.matches;
+    const show = (i, user) => {
+      if (i === k) return; k = i;
+      const [id, , , , pose] = EDGES[+btns[i].dataset.k];
+      btns.forEach((b, j) => b.setAttribute("aria-pressed", j === i));
+      mini.classList.toggle("bar-lit", id === "bar");
+      clock(mini); paintMini(mini, {...INIT, tile: "3", ...pose});
+      if (user) Snd.sfx(id === "bar" ? "pop" : "open", 2);
+    };
+    const cycle = () => { clearTimeout(timer); if (!on || !auto || hidden()) return; timer = setTimeout(() => { show((k + 1) % btns.length); cycle(); }, 2600); };
+    const choose = (i, user) => { auto = false; clearTimeout(timer); show(i, user); };
+    btns.forEach((b, i) => {
+      b.addEventListener("pointerenter", () => fine.matches && choose(i, true));
+      b.addEventListener("focus", () => b.matches(":focus-visible") && choose(i, true));
+      b.addEventListener("click", () => choose(i, true));
+    });
+    show(0);
+    return {set(o) { on = o; cycle(); }, sync: cycle};
+  }
+
+  /* ---------- tiling: the shell's three layouts, worked out the way the tiler does ----------
+     Dwindle halves the space for each new window, turning the split each time. Master keeps one
+     big window and stacks the rest. Scrolling lays windows out as a strip and brings the focused
+     one into view. Until the visitor touches it, the layouts take turns. */
+  const TILES = [
+    ["Workspaces", "Each workspace is a Windows 11 virtual desktop.", "--primary", "cookie9"],
+    ["Notifications", "Windows notifications land in Caelestia's sidebar.", "--tertiary", "flower"],
+    ["Wallpaper Engine", "Its wallpapers set the colours too.", "--quad", "sunny"],
+    ["Monitors", "A bar on every screen, at any scaling.", "--quin", "clover"]
+  ];
+  function tiler() {
+    const sec = document.getElementById("tiling"), wins = [...sec.querySelectorAll(".tw")], btns = [...sec.querySelectorAll(".seg3 button")], L = ["dwindle", "master", "scrolling"];
+    let layout = "dwindle", order = wins.map((_, i) => i), foc = 0, on = false, auto = !reduced.matches, timer = 0;
+    const rects = () => {
+      const R = [], n = order.length;
+      if (layout === "master") order.forEach((w, j) => R[w] = j ? [55, (j - 1) * 100 / (n - 1), 45, 100 / (n - 1)] : [0, 0, 55, 100]);
+      // the strip centres the focused column, but never scrolls past either end
+      else if (layout === "scrolling") { const off = Math.max(100 - n * 45, Math.min(0, 27.5 - order.indexOf(foc) * 45)); order.forEach((w, j) => R[w] = [off + j * 45, 0, 45, 100]); }
+      else { let x = 0, y = 0, w = 100, h = 100; order.forEach((id, j) => {
+        if (j === n - 1) R[id] = [x, y, w, h];
+        else if (j % 2) { R[id] = [x, y, w, h / 2]; y += h / 2; h /= 2; }
+        else { R[id] = [x, y, w / 2, h]; x += w / 2; w /= 2; } }); }
+      return R;
+    };
+    const paint = () => {
+      const R = rects();
+      wins.forEach((el, i) => { const [x, y, w, h] = R[i]; el.style.cssText = `--x:${x};--y:${y};--w:${w};--h:${h}`; el.classList.toggle("focus", i === foc); el.setAttribute("aria-current", i === foc); });
+      btns.forEach(b => b.setAttribute("aria-pressed", b.dataset.l === layout));
+    };
+    const use = (l, user) => { if (l === layout) return; layout = l; paint(); if (user) wins.forEach((_, i) => Snd.sfx("slide", i)); };
+    const cycle = () => { clearTimeout(timer); if (!on || !auto || hidden()) return; timer = setTimeout(() => { use(L[(L.indexOf(layout) + 1) % L.length]); cycle(); }, 3400); };
+    const stop = () => { auto = false; clearTimeout(timer); };
+    btns.forEach(b => b.addEventListener("click", () => { stop(); use(b.dataset.l, true); }));
+    wins.forEach((el, i) => {
+      el.addEventListener("click", () => {
+        stop();
+        // in Master, the window you pick swaps places with the big one
+        if (layout === "master" && order[0] !== i) { const j = order.indexOf(i); [order[0], order[j]] = [order[j], order[0]]; Snd.sfx("boing"); }
+        else Snd.sfx(layout === "scrolling" && foc !== i ? "slide" : "pop", i);
+        foc = i; paint();
+        const pa = el.querySelector("path[data-shape]"); pa?._m?.to(pick(BLOOM, pa._m.name));
+      });
+      // a keyboard visitor tabbing along the strip brings each window into view
+      el.addEventListener("focus", () => { if (layout === "scrolling" && foc !== i && el.matches(":focus-visible")) { foc = i; paint(); } });
+    });
+    paint();
+    return {set(o) { on = o; cycle(); }, sync: cycle};
+  }
+  const ctl = {};
+  document.addEventListener("visibilitychange", () => Object.values(ctl).forEach(c => c.sync()));
 
   /* ---------- scenes ---------- */
-  const SCN = [["intro", "Caelestia", "cookie12"], ["run", "See it run", "cookie6"], ["cost", "Cost", "cookie9"], ["tokens", "Tokens", "sunny"],
-    ["agents", "Agents", "flower"], ["time", "Time and milestones", "verysunny"], ["credits", "Credits", "clover"]];
-  let D = null, builders = [], sky = null, SECs = [], SCs = [], links = [];
+  const SCN = [["intro", "Caelestia", "cookie12"], ["run", "See it run", "cookie6"], ["edges", "Panels", "sunny"], ["tiling", "Tiling", "flower"],
+    ["install", "Install", "cookie9"], ["build", "How it was built", "verysunny"], ["credits", "Credits", "clover"]];
+  let D = null, agentsN = null, builders = [], SECs = [], SCs = [], links = [];
   function render(d) {
     D = d;
-    const p = d.project || {}, t3 = p.t3 || {}, u = d.usage || {}, t = u.totals || {}, code = p.code || {}, ses = u.session || {};
-    const agents = t3.delegated || isNum(p.claudeAgents) ? sum(t3.delegated) + (p.claudeAgents || 0) : null;
-    const asOf = d.updatedAt ? `Figures as of ${esc(day(d.updatedAt))}. ` : "";
+    const p = d.project || {}, t3 = p.t3 || {}, u = d.usage || {}, t = u.totals || {}, code = p.code || {};
+    agentsN = t3.delegated || isNum(p.claudeAgents) ? sum(t3.delegated) + (p.claudeAgents || 0) : null;
     const start = code.startedAt || t3.firstThreadAt;
-    const hours = start ? Math.round((new Date(d.updatedAt) - new Date(start)) / 36e5) : null;
-
-    // Cost: the four largest models, the rest folded together. Area follows spend.
-    const models = (u.byModel || []).slice().sort((a, b) => (b.apiCostUsd || 0) - (a.apiCostUsd || 0));
-    const tones = [["var(--on-p)", "var(--on-pc)", "cookie9"], ["var(--t-cont)", "var(--on-pc)", "flower"], ["var(--p-cont)", "var(--on-pc)", "sunny"], ["oklch(.97 .02 var(--h))", "var(--on-p)", "clover"], ["oklch(.9 .05 var(--h))", "var(--on-p)", "circle"]];
-    const orbs = models.slice(0, 4).map((m, i) => ({name: modelName(m.model), v: Math.max(m.apiCostUsd || 0, .01), tone: tones[i]}));
-    const rest = models.slice(4);
-    if (rest.length) orbs.push({name: rest.length + " more models", v: Math.max(rest.reduce((a, m) => a + (m.apiCostUsd || 0), 0), .01), tone: tones[4]});
-    const prov = {}; for (const m of models) prov[m.provider] = (prov[m.provider] || 0) + (m.apiCostUsd || 0);
-    const provs = Object.entries(prov).sort((a, b) => b[1] - a[1]), provTotal = provs.reduce((s, [, v]) => s + v, 0) || 1;
-    const provTone = ["var(--on-p)", "var(--t-cont)", "var(--p-cont)", "oklch(.6 .1 var(--h))", "oklch(.7 .08 var(--h))"];
-    const cost = isNum(t.apiCostUsd) ? t.apiCostUsd : null;
-
-    // Tokens: 200 stars, each half a percent. The few bright ones are the new tokens.
-    const fresh = (t.inputTokens || 0) + (t.outputTokens || 0) + (t.cacheWriteTokens || 0);
-    const freshShare = isNum(t.totalTokens) && t.totalTokens > 0 ? fresh / t.totalTokens : null;
-    const hot = Math.min(8, Math.max(1, Math.round((freshShare || 0) * 200)));
-    const rnd = mulberry(11), hotCells = [[14, 2], [16, 1], [18, 3], [16, 4], [13, 4], [18, 6], [14, 7], [11, 2]].slice(0, hot).map(([c, r]) => c + r * 20);
-    const stars = [], pts = []; let novae = "";
-    for (let r = 0; r < 10; r++) for (let c = 0; c < 20; c++) {
-      const x = (c + .18 + .64 * rnd()) / 20, y = (r + .18 + .64 * rnd()) / 10, s = 1.5 + rnd() * 2.5, o = .32 + rnd() * .55, tw = rnd() < .28;
-      if (hotCells.includes(c + r * 20)) { pts.push([x * 100, y * 100]); continue; }
-      stars.push({x, y, s, o, tw, sp: 1 + rnd() * 1.6, ph: rnd() * TAU, dl: rnd() * 520});
-    }
-    const spark = "M16 2.5l2.6 8.2a5 5 0 0 0 3.3 3.3L30 16.5l-8.1 2.5a5 5 0 0 0-3.3 3.3L16 30.5l-2.6-8.2a5 5 0 0 0-3.3-3.3L2 16.5l8.1-2.5a5 5 0 0 0 3.3-3.3z";
-    pts.forEach(([x, y], i) => novae += `<svg class="nova" viewBox="0 0 32 32" style="--x:${x.toFixed(2)};--y:${y.toFixed(2)};--s:${i % 2 ? 26 : 38}px;--dl:${(1.5 + i * .18).toFixed(2)}s" aria-hidden="true"><path d="${spark}"/></svg>`);
-    const lx = Math.min(...pts.map(q => q[0])), ly = Math.max(...pts.map(q => q[1]));
-    const line = pts.length > 1 ? `<svg class="lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts.map(q => q.map(f3).join(",")).join(" ")}"/></svg>` : "";
-
-    // Agents: one star each, in a cluster per tool. Claude Code's delegated threads join its subagents.
-    const by = {...(t3.delegated || {})};
-    if (p.claudeAgents) by["Claude Code"] = (by["Claude Code"] || 0) + p.claudeAgents;
-    const crew = Object.entries(by).map(([name, n]) => ({name, n})).sort((a, b) => b.n - a.n);
-
-    // Credits: each model by the job it did, one name to a line.
-    const byRole = {}; for (const m of u.byModel || []) if (roleName[m.role]) (byRole[m.role] ||= []).push(m);
-    const cast = Object.values(byRole).flat(), labs = new Set(cast.map(m => m.provider)).size;
-    const roleTone = ["--primary", "--tertiary", "--quad", "--quin"], roleShape = ["cookie12", "sunny", "flower", "clover"];
-    const tally = [[code.linesAdded, "add", "lines added", "add"], [code.linesRemoved, "del", "lines removed", "del"],
-      [ses.agentComputeHours, "int", "hours of agent compute"]].filter(x => isNum(x[0]));
-
-    // Milestones are the M-numbers only; later work lives on the live page.
-    const ms = (d.milestones || []).filter(m => /^M\d+\s/.test(m.name));
-    const wave = "M-100 0q25-7 50 0t50 0t50 0t50 0t50 0t50 0V120H-100z";
-    const moonXY = [[14, 59], [32, 52], [50, 45], [68, 38], [86, 31]], moonShapes = ["cookie12", "flower", "sunny", "clover", "cookie9"];
-
-    // The four headline numbers sit in shapes bleeding off the bottom edge. A missing figure shows as a dash.
-    // In See it run they sit low along the bottom edge, under the player.
-    const satSlots = [[13, 95, 16, "var(--primary)", "var(--on-p)", "cookie9", 150], [36, 93, 15, "var(--tertiary)", "var(--on-t)", "flower", 120],
-      [60, 96, 16, "var(--quad)", "var(--on-q)", "sunny", 170], [84, 93.5, 15.5, "var(--secondary)", "var(--on-p)", "softburst", 140]];
-    const sats = [[agents, "Agents and subagents"], [t3.threads, "Threads triaged"], [p.pullRequests, "Pull requests landed"], [code.commits, "Git commits"]]
-      .map(([n, label], i) => {
-        const [x, y, dm, c, on, shape, rot] = satSlots[i];
-        return `<div class="sat" data-in="${1050 + i * 100}" style="--i:${i};--x:${x};--y:${y};--d:${dm}cqw;--c:${c};--on:${on};--ty:22;--rot:${rot}s">${shapeSvg(shape)}<div><b ${counter(n, "int", 1100 + i * 100)}${isNum(n) ? `>${shown0(n, "int")}` : ` title="Not available yet"><span aria-hidden="true">${NA}</span><span class="sr">${NA_SAY}</span>`}</b><span>${label}</span></div></div>`;
-      }).join("");
+    const hours = start && d.updatedAt ? Math.round((new Date(d.updatedAt) - new Date(start)) / 36e5) : null;
+    const num = (v, f, src) => `<span class="num" ${counter(v, f)} data-flat${src ? " data-src" : ""}>${shown0(v, f)}</span>`;
+    const span = u.session?.start && u.asOf ? `, ${esc(day(u.session.start))} to ${esc(day(u.asOf))}` : "";
+    const ext = (href, text) => `<a href="${href}" target="_blank" rel="noopener">${text}<span class="sr"> (opens in a new tab)</span></a>`;
+    const download = RELEASED ? `<a class="btn pri" href="${REPO}/releases/latest">Download for Windows</a>` : `<span class="btn pri off">First release coming soon</span>`;
+    const edge = (k, cls) => { const [, , name, text] = EDGES[k]; return `<button class="el el-${cls}" data-k="${k}" aria-pressed="false"><b>${name}</b><span>${text}</span></button>`; };
+    const idx = id => EDGES.findIndex(e => e[0] === id);
 
     document.getElementById("app").innerHTML = `
-      <div class="scene"><section id="intro" class="ws hero" aria-label="Caelestia">
+      <div class="scene"><section id="intro" class="ws hero" tabindex="-1" aria-label="Caelestia">
         <div class="drift" data-drift="5" data-shapes="12" aria-hidden="true"></div>
         ${shapeSvg(pick(BLOOM), "shape sun", 'data-in="150"')}${shapeSvg("flower", "shape moon", 'data-in="380"')}
         <div class="copy">
           <h1 class="name" aria-label="Caelestia">${[..."Caelestia"].map((ch, i) => `<span aria-hidden="true" style="--i:${i}">${ch}</span>`).join("")}</h1>
-          <p class="pitch rv" style="--rd:.75s">The Caelestia desktop, on Windows&nbsp;11. Ported from Linux by a team of AI agents.</p>
-          <p class="credit rv" style="--rd:.9s">Based on ${UP}Caelestia, the Hyprland desktop shell by caelestia-dots${EXT}</a>. Its look, components and motion are theirs; this port carries them to Windows.</p>
-          <div class="meta rv" style="--rd:1.05s"><p class="state">In daily use as the maintainer's desktop</p>
-            <div class="wall"><span>Colours follow the wallpaper. Try one:</span><div class="papers" role="group" aria-label="Wallpaper" data-papers>${chips()}</div></div>
-            <p class="hint">Scroll, or press <kbd>1</kbd>to<kbd>${SCN.length}</kbd></p></div>
+          <p class="pitch rv" style="--rd:.75s">The Caelestia shell from Hyprland, now on Windows&nbsp;11.</p>
+          <p class="sub rv" style="--rd:.9s">A new bar, launcher, dashboard and window tiling for your desktop, all coloured by your wallpaper.</p>
+          <div class="cta rv" style="--rd:1.05s"><a class="btn pri" href="#install">Get Caelestia</a><a class="btn ton" href="#run">Watch it run</a></div>
+          <div class="wall rv" style="--rd:1.2s"><span>Try a wallpaper</span><div class="papers" role="group" aria-label="Wallpaper" data-papers>${chips()}</div></div>
         </div>
-        <div class="screen" id="hero-screen"><video muted loop playsinline preload="auto" aria-label="Caelestia running on Windows 11"></video>
+        <div class="screen" id="hero-screen">
           ${miniHtml("A live drawing of the Caelestia shell: the bar with workspace dots and a clock, tiled windows, and panels sliding out of the screen's edges.")}
           <button class="hold" aria-pressed="false"><svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg><svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><span>Pause</span></button></div>
       </section></div>
 
-      <div class="scene"><section id="run" class="ws run" aria-labelledby="run-h">
+      <div class="scene"><section id="run" class="ws run" tabindex="-1" aria-labelledby="run-h">
         <div class="drift" data-drift="13" data-shapes="6" data-fade=".45" aria-hidden="true"></div>
-        <div class="lead"><h2 class="fig" id="run-h">See it run</h2>
+        <div class="lead"><h2 class="title" id="run-h">See it run</h2>
           <ol class="cues" aria-label="What the demo shows">${CH.map((c, i) => `<li${i ? "" : ' class="now"'}><h3>${esc(c.title)}</h3><p>${esc(c.text)}</p></li>`).join("")}</ol>
-          <p class="small note rv" style="--rd:.8s">This is a live drawing of the shell's layout, made in code, not a screenshot.</p></div>
+          <p class="small note rv" style="--rd:.8s">A drawing of the shell, made in code.</p></div>
         <div class="player rv" style="--rd:.25s"><div class="pscreen"><video playsinline muted preload="metadata" aria-label="Demo of Caelestia running on Windows 11"></video>
-            ${miniHtml("A larger drawing of the Caelestia shell, stepping through each chapter of the demo.")}</div>
+            ${miniHtml("A drawing of the Caelestia shell, stepping through each chapter of the demo.")}</div>
           <div class="pbar"><button class="pplay" aria-label="Play">${shapeSvg("circle")}<svg class="ic ic-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><svg class="ic ic-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg></button>
             <div class="segs" role="group" aria-label="Chapters">${CH.map((c, i) => `<button class="seg" style="--len:${c.dur}" aria-label="${esc(c.title)}" aria-current="${!i}"><i><i></i></i><span aria-hidden="true">${esc(c.label)}</span></button>`).join("")}</div>
             <span class="ptime" aria-hidden="true"></span>
             <button class="pmute" hidden aria-pressed="false" aria-label="Video sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path class="x" d="M16 9.5l5 5M21 9.5l-5 5"/><path class="w" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg></button></div></div>
-        <div class="sats">${sats}</div>
       </section></div>
 
-      <div class="scene"><section id="cost" class="ws cost flood-p" aria-labelledby="cost-n">
+      <div class="scene"><section id="edges" class="ws edges flood-t" tabindex="-1" aria-labelledby="edges-h">
         <div class="drift" data-drift="21" data-shapes="7" data-flood aria-hidden="true"></div>
-        <div class="lead"><h2 class="fig" id="cost-n" aria-label="Estimated API-equivalent cost: ${say(cost, "usd0")}" style="--len:${usd0(cost).length}" ${counter(cost, "usd0")}>${shown0(cost, "usd0")}</h2>
-          <p class="cap rv">is an estimate: this project's agent work, priced at <b>public API list rates.</b></p></div>
-        <div class="said rv" style="--rd:.6s"><p>Not money spent.<br>It all ran on subscriptions.</p>
-          <div class="strip" role="img" aria-label="Share of the estimate by provider">${provs.map(([, v], i) => `<i style="--v:${v};--c:${provTone[i] ?? provTone[4]};--i:${i}"></i>`).join("")}</div>
-          <ul class="provs" aria-label="Share of the estimate by provider">${provs.map(([n, v], i) => `<li style="--c:${provTone[i] ?? provTone[4]}">${esc(n)} <b>${(v / provTotal * 100).toFixed(0)}%</b></li>`).join("")}</ul></div>
-        <div class="stage" id="bubbles" role="list" aria-label="Estimated cost by model"></div>
+        <div class="emap">
+          <div class="h"><h2 class="title" id="edges-h">Every edge opens something</h2><p class="cap rv">Pick a name to open its panel.</p></div>
+          <div class="escreen">${miniHtml("A drawing of the Caelestia shell. The panel named alongside it is open.")}</div>
+          ${edge(idx("dash"), "t")}${edge(idx("bar"), "l")}
+          <div class="er">${edge(idx("note"), "n")}${edge(idx("sess"), "s")}</div>
+          ${edge(idx("launch"), "b")}
+        </div>
       </section></div>
 
-      <div class="scene"><section id="tokens" class="ws tokens" aria-labelledby="tok-n">
-        <div class="sky" aria-hidden="true"><canvas></canvas><div class="const">${line}${novae}<p class="nova-l rv" style="--rd:2.4s;--x:${Math.min(lx, 74).toFixed(1)};--y:${Math.min(ly + 7, 82).toFixed(1)}">New input and output<br>${isNum(freshShare) ? (freshShare * 100).toFixed(1) + "%" : NA} of tokens</p></div></div>
-        <div class="lead"><h2 class="fig" id="tok-n" aria-label="${say(t.totalTokens, "b2")}" ${counter(t.totalTokens, "b2")}>${shown0(t.totalTokens, "b2")}</h2>
-          <p class="cap rv">tokens processed across the build.</p></div>
-        <div class="pct rv" style="--rd:.9s"><p class="fig">${isNum(freshShare) ? (100 - freshShare * 100).toFixed(0) + "%" : NA}</p><p class="cap">were cache reads: <b>agents rereading code they had already seen.</b></p></div>
-        <p class="each rv" style="--rd:1.4s" aria-hidden="true">Each star is half a percent of the total.</p>
-      </section></div>
-
-      <div class="scene"><section id="agents" class="ws agents" aria-labelledby="ag-n">
+      <div class="scene"><section id="tiling" class="ws tiling" tabindex="-1" aria-labelledby="tile-h">
         <div class="drift" data-drift="31" data-shapes="6" data-fade=".6" aria-hidden="true"></div>
-        <div class="lead"><h2 class="fig" id="ag-n" aria-label="${say(agents, "int")}" ${counter(agents, "int")}>${shown0(agents, "int")}</h2>
-          <p class="cap rv">agents and subagents, across <b>${int(t3.threads)} threads</b> and ${t3.runs ? int(sum(t3.runs)) : NA} runs.</p></div>
-        ${isNum(ses.concurrency) ? `<div class="pct rv" style="--rd:.8s"><p class="fig" ${counter(ses.concurrency, "d1")}>${shown0(ses.concurrency, "d1")}</p><p class="cap">agents at work at any moment, <b>on average.</b></p></div>` : ""}
-        <div class="stage" id="chart" role="img" aria-label="Agents by tool: ${esc(crew.map(c => c.name + " " + c.n).join(", "))}"></div>
+        <div class="lead"><h2 class="title" id="tile-h">Tiling, built in</h2>
+          <p class="cap rv">Windows arrange themselves as they open, with Hyprland's layouts and gaps. Pick a layout, then click a window.</p>
+          <div class="seg3 rv" style="--rd:.5s" role="group" aria-label="Layout">${["Dwindle", "Master", "Scrolling"].map(l => `<button data-l="${l.toLowerCase()}" aria-pressed="false">${l}</button>`).join("")}</div>
+          <p class="small rv" style="--rd:.65s">Tiling stays off until you turn it on.</p></div>
+        <div class="tstage" role="group" aria-label="Tiled windows"><div class="tarea">${TILES.map(([name, text, c, sh], i) =>
+          `<button class="tw" style="--c:var(${c})"><span class="win" style="--c:var(${c});--rot:${110 + i * 23}s"><span class="tt"><b></b>${esc(name)}</span><span class="tx">${esc(text)}</span>${shapeSvg(sh, "tsh")}</span></button>`).join("")}</div></div>
       </section></div>
 
-      <div class="scene"><section id="time" class="ws time flood-t" aria-labelledby="time-n">
+      <div class="scene"><section id="install" class="ws install flood-p" tabindex="-1" aria-labelledby="inst-h">
         <div class="drift" data-drift="22" data-shapes="7" data-flood aria-hidden="true"></div>
-        <svg class="orbit" aria-hidden="true"></svg>
-        <div class="lead"><h2 class="fig" id="time-n" aria-label="${say(hours, "hrs")}" ${counter(hours, "hrs")}>${shown0(hours, "hrs")}</h2>
-          <p class="cap rv">since the first commit${start ? ` on <b>${esc(day(start))}</b>` : ""}, long enough for Caelestia to become the maintainer's daily desktop.</p></div>
-        <ol class="moons" aria-label="Milestones">${ms.map((m, i) => {
-          const done = m.progress?.done ?? 0, [num, ...name] = m.name.split(" "), [x, y] = moonXY[i] || [50, 50];
-          const sh = moonShapes[i % moonShapes.length], tr = 'transform="translate(50 50) scale(50)"';
-          // A finished milestone is a solid shape. One still in progress is an empty shape filling like a tide.
-          const body = done >= 100 ? `<path class="solid" ${tr} d="${pathOf(SH[sh])}" data-shape="${sh}"/>` :
-            `<defs><clipPath id="mc${i}"><path ${tr} d="${pathOf(SH[sh])}"/></clipPath></defs><path class="track" ${tr} d="${pathOf(SH[sh])}"/><g clip-path="url(#mc${i})"><g class="liq" style="--p:${done};--dl:${(1.2 + i * .4).toFixed(2)}s"><g class="wave"><path d="${wave}"/></g></g></g>`;
-          return `<li class="moon-l" data-in="${700 + i * 400}" style="--i:${i};--x:${x};--y:${y};--rot:${100 + i * 17}s"><div class="disc${done >= 100 ? " spin" : ""}"><svg viewBox="0 0 100 100" aria-hidden="true">${body}</svg></div>
-            <div class="mt"><span class="mn">${esc(num)}</span><b>${esc(name.join(" "))}</b><span class="small">${done >= 100 ? "Complete" : done + "% complete"}</span></div></li>`;
-        }).join("")}</ol>
+        <svg class="ipath" aria-hidden="true"></svg>
+        <div class="lead"><h2 class="title" id="inst-h">Three steps, no admin rights</h2></div>
+        <ol class="steps">
+          <li class="step"><div class="sn" data-in="350" style="--i:0;--rot:140s">${shapeSvg("cookie9")}<span aria-hidden="true">1</span></div>
+            <h3><span class="sr">Step 1: </span>Download</h3><p>Get the latest release from GitHub and unzip it.</p>${download}</li>
+          <li class="step"><div class="sn" data-in="500" style="--i:1;--rot:120s">${shapeSvg("flower")}<span aria-hidden="true">2</span></div>
+            <h3><span class="sr">Step 2: </span>Run the installer</h3><p>Open PowerShell in that folder and run:</p>
+            <div class="cmd"><code>${INSTALL_CMD.split(" ").map(w => `<span>${esc(w)}</span>`).join(" ")}</code><button class="cpy" aria-live="polite">Copy</button></div></li>
+          <li class="step"><div class="sn" data-in="650" style="--i:2;--rot:160s">${shapeSvg("sunny")}<span aria-hidden="true">3</span></div>
+            <h3><span class="sr">Step 3: </span>Start Caelestia</h3><p>Open it from the Start menu. The bar appears on the left edge of your screen.</p></li>
+        </ol>
+        <div class="fine rv" style="--rd:.9s"><p>Tiling, taskbar hiding and start at sign-in stay off until you turn them on. Uninstalling restores your taskbar and keeps your settings.</p>
+          <p>Needs 64-bit Windows 11 and Python 3 for wallpaper colours. Switching workspaces needs Windows 11 24H2 or later.</p></div>
       </section></div>
 
-      <div class="scene"><section id="credits" class="ws credits" aria-labelledby="cr-n">
-        <div class="drift" data-drift="41" data-shapes="8" data-fade=".7" aria-hidden="true"></div>
+      <div class="scene"><section id="build" class="ws build" tabindex="-1" aria-labelledby="build-h">
+        <div class="drift" data-drift="41" data-shapes="6" data-fade=".5" aria-hidden="true"></div>
+        <h2 class="sr" id="build-h">How it was built</h2>
+        <div class="ledger">
+          <p>Built by ${num(agentsN, "int", true)} AI agents and subagents, across ${num(t3.threads, "int")} threads, ${num(p.pullRequests, "int")} pull requests and ${num(code.commits, "int")} commits, in ${num(hours, "int")} hours.</p>
+          <p class="cap rv" style="--rd:1s">Along the way they worked through ${num(t.totalTokens, "bn")} tokens, about ${num(t.apiCostUsd, "usd0")} at public API prices. It all ran on subscriptions.</p>
+        </div>
+        <div class="galaxy" id="galaxy" aria-hidden="true"></div>
+        <p class="gcap rv" style="--rd:2.2s" aria-hidden="true">One dot for each agent.</p>
+        <p class="bnote rv" style="--rd:1.4s">${d.updatedAt ? `Figures as of ${esc(day(d.updatedAt))}. ` : ""}Tokens and cost cover the measured build session${span}; the other figures cover the whole project.</p>
+      </section></div>
+
+      <div class="scene"><section id="credits" class="ws credits" tabindex="-1" aria-labelledby="cr-h">
+        <div class="drift" data-drift="43" data-shapes="8" data-fade=".7" aria-hidden="true"></div>
         ${shapeSvg("cookie12", "shape big", 'data-in="80"')}
-        <div class="lead"><h2 class="fig" id="cr-n">Credits</h2>
-          <p class="cap rv">${cap1(words(cast.length))} models from ${words(labs)} labs, each with its own job.</p></div>
-        <div class="roster">${Object.keys(roleName).filter(r => byRole[r]).map((r, i) => `<div style="--i:${i};--c:var(${roleTone[i]})">
-          <h3 class="rv">${shapeSvg(roleShape[i])}${roleName[r]}</h3>
-          <ul>${byRole[r].map((m, j) => { const [v, ...rest] = modelName(m.model).split(" "); return `<li class="rv" style="--j:${j + 1}"><span>${esc(v)}</span> ${esc(rest.join(" "))}</li>`; }).join("")}</ul></div>`).join("")}</div>
-        <dl class="tally">${tally.map(([n, f, label, cls], i) => `<div class="rv ${cls || ""}" style="--rd:${(1.1 + i * .12).toFixed(2)}s"><dt>${esc(label)}</dt><dd><b ${counter(n, f)}>${shown0(n, f)}</b></dd></div>`).join("")}</dl>
-        <footer class="foot rv" style="--rd:1.6s">
-          <p>${asOf}Cost is an estimate at public API list rates, not money spent. Cost and tokens cover the measured build session${u.session?.start && u.asOf ? `, ${esc(day(u.session.start))} to ${esc(day(u.asOf))}` : ""}; agents, threads and time cover the whole project. ${UP}Caelestia Shell<span class="sr"> (opens in a new tab)</span></a> is by soramanew and the caelestia-dots contributors; its design, components and motion are theirs.</p>
-          <p class="sig"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="${spark}"/></svg>Caelestia, on Windows</p>
+        <div class="who">
+          <h2 id="cr-h" class="rv" style="--rd:.2s">${ext(UPSTREAM, "Caelestia")} is by soramanew and the caelestia-dots contributors. This port brings it to Windows.</h2>
+          <dl class="roles">
+            <div class="rv" style="--rd:.5s"><dt>Windows support</dt><dd>nunreasonable's ${ext("https://github.com/nunreasonable/quickshell", "Windows Quickshell")}, built for ${ext("https://github.com/nunreasonable/ii-windows", "ii-windows")}, on outfoxxed's ${ext("https://quickshell.org", "Quickshell")}</dd></div>
+            <div class="rv" style="--rd:.62s"><dt>Expressive shapes</dt><dd>${ext("https://github.com/soramanew/m3shapes", "m3shapes")} by soramanew</dd></div>
+            <div class="rv" style="--rd:.74s"><dt>The port</dt><dd>KldsSeeGhosts, with a team of AI agents</dd></div>
+          </dl>
+          <div class="cta rv" style="--rd:.9s">${download}<a class="btn ton" href="${UPSTREAM}" target="_blank" rel="noopener">Caelestia on GitHub<span class="sr"> (opens in a new tab)</span></a></div>
+        </div>
+        <footer class="foot rv" style="--rd:1.2s">
+          <p>Caelestia and this port are free software under the GPL-3.0 licence.</p>
+          <p class="sig"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="${SPARK}"/></svg>Caelestia, on Windows</p>
         </footer>
       </section></div>`;
 
@@ -1226,8 +1242,8 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     links = [...document.querySelectorAll("#spaces a")];
     links.forEach((a, j) => {
       const pa = a.querySelector("path"); pa._m = new Morph(pa, "circle");
-      // pointing at a workspace, or tabbing to it, previews its shape
-      const peek = on => { if (a.getAttribute("aria-current") === "true") return; a.classList.toggle("peek", on); pa._m.to(on ? SCN[j][2] : "circle"); };
+      // pointing at a workspace, or tabbing to it, previews its shape with a little pop
+      const peek = on => { if (a.getAttribute("aria-current") === "true") return; a.classList.toggle("peek", on); pa._m.to(on ? SCN[j][2] : "circle"); if (on) Snd.sfx("pop", j); };
       a.addEventListener("pointerenter", () => peek(true)); a.addEventListener("pointerleave", () => peek(false));
       a.addEventListener("focus", () => a.matches(":focus-visible") && peek(true)); a.addEventListener("blur", () => peek(false));
     });
@@ -1235,9 +1251,8 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
 
     document.querySelectorAll("[data-drift]").forEach(el => drift(el, +el.dataset.shapes, +el.dataset.drift, el.hasAttribute("data-flood"), +(el.dataset.fade || 1)));
     arm(document.getElementById("app"));
-    sky = makeSky(document.querySelector("#tokens .sky"), stars);
-    builders = [() => layoutBubbles(orbs), () => layoutChart(crew), layoutOrbit];
-    hero = heroDemo(); run = runDemo();
+    builders = [layoutGalaxy, layoutPath];
+    ctl.intro = heroDemo(); ctl.run = runDemo(); ctl.edges = edgeMap(); ctl.tiling = tiler();
     wordmark(); hoverShapes();
     setHue(hue, false);
     setMode();
@@ -1245,99 +1260,53 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     if (k > 0) jump(k); else startIntro();
   }
 
-  function layoutBubbles(orbs) {
-    const el = document.getElementById("bubbles"), W = el.clientWidth, H = el.clientHeight;
-    if (!W || !H) return;
-    const P = pack(orbs.map(o => Math.sqrt(o.v)), W, H, 14);
-    el.innerHTML = orbs.map((o, i) => `<div class="orb" role="listitem" data-in="${Math.round(450 + i * 130)}" style="left:${P[i].x.toFixed(1)}px;top:${P[i].y.toFixed(1)}px;--R:${P[i].r.toFixed(1)}px;--c:${o.tone[0]};--on:${o.tone[1]};--rot:${90 + i * 23}s;--dl:${(.45 + i * .13).toFixed(2)}s">
-      ${shapeSvg(o.tone[2])}<div><span>${esc(o.name)}</span><b>${usd(o.v)}</b></div></div>`).join("");
-    arm(el);
+  // One dot for each agent, on a sunflower spiral. They fly out of the number that counts them.
+  function layoutGalaxy() {
+    const el = document.getElementById("galaxy"), n = agentsN;
+    if (!el) return;
+    const W = el.clientWidth, H = el.clientHeight;
+    if (!W || !H || !isNum(n) || n < 1) { el.innerHTML = ""; return; }
+    const sec = el.closest(".ws"), src = sec.querySelector("[data-src]"), [sx, sy] = rel(el, sec);
+    let ox = W / 2, oy = H / 2;
+    if (src) { const [x, y] = rel(src, sec); ox = x + src.offsetWidth / 2 - sx; oy = y + src.offsetHeight / 2 - sy; }
+    const R = Math.min(W, H) / 2 * .96, cx = W / 2, cy = H / 2, r0 = mulberry(7);
+    const dot = Math.max(1.4, Math.min(6, R * Math.sqrt(Math.PI / n) * .46));
+    let s = "";
+    for (let j = 0; j < n; j++) {
+      const rr = R * Math.sqrt((j + .5) / n), a = j * 2.39996, x = cx + rr * Math.cos(a), y = cy + rr * Math.sin(a);
+      s += `<circle class="d${j % 9 ? "" : " t"}" cx="${f1(x)}" cy="${f1(y)}" r="${f1(dot)}" style="--fx:${(ox - x + (r0() - .5) * 40).toFixed(0)}px;--fy:${(oy - y + (r0() - .5) * 40).toFixed(0)}px;--dl:${(.3 + j / n * 1.3 + r0() * .15).toFixed(2)}s;--o:${(.5 + r0() * .5).toFixed(2)}"/>`;
+    }
+    el.innerHTML = `<svg class="gx" viewBox="0 0 ${W} ${H}"><g class="sp" style="transform-origin:${f1(cx)}px ${f1(cy)}px">${s}</g></svg>`;
   }
 
-  function layoutChart(crew) {
-    const el = document.getElementById("chart"), W = el.clientWidth, H = el.clientHeight, sec = el.closest(".ws");
-    if (!W || !H) return;
-    // where the big number sits, in the chart's own coordinates: the dots start there
-    const fig = sec.querySelector(".fig"), [fx0, fy0] = rel(fig, sec), [sx, sy] = rel(el, sec);
-    const ox = fx0 + fig.offsetWidth / 2 - sx, oy = fy0 + fig.offsetHeight / 2 - sy;
-    const P = pack(crew.map(c => Math.max(Math.sqrt(c.n), 2.4)), W, H, 52), r0 = mulberry(7);
-    const ga = 2.39996; let svg = "";
-    crew.forEach((c, k) => {
-      const {x, y, r} = P[k], col = ["--primary", "--tertiary", "--quad", "--quin", "--sext", "--secondary"][k % 6], R = r * .92;
-      const pts = Array.from({length: c.n}, (_, j) => { const rr = R * Math.sqrt((j + .5) / c.n); return [x + rr * Math.cos(j * ga), y + rr * Math.sin(j * ga)]; });
-      const dot = Math.max(2.4, Math.min(c.n === 1 ? 7 : 10, R * Math.sqrt(Math.PI / c.n) * .52));
-      let links = "";
-      if (c.n > 1 && c.n <= 14) {                                  // small clusters read as constellations
-        const seen = [0], rest = new Set(pts.map((_, i) => i).slice(1));
-        while (rest.size) { let bi = 0, bj = 0, bd = 1e9; for (const i of seen) for (const j of rest) { const dd = Math.hypot(pts[i][0] - pts[j][0], pts[i][1] - pts[j][1]); if (dd < bd) { bd = dd; bi = i; bj = j; } } links += `M${f1(pts[bi][0])} ${f1(pts[bi][1])}L${f1(pts[bj][0])} ${f1(pts[bj][1])}`; seen.push(bj); rest.delete(bj); }
-      }
-      svg += `<g class="cl" style="--c:var(${col})"><circle class="ring" cx="${f1(x)}" cy="${f1(y)}" r="${f1(r + 12)}"/>
-        <g class="sp" style="transform-origin:${f1(x)}px ${f1(y)}px;--rot:${160 + k * 40}s${k % 2 ? ";animation-direction:reverse" : ""}">${links ? `<path class="link" d="${links}"/>` : ""}
-        ${pts.map((q, j) => `<circle class="d" cx="${f1(q[0])}" cy="${f1(q[1])}" r="${f1(dot)}" style="--fx:${(ox - q[0] + (r0() - .5) * 40).toFixed(0)}px;--fy:${(oy - q[1] + (r0() - .5) * 40).toFixed(0)}px;--dl:${(.25 + k * .08 + j / c.n * .7 + r0() * .12).toFixed(2)}s"/>`).join("")}</g>
-        <text x="${f1(x)}" y="${f1(y + r + 34)}">${esc(c.name)} <tspan>${int(c.n)}</tspan></text></g>`;
-    });
-    el.innerHTML = `<svg class="chart" viewBox="0 0 ${W} ${H}" aria-hidden="true">${svg}</svg>`;
-  }
-
-  // A thin orbit joins the milestones, drawn in as the scene arrives.
-  function layoutOrbit() {
-    const sec = document.getElementById("time"), svg = sec?.querySelector(".orbit");
+  // A line joins the three install steps, with a gentle wave between them.
+  function layoutPath() {
+    const sec = document.getElementById("install"), svg = sec?.querySelector(".ipath");
     if (!svg) return;
-    const lis = [...sec.querySelectorAll(".moon-l")];
-    if (narrow.matches || lis.length < 2) { svg.innerHTML = ""; return; }
-    const W = sec.offsetWidth, H = sec.offsetHeight;
-    const P = lis.map(li => { const [x, y] = rel(li, sec); return [x, y + li.offsetWidth / 2]; });
-    const a = P[0], b = P[1], y = P.at(-1), z = P.at(-2);
-    P.unshift([a[0] - (b[0] - a[0]) * 1.2, a[1] - (b[1] - a[1]) * 1.2]); P.push([y[0] + (y[0] - z[0]) * 1.2, y[1] + (y[1] - z[1]) * 1.2]);
+    const sn = [...sec.querySelectorAll(".sn")];
+    if (narrow.matches || sn.length < 2) { svg.innerHTML = ""; return; }
+    const W = sec.offsetWidth, H = sec.offsetHeight, amp = H * .06;
+    const P = sn.map(el => { const [x, y] = rel(el, sec); return [x + el.offsetWidth / 2, y + el.offsetHeight / 2]; });
+    const gap = P[1][0] - P[0][0], pts = [[P[0][0] - gap * .9, P[0][1] - amp]];
+    P.forEach((q, i) => { pts.push(q); if (i < P.length - 1) pts.push([(q[0] + P[i + 1][0]) / 2, q[1] + (i % 2 ? -amp : amp)]); });
+    pts.push([P.at(-1)[0] + gap * .9, P.at(-1)[1] + (P.length % 2 ? amp : -amp)]);
     svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-    svg.innerHTML = `<path pathLength="1" d="${openPath(P)}"/>`;
+    svg.innerHTML = `<path pathLength="1" d="${openPath(pts)}"/>`;
   }
 
   const layout = () => builders.forEach(b => b());
   let rt; addEventListener("resize", () => { if (staged) { P = Q = progress(); paint(); } clearTimeout(rt); rt = setTimeout(layout, 120); });
 
-  /* ---------- the token sky: arrives at warp speed, and bends round the pointer like a lens ---------- */
-  function makeSky(el, stars) {
-    const cv = el.querySelector("canvas"), ctx = cv.getContext("2d"), ws = el.closest(".ws");
-    let w = 0, h = 0, dpr = 1, t0 = -1e9, run = false, mx = -1e4, my = -1e4;
-    const frame = now => {
-      if (!shown(ws) || !w) { run = false; return; }
-      const r = el.getBoundingClientRect(), sx = w / (r.width || w), sy = h / (r.height || h);
-      const tx = ptr.x < -1e3 ? -1e4 : (ptr.x - r.left) * sx, ty = ptr.x < -1e3 ? -1e4 : (ptr.y - r.top) * sy;
-      if (mx < -1e3 || tx < -1e3) { mx = tx; my = ty; } else { mx += (tx - mx) * .12; my += (ty - my) * .12; }
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = ctx.strokeStyle = getComputedStyle(el).color; ctx.lineCap = "round";
-      const T = now - t0, vx = w * .64, vy = h * .4, sec = now / 1000;
-      for (const s of stars) {
-        const t = Math.min(1, Math.max(0, (T - s.dl) / 1500)), e = 1 - Math.pow(1 - t, 4), X = s.x * w, Y = s.y * h;
-        let x = vx + (X - vx) * e, y = vy + (Y - vy) * e, rad = s.s / 2;
-        let a = s.o * (s.tw ? .6 + .4 * Math.sin(sec * s.sp + s.ph) : 1) * Math.min(1, t * 5);
-        const dx = x - mx, dy = y - my, dd = Math.hypot(dx, dy) || 1, k = Math.exp(-dd * dd / 24000);
-        x += dx / dd * 34 * k; y += dy / dd * 34 * k; a = Math.min(1, a + .6 * k); rad *= 1 + k;
-        ctx.globalAlpha = a;
-        if (t < 1) {           // in flight: a streak from where it was a moment ago
-          const t2 = Math.min(1, Math.max(0, (T - s.dl - 130) / 1500)), e2 = 1 - Math.pow(1 - t2, 4);
-          ctx.lineWidth = rad * 2; ctx.beginPath(); ctx.moveTo(vx + (X - vx) * e2, vy + (Y - vy) * e2); ctx.lineTo(x, y); ctx.stroke();
-        } else { ctx.beginPath(); ctx.arc(x, y, rad, 0, TAU); ctx.fill(); }
-      }
-      ctx.globalAlpha = 1;
-      requestAnimationFrame(frame);
-    };
-    const go = () => { if (!run) { run = true; requestAnimationFrame(frame); } };
-    new ResizeObserver(() => { dpr = Math.min(2, devicePixelRatio || 1); w = el.clientWidth; h = el.clientHeight; cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); go(); }).observe(el);
-    return {warp() { if (!reduced.matches) t0 = performance.now(); go(); }, go};
-  }
-
   /* ---------- waking and sleeping scenes ---------- */
-  const shown = ws => staged ? ws.parentElement.classList.contains("vis") : !!ws._in;
+  let pendFocus = null;
   function setOn(ws, on) {
     if (on === ws.classList.contains("on")) return;
     ws.classList.toggle("on", on);
+    if (on && ws === pendFocus) { pendFocus = null; ws.focus({preventScroll: true}); }
     bloom(ws, on);
-    if (ws.id === "intro") hero?.set(on); else if (ws.id === "run") run?.set(on);
+    ctl[ws.id]?.set(on);
     if (on) {
       ws.querySelectorAll("[data-n]").forEach(countUp);
-      if (ws.id === "tokens") sky?.warp();
       if (ws.id === "intro") ws._st = setTimeout(() => ws.classList.add("settled"), 2700);
     } else {
       clearTimeout(ws._st); ws.classList.remove("settled");
@@ -1379,7 +1348,6 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       sc.style.clipPath = clip; sc.style.zIndex = inc ? 2 : 1; sc.style.setProperty("--dim", dim.toFixed(3)); ws.style.transform = tf;
       const wake = k === Math.round(q) || (inc && f > .4) || ws.classList.contains("on");
       setOn(ws, vis && wake && !(k === 0 && introF !== null && introF < .12));
-      if (vis && ws.id === "tokens") sky?.go();
     });
     current(Math.round(q));
   }
@@ -1414,9 +1382,8 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       introF = null;
       SCs.forEach(sc => { sc.classList.remove("vis"); sc.style.clipPath = sc.style.zIndex = ""; sc.style.removeProperty("--dim"); sc.firstElementChild.style.transform = ""; });
       io = new IntersectionObserver(es => es.forEach(en => {
-        const ws = en.target; ws._in = en.isIntersecting; ws.classList.toggle("in", en.isIntersecting);
+        const ws = en.target; ws.classList.toggle("in", en.isIntersecting);
         if (en.intersectionRatio >= .25) setOn(ws, true); else if (!en.isIntersecting) setOn(ws, false);
-        if (ws._in && ws.id === "tokens") sky?.go();
       }), {threshold: [0, .25]});
       io2 = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) current(SECs.indexOf(en.target)); }), {rootMargin: "-45% 0px -50% 0px"});
       SECs.forEach(s => { io.observe(s); io2.observe(s); });
@@ -1448,8 +1415,16 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     wheelAcc += e.deltaY * (e.deltaMode === 1 ? 40 : 1);
     if (Math.abs(wheelAcc) > 30) { wheelLock = true; go(Math.round(P) + Math.sign(wheelAcc)); }
   }, {passive: false});
-  document.getElementById("spaces").addEventListener("click", e => { const a = e.target.closest("a"); if (a) { e.preventDefault(); go(links.indexOf(a)); } });
-  // Number keys switch workspace, like Super+1 to 6 in the shell.
+  // Links to a scene, in the bar or on the page, switch workspace. A link on the page also moves
+  // keyboard focus into the scene it opens, since the one it sat in is now hidden.
+  document.addEventListener("click", e => {
+    const a = e.target.closest('a[href^="#"]'); if (!a) return;
+    const k = SCN.findIndex(s => "#" + s[0] === a.getAttribute("href")); if (k < 0) return;
+    e.preventDefault(); go(k);
+    // on the staged desktop the scene is still hidden here, so focus follows once it wakes
+    if (a.closest("#app")) { if (staged) pendFocus = SECs[k]; else SECs[k].focus({preventScroll: true}); }
+  });
+  // Number keys switch workspace, like Super+1 to 7 in the shell.
   // On the staged desktop, the usual paging keys move one workspace at a time.
   const PAGE = {ArrowDown: 1, PageDown: 1, " ": 1, ArrowUp: -1, PageUp: -1};
   addEventListener("keydown", e => {
@@ -1463,10 +1438,12 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     if (/^[1-9]$/.test(e.key) && SECs[+e.key - 1]) { e.preventDefault(); go(+e.key - 1); }
   });
 
-  /* ---------- the wordmark leans into the pointer, like a variable font should ---------- */
+  /* ---------- the wordmark leans into the pointer, like a variable font should, and plays like a harp ---------- */
   function wordmark() {
     const hero = document.getElementById("intro"), L = [...hero.querySelectorAll(".name span")];
-    if (!fine.matches || reduced.matches) return;
+    if (!fine.matches) return;
+    L.forEach((el, i) => el.addEventListener("pointerenter", () => Snd.sfx("harp", i)));
+    if (reduced.matches) return;
     const st = L.map(() => ({w: 300, s: 125})); let run = false;
     const frame = () => {
       let moving = false;
@@ -1485,18 +1462,18 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     hero.addEventListener("pointerleave", () => { nudge(); hero.style.setProperty("--px", 0); hero.style.setProperty("--py", 0); });
   }
 
-  /* ---------- shapes answer the pointer ---------- */
+  /* ---------- shapes and buttons answer the pointer ---------- */
   function hoverShapes() {
     const app = document.getElementById("app");
     app.addEventListener("pointerover", e => {
-      const host = e.target.closest(".sat,.orb,.moon-l"); if (!host || host._h) return;
-      host._h = true; const pa = host.querySelector("path[data-shape]"); pa?._m?.to(pick(BLOOM, pa._m.name));
+      const host = e.target.closest(".sn"); if (!host || host._h) return;
+      host._h = true; const pa = host.querySelector("path[data-shape]"); pa?._m?.to(pick(BLOOM, pa._m.name)); Snd.sfx("boing");
       setTimeout(() => host._h = false, 700);
     });
     // a shape under the pointer leans toward it, and springs back when the pointer leaves
     let lean = null;
     if (fine.matches && !reduced.matches) app.addEventListener("pointermove", e => {
-      const host = e.target.closest(".sat,.orb");
+      const host = e.target.closest(".sn");
       if (host !== lean) { lean?.style.removeProperty("--mx"); lean?.style.removeProperty("--my"); lean = host; }
       if (!host) return;
       const r = host.getBoundingClientRect();
@@ -1505,12 +1482,16 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     }, {passive: true});
     app.addEventListener("pointerleave", () => { lean?.style.removeProperty("--mx"); lean?.style.removeProperty("--my"); lean = null; });
     // the big shapes change on their own, every few seconds, while they are on screen
+    const shown = ws => staged ? ws.parentElement.classList.contains("vis") : ws.classList.contains("in");
     if (!reduced.matches) [[".hero .sun path", 5200], [".credits .big path", 6100]].forEach(([sel, ms]) => {
       const pa = document.querySelector(sel); if (pa) setInterval(() => { if (shown(pa.closest(".ws"))) pa._m?.to(pick(BLOOM, pa._m.name)); }, ms);
     });
+    // buttons and links click softly as they are pressed
+    app.addEventListener("pointerdown", e => { if (e.target.closest(".btn:not(.off),.seg,.pplay,.hold,.pmute,.seg3 button,.cpy")) Snd.sfx("click"); });
     // a click on the desktop throws out a handful of shapes
     app.addEventListener("pointerdown", e => {
-      if (reduced.matches || e.button !== 0 || e.target.closest("a,button,.orb,.sat,.cl,.moon-l,.screen,.player,p,h1,h2,h3,li,dd")) return;
+      if (reduced.matches || e.button !== 0 || e.target.closest("a,button,.screen,.player,.escreen,.tstage,.galaxy,.cmd,p,h1,h2,h3,li,dd,dt")) return;
+      Snd.sfx("burst");
       const cols = ["--primary", "--tertiary", "--quad", "--quin", "--sext", "--p-cont", "--t-cont"];
       for (let i = 0; i < 10; i++) {
         const sz = 12 + Math.random() * 30, a = i / 10 * TAU + Math.random() * .6, dist = 80 + Math.random() * 130;
@@ -1522,6 +1503,19 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       }
     });
   }
+
+  // Copies the install command, and says so. If the clipboard is refused, the command is selected instead.
+  document.addEventListener("click", e => {
+    const c = e.target.closest(".cpy"); if (!c) return;
+    const code = c.previousElementSibling;
+    const done = ok => {
+      c.textContent = ok ? "Copied" : "Press Ctrl+C";
+      if (ok) Snd.sfx("copy");
+      else { const r = document.createRange(); r.selectNodeContents(code); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+      clearTimeout(c._t); c._t = setTimeout(() => c.textContent = "Copy", 2200);
+    };
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(code.textContent).then(() => done(true), () => done(false)); else done(false);
+  });
 
   /* ---------- drifting shapes part round the pointer, then drift back ---------- */
   let amb = 0;
@@ -1552,7 +1546,8 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   const s = document.createElement("script");
   s.src = "status-data.js?t=" + Date.now();
   s.onload = () => window.__STATUS && render(window.__STATUS);
-  const failed = () => { if (!D) document.body.insertAdjacentHTML("beforeend", `<p class="nojs" role="status">The build figures could not be loaded. Reload the page to try again.</p>`); };
+  // Without the figures the page still shows the shell; only the build numbers read as dashes.
+  const failed = () => { if (!D) render({}); };
   s.onerror = () => { const s2 = document.createElement('script'); s2.src = 'status-data.js'; s2.onload = () => window.__STATUS ? render(window.__STATUS) : failed(); s2.onerror = failed; document.body.appendChild(s2); };
   document.body.appendChild(s);
   document.fonts?.ready.then(() => D && layout());
