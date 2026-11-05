@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Caelestia for Windows</title>
 <meta name="description" content="Caelestia, the Hyprland desktop shell, ported to Windows 11: a new bar, launcher, dashboard, notifications and window tiling, coloured by your wallpaper.">
 <meta name="color-scheme" content="dark">
@@ -95,9 +95,9 @@ svg{display:block;overflow:visible}
 .papers{display:flex;gap:9px}
 .bar .papers{flex-direction:column;margin-top:auto}
 .bar .snd{margin-top:-6px}
-.chip{--ch:277;width:20px;height:20px;border-radius:50%;flex:none;
-  background:radial-gradient(circle at 30% 28%,oklch(.86 .1 var(--ch)) 0 33%,transparent 35%),
+.chip{--ch:277;--chip-bg:radial-gradient(circle at 30% 28%,oklch(.86 .1 var(--ch)) 0 33%,transparent 35%),
     radial-gradient(circle at 72% 70%,oklch(.86 .095 calc(var(--ch) + 60)) 0 27%,transparent 29%),oklch(.3 .05 var(--ch));
+  width:20px;height:20px;border-radius:50%;flex:none;background:var(--chip-bg);
   box-shadow:0 0 0 0 var(--ink);transition:box-shadow .3s,scale .35s var(--spring-fast),rotate .6s var(--spring)}
 .chip:hover{scale:1.2;rotate:40deg}
 .chip:active{scale:.85}
@@ -108,7 +108,7 @@ svg{display:block;overflow:visible}
 
 /* Drifting shapes: the shell's dashboard backdrop. CSS keeps the drift and spin
    independent of pointer movement, without a JavaScript layout loop. */
-.drift{position:absolute;inset:0;overflow:hidden}
+.drift{position:absolute;inset:0;overflow:hidden;container-type:size}
 .dsw{position:absolute;left:0;top:0;width:calc(var(--sz) * 1cqw);aspect-ratio:1;margin:calc(var(--sz) * -.5cqw) 0 0 calc(var(--sz) * -.5cqw);
   animation:drift var(--dur) linear var(--del) infinite}
 .ds{width:100%;height:100%;animation:spin var(--rot) linear infinite}
@@ -489,39 +489,97 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .copy{padding:0}
   .name{font-size:17.8cqw}
   .pitch{font-size:clamp(22px,5.6cqw,38px);margin-top:14px}
-  .sub{font-size:clamp(16px,4cqw,20px)}
+  .sub{font-size:clamp(16px,4cqw,20px);margin-top:12px}
   .hero .cta,.wall{margin-top:22px}
+  .cues{margin-top:4px}
+  .cues h3{font-size:22px}
+  .cues p{font-size:18px}
   .screen{margin-bottom:34px}
   .player{top:auto!important;margin-top:4px}
   .emap{display:flex;flex-direction:column;align-items:stretch;gap:10px}
-  .emap .h{padding:0;margin-bottom:8px}
+  .emap .h{padding:0;margin-bottom:8px;gap:12px}
   .escreen{width:100%!important;margin-bottom:10px}
   .er{display:contents}
   .el{max-width:none;text-align:left!important;margin:0!important;align-self:stretch!important}
   .tstage{height:min(118cqw,560px)}
   .steps{display:flex;flex-direction:column;gap:34px}
-  .sn{width:84px}
+  .sn{width:84px;margin-bottom:16px}
+  .step .btn{margin-top:16px}
+  .cmd{margin-top:14px}
   .fine{margin-top:6px}
   .ledger>p:first-child{font-size:clamp(26px,7cqw,44px)}
+  .ledger .cap{margin-top:20px}
   .galaxy{height:min(96cqw,520px)}
   .gcap,.bnote{max-width:none}
-  .roles{grid-template-columns:1fr;gap:18px}
+  .roles{grid-template-columns:1fr;gap:18px;margin-top:28px}
+  .credits .cta{margin-top:28px}
   .foot{flex-direction:column;align-items:flex-start;margin-top:10px}
+  /* Reading on a phone must not wait for a section entrance or replay on every scroll. */
+  .ws:not(.hero) .rv{opacity:1;translate:none;transition:none}
 }
-@media (max-width:700px){
-  :root{--bar:0px;--edge:6px;--top:54px;--corner:22px}
-  .desk,.grain,.frame{inset:var(--top) var(--edge) var(--edge) var(--edge)}
-  .bar{width:auto;right:0;bottom:auto;height:var(--top);flex-direction:row;padding:0 16px;gap:14px}
+/* Short landscape phones need the top bar too, not a clipped desktop sidebar. */
+@media (max-width:700px), (max-width:999px) and (max-height:600px){
+  :root{--bar:0px;--edge:6px;--top:calc(56px + env(safe-area-inset-top,0px));--corner:22px}
+  .desk,.grain,.frame{inset:var(--top) max(var(--edge),env(safe-area-inset-right,0px)) max(var(--edge),env(safe-area-inset-bottom,0px)) max(var(--edge),env(safe-area-inset-left,0px))}
+  .bar{width:auto;right:0;bottom:auto;height:var(--top);flex-direction:row;gap:10px;
+    padding:env(safe-area-inset-top,0px) max(6px,env(safe-area-inset-right,0px)) 0 max(14px,env(safe-area-inset-left,0px))}
   @keyframes slide{from{transform:translateY(calc(-1 * var(--top)))}}
-  .spaces{flex-direction:row;width:auto;height:36px;padding:0 6px}
+  .spaces{flex:1 1 auto;min-width:0;max-width:320px;flex-direction:row;justify-content:space-between;width:auto;height:44px;padding:0 4px}
+  .spaces a{flex:1 1 0;min-width:0;width:auto;height:44px}
+  .spaces svg{width:32px;height:32px}
   .bar .papers{display:none}
-  .chip{width:18px;height:18px}
-  .bar .snd{margin:0 0 0 auto}
-  .seg span,.ptime{display:none}
+  .bar .snd{width:44px;height:44px;margin:0 0 0 auto}
+  .grain{display:none}
+  .ws{padding:24px 20px;scroll-margin-top:var(--top)}
+  .name{font-size:16.8cqw}
+  .title{font-size:34px!important}
+  .pitch{font-size:22px}
+  .cap{font-size:18px}
+  .hero .rv{transition-delay:calc(var(--rd) - .45s)}
+  .hero .cta{width:100%;gap:8px}
+  .hero .cta .btn{flex:1 1 auto;min-width:0;padding:0 16px;font-size:16px}
+  .hero .cta .btn.ton{order:-1;background:var(--primary);color:var(--on-p)}
+  .hero .cta .btn.pri{background:var(--mid);color:var(--ink)}
+  /* Six tiny timeline slivers become a labelled, thumb-sized chapter chooser. */
+  .pbar{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:8px 12px}
+  .segs{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:repeat(3,minmax(44px,1fr));gap:4px 12px}
+  .seg{min-height:48px;padding:8px 0}
+  .seg span{margin-top:6px}
+  .ptime{grid-column:2;grid-row:1;justify-self:end;font-size:13.5px}
+  .pmute{grid-column:3;grid-row:1}
   .pplay{width:46px;height:46px}
+  .pmute,.cpy{height:44px}
+  .pmute{width:44px}
+  .hold{top:calc(100% + 8px);min-height:44px;padding:0 14px 0 11px}
+  .screen{margin-bottom:56px}
+  .seg3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .seg3 button{padding:0 8px}
   .btn{height:52px;padding:0 22px}
-  main{margin:var(--top) var(--edge) var(--edge)}
-  .ws{scroll-margin-top:var(--top)}
+  .btn.off{height:auto;min-height:52px;max-width:100%;padding:14px 18px;white-space:normal;text-align:center;line-height:1.3}
+  .cmd{flex-wrap:wrap;padding:14px}
+  .cmd code{flex-basis:100%;overflow-wrap:anywhere}
+  .cmd code span{white-space:normal}
+  .cmd .cpy{margin-left:auto}
+  main{margin:var(--top) max(var(--edge),env(safe-area-inset-right,0px)) max(var(--edge),env(safe-area-inset-bottom,0px)) max(var(--edge),env(safe-area-inset-left,0px))}
+}
+@media (max-width:999px) and (max-height:600px){
+  .hero .screen,.player,.edges .escreen{width:min(100%,calc((100svh - var(--top) - 110px) * 1.778))!important;align-self:center}
+  .tstage{height:min(118cqw,560px,calc(100svh - var(--top) - 40px))}
+}
+@media (max-width:700px) and (orientation:portrait){
+  .edges .escreen{position:sticky!important;top:calc(var(--top) + 10px)!important;z-index:3}
+}
+@media (pointer:coarse){
+  /* The visual swatch stays small; the actual button, not an overlapping hit halo, is 44px. */
+  .papers{gap:2px}
+  .chip{position:relative;width:44px;height:44px;background:none;box-shadow:none}
+  .chip::before{content:"";position:absolute;inset:10px;border-radius:50%;background:var(--chip-bg)}
+  .chip[aria-pressed="true"]{box-shadow:none}
+  .chip[aria-pressed="true"]::before{box-shadow:0 0 0 2px var(--shell),0 0 0 4px var(--ink)}
+}
+@media (hover:none){
+  .chip:hover{scale:1;rotate:0deg}
+  .el:hover:not([aria-pressed="true"]){background:none}
 }
 @media (prefers-reduced-motion:reduce){
   :root{transition:none}
@@ -654,7 +712,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   }
 
   /* ---------- sound: synthesised, never played from files ----------
-     On by default, but browsers only allow audio after the visitor's first click or key press,
+     On by default with a mouse, opt-in on touch. Browsers only allow audio after a click or key press,
      so nothing plays before that. Every sound answers something the visitor did: a pop as the
      pointer finds a workspace, a chime in the new wallpaper's key, a whoosh as a panel opens,
      windows that slide into their tiles, and a boing when one swaps.
@@ -664,8 +722,8 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     const KEY = "caelestia-sound", btn = document.getElementById("snd");
     const CHORDS = [[0, 7, 14, 16, 23], [0, 5, 12, 14, 19], [0, 7, 12, 15, 22], [0, 7, 14, 19, 26], [0, 4, 11, 14, 21], [0, 7, 10, 14, 17], [0, 5, 9, 14, 16]];
     const PENT = [0, 2, 4, 7, 9], PAD = .3;
-    let ctx = null, out, bus, padBus, noise, pad = null, want = true, live = false, ducked = false, scn = 0, h = 277, rt = 0, gl = 0, lastTick = 0, lastPop = 0;
-    try { want = localStorage.getItem(KEY) !== "0"; } catch {}
+    let ctx = null, out, bus, padBus, noise, pad = null, want = fine.matches, live = false, ducked = false, scn = 0, h = 277, rt = 0, gl = 0, lastTick = 0, lastPop = 0;
+    try { const v = localStorage.getItem(KEY); if (v !== null) want = v !== "0"; } catch {}
     const iv = () => CHORDS[scn % CHORDS.length];
     // the hue picks the key: each 30 degrees of the colour wheel is a semitone above G
     const hz = (semi, oct = 0) => 98 * Math.pow(2, Math.round((((h % 360) + 360) % 360) / 30) / 12 + semi / 12 + oct);
@@ -757,13 +815,13 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       if (want) { start(); FX.chime(); } else stop();
       ui();
     });
-    // The first click or key press anywhere wakes the sound, and that same press is heard.
+    // A touch can start a scroll. Wait for a completed tap before waking a saved sound choice.
     const first = e => {
-      if (e.target.closest?.("#snd")) return;
-      removeEventListener("pointerdown", first, true); removeEventListener("keydown", first, true);
+      if (e.target.closest?.("#snd") || (e.type === "pointerdown" && e.pointerType === "touch")) return;
+      removeEventListener("pointerdown", first, true); removeEventListener("click", first, true); removeEventListener("keydown", first, true);
       if (want && !live) start();
     };
-    if (want) { addEventListener("pointerdown", first, true); addEventListener("keydown", first, true); }
+    if (want) { addEventListener("pointerdown", first, true); addEventListener("click", first, true); addEventListener("keydown", first, true); }
     document.addEventListener("visibilitychange", () => { if (ctx && live) document.hidden ? ctx.suspend() : ctx.resume(); });
     ui();
     return {
@@ -863,8 +921,8 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   function zero(el) { el._cu = null; el.style.fontWeight = el.style.fontStretch = ""; if (!reduced.matches && isNum(+el.dataset.n)) el.textContent = FMT[el.dataset.f](0); }
 
   /* ---------- the demo: chapters, a living miniature of the shell, and the footage once it exists ---------- */
-  // Footage sits next to the page under these names (.webm, then .mp4, plus a poster .jpg).
-  // The page asks for the .mp4; when it is there the video replaces the drawing, with no code change.
+  // Footage sits next to the page as an MP4 plus a poster JPG.
+  // When it is there the video replaces the drawing, with no code change.
   const CLIPS = {full: ["demo-full", "demo-full-poster.jpg"]};
   // The demo's chapters. `t` is the second each one starts in demo-full: edit these after recording.
   // `dur`, `pose` and `steps` drive the drawing, which plays the same chapters when there is no footage.
@@ -949,15 +1007,15 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   // Published copies say which clips exist (export_site.py rewrites this line), so the
   // public page never asks for a missing file. Locally it is null and the page probes.
   const MEDIA = {"demo-loop": false, "demo-full": true};
-  // Uses the footage when it exists. Only the .mp4 is asked about; the .webm, listed first, wins where it plays.
+  // MP4 is the published format. Do not probe a missing WebM before the working video.
   function footage([name, poster], v, ok) {
-    if (!/^https?:$/.test(location.protocol)) return;
+    if (!/^https?:$/.test(location.protocol) || navigator.connection?.saveData) return;
     if (MEDIA && !MEDIA[name]) return;
     fetch(name + ".mp4", {method: "HEAD", cache: "no-store"}).then(r => {
       if (!r.ok) return;
       v.addEventListener("loadeddata", ok, {once: true});
       v.poster = poster;
-      v.innerHTML = `<source src="${name}.webm" type="video/webm"><source src="${name}.mp4" type="video/mp4">`;
+      v.src = name + ".mp4";
       v.load();
     }).catch(() => {});
   }
@@ -1027,14 +1085,20 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     }));
     ["play", "pause", "volumechange"].forEach(e => v.addEventListener(e, look));
     v.addEventListener("ended", () => { held = true; v.currentTime = 0; sync(); });
-    footage(CLIPS.full, v, () => {
-      vid = true; box.classList.add("has-video"); sec.classList.add("has-video"); mute.hidden = false;
-      const S = starts(), T = total(); segs.forEach((s, i) => s.style.setProperty("--len", Math.max(.5, (S[i + 1] ?? T) - S[i]).toFixed(1)));
-      sync();
-    });
+    let asked = false;
+    const ask = () => {
+      if (asked) return; asked = true;
+      footage(CLIPS.full, v, () => {
+        vid = true; box.classList.add("has-video"); sec.classList.add("has-video"); mute.hidden = false;
+        const S = starts(), T = total(); segs.forEach((s, i) => s.style.setProperty("--len", Math.max(.5, (S[i + 1] ?? T) - S[i]).toFixed(1)));
+        sync();
+      });
+    };
+    // A phone visitor arriving from a post should not download footage before reaching it.
+    if (!narrow.matches) ask();
     if (reduced.matches) w.seek(CH[0].pose);
     sync();
-    return {set(o) { on = o; sync(); }, sync};
+    return {set(o) { on = o; if (o) ask(); sync(); }, sync};
   }
 
   /* ---------- every edge: pointing at a panel's name opens it in the drawing ----------
@@ -1179,7 +1243,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       <div class="scene"><section id="tiling" class="ws tiling" tabindex="-1" aria-labelledby="tile-h">
         <div class="drift" data-drift="31" data-shapes="6" data-fade=".6" aria-hidden="true"></div>
         <div class="lead"><h2 class="title" id="tile-h">Tiling, built in</h2>
-          <p class="cap rv">Windows arrange themselves as they open, with Hyprland's layouts and gaps. Pick a layout, then click a window.</p>
+          <p class="cap rv">Windows arrange themselves as they open, with Hyprland's layouts and gaps. Choose a layout, then pick a window.</p>
           <div class="seg3 rv" style="--rd:.5s" role="group" aria-label="Layout">${["Dwindle", "Master", "Scrolling"].map(l => `<button data-l="${l.toLowerCase()}" aria-pressed="false">${l}</button>`).join("")}</div>
           <p class="small rv" style="--rd:.65s">Tiling stays off until you turn it on.</p></div>
         <div class="tstage" role="group" aria-label="Tiled windows"><div class="tarea">${TILES.map(([name, text, c, sh], i) =>
@@ -1241,12 +1305,12 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       const pa = a.querySelector("path"); pa._m = new Morph(pa, "circle");
       // pointing at a workspace, or tabbing to it, previews its shape with a little pop
       const peek = on => { if (a.getAttribute("aria-current") === "true") return; a.classList.toggle("peek", on); pa._m.to(on ? SCN[j][2] : "circle"); if (on) Snd.sfx("pop", j); };
-      a.addEventListener("pointerenter", () => peek(true)); a.addEventListener("pointerleave", () => peek(false));
+      a.addEventListener("pointerenter", e => e.pointerType !== "touch" && peek(true)); a.addEventListener("pointerleave", () => peek(false));
       a.addEventListener("focus", () => a.matches(":focus-visible") && peek(true)); a.addEventListener("blur", () => peek(false));
     });
     SECs = [...document.querySelectorAll("#app .ws")]; SCs = SECs.map(s => s.parentElement);
 
-    document.querySelectorAll("[data-drift]").forEach(el => drift(el, +el.dataset.shapes, +el.dataset.drift, el.hasAttribute("data-flood"), +(el.dataset.fade || 1)));
+    document.querySelectorAll("[data-drift]").forEach(el => drift(el, narrow.matches ? Math.ceil(+el.dataset.shapes / 2) : +el.dataset.shapes, +el.dataset.drift, el.hasAttribute("data-flood"), +(el.dataset.fade || 1)));
     arm(document.getElementById("app"));
     builders = [layoutGalaxy, layoutPath];
     ctl.intro = heroDemo(); ctl.run = runDemo(); ctl.edges = edgeMap(); ctl.tiling = tiler();
@@ -1378,8 +1442,9 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       SCs.forEach(sc => { sc.classList.remove("vis"); sc.style.clipPath = sc.style.zIndex = ""; sc.style.removeProperty("--dim"); sc.firstElementChild.style.transform = ""; });
       io = new IntersectionObserver(es => es.forEach(en => {
         const ws = en.target; ws.classList.toggle("in", en.isIntersecting);
-        if (en.intersectionRatio >= .25) setOn(ws, true); else if (!en.isIntersecting) setOn(ws, false);
-      }), {threshold: [0, .25]});
+        // Tall phone sections may never reach a 25% intersection ratio.
+        setOn(ws, en.isIntersecting);
+      }), {threshold: 0});
       io2 = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) current(SECs.indexOf(en.target)); }), {rootMargin: "-45% 0px -50% 0px"});
       SECs.forEach(s => { io.observe(s); io2.observe(s); });
     }
@@ -1437,6 +1502,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   function hoverShapes() {
     const app = document.getElementById("app");
     app.addEventListener("pointerover", e => {
+      if (e.pointerType === "touch") return;
       const host = e.target.closest(".sn"); if (!host || host._h) return;
       host._h = true; const pa = host.querySelector("path[data-shape]"); pa?._m?.to(pick(BLOOM, pa._m.name)); Snd.sfx("boing");
       setTimeout(() => host._h = false, 700);
@@ -1461,7 +1527,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     app.addEventListener("pointerdown", e => { if (e.target.closest(".btn:not(.off),.seg,.pplay,.hold,.pmute,.seg3 button,.cpy")) Snd.sfx("click"); });
     // a click on the desktop throws out a handful of shapes
     app.addEventListener("pointerdown", e => {
-      if (reduced.matches || e.button !== 0 || e.target.closest("a,button,.screen,.player,.escreen,.tstage,.galaxy,.cmd,p,h1,h2,h3,li,dd,dt")) return;
+      if (e.pointerType === "touch" || reduced.matches || e.button !== 0 || e.target.closest("a,button,.screen,.player,.escreen,.tstage,.galaxy,.cmd,p,h1,h2,h3,li,dd,dt")) return;
       Snd.sfx("burst");
       const cols = ["--primary", "--tertiary", "--quad", "--quin", "--sext", "--p-cont", "--t-cont"];
       for (let i = 0; i < 10; i++) {
@@ -1493,7 +1559,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     if (SEEDS.some(s => s[1] === h)) { hue = h; root.style.transition = "none"; root.style.setProperty("--h", h); requestAnimationFrame(() => requestAnimationFrame(() => root.style.transition = "")); }
   } catch {}
   const s = document.createElement("script");
-  s.src = "status-data.js?t=" + Date.now();
+  s.src = "status-data.js?t=" + Math.floor(Date.now() / 6e5);
   s.onload = () => window.__STATUS && render(window.__STATUS);
   // Without the figures the page still shows the shell; only the build numbers read as dashes.
   const failed = () => { if (!D) render({}); };
