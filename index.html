@@ -106,8 +106,8 @@ svg{display:block;overflow:visible}
 @keyframes slide{from{transform:translateX(calc(-1 * var(--bar)))}}
 @keyframes spin{to{rotate:360deg}}
 
-/* Drifting shapes: the shell's dashboard backdrop. The wrapper drifts, the shape spins,
-   and the wrapper's transform is left free for the pointer to push it. */
+/* Drifting shapes: the shell's dashboard backdrop. CSS keeps the drift and spin
+   independent of pointer movement, without a JavaScript layout loop. */
 .drift{position:absolute;inset:0;overflow:hidden}
 .dsw{position:absolute;left:0;top:0;width:calc(var(--sz) * 1cqw);aspect-ratio:1;margin:calc(var(--sz) * -.5cqw) 0 0 calc(var(--sz) * -.5cqw);
   animation:drift var(--dur) linear var(--del) infinite}
@@ -149,35 +149,33 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 .lead{position:absolute;left:5.5cqw;top:7cqh;display:flex;flex-direction:column;gap:2.6cqh;z-index:2}
 .flood-p .cap,.flood-t .cap{font-weight:350}
 
-/* Buttons are M3 expressive: round at rest, and they square off as you press them. */
+/* Keep the pill silhouette stable across hover, press and keyboard focus. */
 .cta{display:flex;flex-wrap:wrap;gap:10px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:56px;padding:0 28px;border-radius:999px;white-space:nowrap;
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:56px;padding:0 28px;border-radius:999px;overflow:hidden;white-space:nowrap;
   font-size:17px;font-weight:550;font-stretch:106%;letter-spacing:.005em;
-  transition:border-radius .5s var(--spring-fast),scale .4s var(--spring-fast),background-color .3s,color .3s}
-.btn:hover{border-radius:22px}
-.btn:active{border-radius:14px;scale:.95}
+  transition:scale .16s ease-out,background-color .2s,color .2s}
+.btn:focus-visible{border-radius:999px}
+.btn:active{scale:.98}
 .btn.pri{background:var(--primary);color:var(--on-p)}
+.btn.pri:not(.off):hover{background:color-mix(in oklch,var(--primary) 92%,var(--on-p))}
 .btn.ton{background:var(--mid);color:var(--ink)}
 .btn.ton:hover{background:var(--high)}
 .flood-p .btn.pri{background:var(--on-p);color:var(--primary)}
+.flood-p .btn.pri:not(.off):hover{background:color-mix(in oklch,var(--on-p) 92%,var(--primary))}
 .btn.off{cursor:default;opacity:.75}
-.btn.off:hover,.btn.off:active{border-radius:999px;scale:1}
+.btn.off:active{scale:1}
 
 /* Hero */
 .hero .sun{right:-8cqw;top:-16cqh;width:min(48cqw,92cqh);aspect-ratio:1;fill:var(--p-cont);animation:spin 160s linear infinite;
-  scale:.4;opacity:0;translate:calc(var(--px,0) * -2.2cqw) calc(var(--py,0) * -2.6cqh);
-  transition:scale 1.6s var(--spring) .1s,opacity .7s .1s,translate 1.4s var(--out)}
+  scale:.4;opacity:0;
+  transition:scale 1.6s var(--spring) .1s,opacity .7s .1s}
 .hero .moon{left:35cqw;top:-26cqh;width:min(22cqw,42cqh);aspect-ratio:1;fill:var(--t-cont);animation:spin 120s linear infinite reverse;
-  scale:.4;opacity:0;translate:calc(var(--px,0) * -4.5cqw) calc(var(--py,0) * -5cqh);
-  transition:scale 1.6s var(--spring) .3s,opacity .7s .3s,translate 1.4s var(--out)}
+  scale:.4;opacity:0;
+  transition:scale 1.6s var(--spring) .3s,opacity .7s .3s}
 .hero.on .sun,.hero.on .moon{scale:1;opacity:1}
 .copy{position:absolute;left:5.5cqw;top:8cqh;width:36cqw;display:flex;flex-direction:column;align-items:flex-start;z-index:2}
+/* The wordmark uses its final font axes from the first frame. Never animate text metrics. */
 .name{font-size:min(10.5cqw,19cqh);font-weight:300;font-stretch:125%;letter-spacing:-.03em;line-height:1;white-space:nowrap;margin:0 0 0 -.04em}
-/* The wordmark unfolds through the font's axes: heavy and condensed, to light and extended. */
-.name span{display:inline-block;opacity:0;translate:0 .3em;font-weight:700;font-stretch:30%}
-.on .name span{opacity:1;translate:0 0;font-weight:var(--w,300);font-stretch:calc(var(--s,125) * 1%);
-  transition:opacity .5s,translate 1.2s var(--out),font-weight 1.5s var(--out),font-stretch 1.5s var(--out);transition-delay:calc(.35s + var(--i) * 65ms)}
-.settled .name span{transition:none}
 .pitch{margin-top:3.2cqh;font-size:clamp(22px,2.3cqw,38px);font-weight:350;font-stretch:108%;line-height:1.16;letter-spacing:-.01em;text-wrap:balance}
 .sub{margin-top:1.8cqh;max-width:27em;font-size:clamp(16px,1.3cqw,20px);line-height:1.5;color:var(--ink-2);text-wrap:pretty}
 .hero .cta{margin-top:3.6cqh}
@@ -570,7 +568,6 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   const mulberry = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   const pick = (a, not) => { let x; do x = a[Math.floor(Math.random() * a.length)]; while (x === not && a.length > 1); return x; };
   const rel = (el, anc) => { let x = 0, y = 0; for (let e = el; e && e !== anc; e = e.offsetParent) { x += e.offsetLeft; y += e.offsetTop; } return [x, y]; };
-  const ptr = {x: -1e4, y: -1e4, t: 0};
   const hidden = () => document.hidden;
 
   // Where visitors download the port. The repository stays private until its first public
@@ -660,8 +657,8 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
      On by default, but browsers only allow audio after the visitor's first click or key press,
      so nothing plays before that. Every sound answers something the visitor did: a pop as the
      pointer finds a workspace, a chime in the new wallpaper's key, a whoosh as a panel opens,
-     windows that slide into their tiles, a boing when one swaps, and a wordmark that plays like
-     a harp. A quiet pad follows the scene underneath. One limiter guards it all, and the bar's
+     windows that slide into their tiles, and a boing when one swaps.
+     A quiet pad follows the scene underneath. One limiter guards it all, and the bar's
      sound button mutes everything; that choice is remembered. */
   const Snd = (() => {
     const KEY = "caelestia-sound", btn = document.getElementById("snd");
@@ -1144,7 +1141,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
         <div class="drift" data-drift="5" data-shapes="12" aria-hidden="true"></div>
         ${shapeSvg(pick(BLOOM), "shape sun", 'data-in="150"')}${shapeSvg("flower", "shape moon", 'data-in="380"')}
         <div class="copy">
-          <h1 class="name" aria-label="Caelestia">${[..."Caelestia"].map((ch, i) => `<span aria-hidden="true" style="--i:${i}">${ch}</span>`).join("")}</h1>
+          <h1 class="name">Caelestia</h1>
           <p class="pitch rv" style="--rd:.75s">The Caelestia shell from Hyprland, now on Windows&nbsp;11.</p>
           <p class="sub rv" style="--rd:.9s">A new bar, launcher, dashboard and window tiling for your desktop, all coloured by your wallpaper.</p>
           <div class="cta rv" style="--rd:1.05s"><a class="btn pri" href="#install">Get Caelestia</a><a class="btn ton" href="#run">Watch it run</a></div>
@@ -1253,7 +1250,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     arm(document.getElementById("app"));
     builders = [layoutGalaxy, layoutPath];
     ctl.intro = heroDemo(); ctl.run = runDemo(); ctl.edges = edgeMap(); ctl.tiling = tiler();
-    wordmark(); hoverShapes();
+    hoverShapes();
     setHue(hue, false);
     setMode();
     const k = SCN.findIndex(s => "#" + s[0] === location.hash);
@@ -1307,9 +1304,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     ctl[ws.id]?.set(on);
     if (on) {
       ws.querySelectorAll("[data-n]").forEach(countUp);
-      if (ws.id === "intro") ws._st = setTimeout(() => ws.classList.add("settled"), 2700);
     } else {
-      clearTimeout(ws._st); ws.classList.remove("settled");
       ws.querySelectorAll("[data-n]").forEach(zero);
     }
   }
@@ -1438,30 +1433,6 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     if (/^[1-9]$/.test(e.key) && SECs[+e.key - 1]) { e.preventDefault(); go(+e.key - 1); }
   });
 
-  /* ---------- the wordmark leans into the pointer, like a variable font should, and plays like a harp ---------- */
-  function wordmark() {
-    const hero = document.getElementById("intro"), L = [...hero.querySelectorAll(".name span")];
-    if (!fine.matches) return;
-    L.forEach((el, i) => el.addEventListener("pointerenter", () => Snd.sfx("harp", i)));
-    if (reduced.matches) return;
-    const st = L.map(() => ({w: 300, s: 125})); let run = false;
-    const frame = () => {
-      let moving = false;
-      L.forEach((el, i) => {
-        const r = el.getBoundingClientRect(), d = Math.hypot(ptr.x - (r.left + r.width / 2), ptr.y - (r.top + r.height / 2)), k = Math.exp(-Math.pow(d / 170, 2));
-        const tw = 300 + 300 * k, ts = 125 + 26 * k, s = st[i];
-        s.w += (tw - s.w) * .16; s.s += (ts - s.s) * .16;
-        if (Math.abs(tw - s.w) > .5 || Math.abs(ts - s.s) > .1) moving = true;
-        el.style.setProperty("--w", s.w.toFixed(0)); el.style.setProperty("--s", s.s.toFixed(1));
-      });
-      run = moving; if (moving) requestAnimationFrame(frame);
-    };
-    const nudge = () => { if (!run) { run = true; requestAnimationFrame(frame); } };
-    // the shapes sit at different depths, so they slide against each other as the pointer moves
-    hero.addEventListener("pointermove", e => { nudge(); hero.style.setProperty("--px", (e.clientX / innerWidth - .5).toFixed(3)); hero.style.setProperty("--py", (e.clientY / innerHeight - .5).toFixed(3)); });
-    hero.addEventListener("pointerleave", () => { nudge(); hero.style.setProperty("--px", 0); hero.style.setProperty("--py", 0); });
-  }
-
   /* ---------- shapes and buttons answer the pointer ---------- */
   function hoverShapes() {
     const app = document.getElementById("app");
@@ -1516,28 +1487,6 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     };
     if (navigator.clipboard?.writeText) navigator.clipboard.writeText(code.textContent).then(() => done(true), () => done(false)); else done(false);
   });
-
-  /* ---------- drifting shapes part round the pointer, then drift back ---------- */
-  let amb = 0;
-  function ambient(now) {
-    let busy = now - ptr.t < 1500;
-    // read every position first, then write, so the frame lays out once
-    const els = [...document.querySelectorAll(staged ? ".scene.vis .dsw" : ".ws.in .dsw")], rs = els.map(el => el.getBoundingClientRect());
-    els.forEach((el, i) => {
-      const ox = el._ox || 0, oy = el._oy || 0, r = rs[i];
-      if (r.bottom < 0 || r.top > innerHeight) return;
-      const dx = r.left + r.width / 2 - ox - ptr.x, dy = r.top + r.height / 2 - oy - ptr.y, dd = Math.hypot(dx, dy) || 1, reach = r.width / 2 + 160;
-      const push = dd < reach ? Math.pow(1 - dd / reach, 2) * 120 : 0, nx = ox + (dx / dd * push - ox) * .07, ny = oy + (dy / dd * push - oy) * .07;
-      el._ox = nx; el._oy = ny; if (Math.abs(nx) + Math.abs(ny) > .3) busy = true;
-      el.style.transform = `translate(${f1(nx)}px,${f1(ny)}px)`;
-    });
-    amb = busy ? requestAnimationFrame(ambient) : 0;
-  }
-  addEventListener("pointermove", e => {
-    ptr.x = e.clientX; ptr.y = e.clientY; ptr.t = performance.now();
-    if (!amb && !reduced.matches && fine.matches) amb = requestAnimationFrame(ambient);
-  }, {passive: true});
-  document.addEventListener("pointerleave", () => { ptr.x = ptr.y = -1e4; });
 
   try {   // a saved wallpaper applies at once, without sweeping in from the default
     const h = +localStorage.getItem("caelestia-hue");
