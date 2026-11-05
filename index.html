@@ -83,7 +83,6 @@ svg{display:block;overflow:visible}
 .bar{position:fixed;left:0;top:0;bottom:0;width:var(--bar);z-index:6;display:flex;flex-direction:column;
   align-items:center;padding:20px 0 18px;gap:22px;animation:slide .8s .2s cubic-bezier(.2,.9,.25,1) both}
 .mark{width:28px;height:28px;color:var(--primary);flex:none}
-.mobile-nav{display:none}
 /* Workspaces, as in the shell: a small dot, and the focused one swells into its shape. */
 .spaces{display:flex;flex-direction:column;align-items:center;padding:6px 0;background:var(--mid);border-radius:999px;width:36px;flex:none}
 .spaces a{display:grid;place-items:center;width:36px;height:36px;animation:pop .6s var(--spring-fast) calc(.55s + var(--i) * 55ms) both}
@@ -411,11 +410,12 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 .win{position:absolute;inset:5px;display:flex;flex-direction:column;gap:.7em;padding:clamp(12px,1.3cqw,22px);border-radius:clamp(10px,1cqw,16px);overflow:hidden;
   container-type:inline-size;background:oklch(.18 .022 var(--h) / .9);box-shadow:inset 0 0 0 1.5px oklch(.42 .03 var(--h));transition:box-shadow .3s}
 .tw.focus .win{box-shadow:inset 0 0 0 2.5px var(--primary)}
-.tt{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:450;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tt b{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
+.tt{display:block;font-size:14px;font-weight:450;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt b{display:inline-block;width:10px;height:10px;margin-right:8px;border-radius:50%;background:var(--c);vertical-align:baseline}
 .tx{position:relative;z-index:1;max-width:14em;font-size:clamp(15px,6.4cqw,27px);font-weight:350;font-stretch:104%;line-height:1.25;color:var(--ink);text-wrap:balance}
 .tsh{position:absolute;right:-14px;bottom:-14px;height:clamp(56px,40%,200px);width:auto;aspect-ratio:1;fill:var(--c);opacity:.9;animation:spin var(--rot) linear infinite}
 @container (max-width:150px){.tx{display:none}}
+@container (max-width:110px){.tt{font-size:0}.tt b{margin:0}}
 
 /* Install: three steps on the primary colour, joined by a line drawn as the scene arrives. */
 .install .lead{width:60cqw}
@@ -464,8 +464,8 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 .credits.on .big{scale:1;opacity:1}
 .who{position:absolute;left:5.5cqw;top:10cqh;width:56cqw;z-index:2}
 .who h2{font-size:clamp(28px,min(3.4cqw,6.4cqh),58px);font-weight:300;font-stretch:108%;line-height:1.14;letter-spacing:-.02em;text-wrap:balance}
-.who a,.roles a,.foot a{text-decoration:underline 1.5px color-mix(in oklch,var(--primary) 55%,transparent);text-underline-offset:.2em;transition:text-decoration-color .3s}
-.who a:hover,.roles a:hover,.foot a:hover{text-decoration-color:var(--primary)}
+.who a:not(.btn),.roles a,.foot a{text-decoration:underline 1.5px color-mix(in oklch,var(--primary) 55%,transparent);text-underline-offset:.2em;transition:text-decoration-color .3s}
+.who a:not(.btn):hover,.roles a:hover,.foot a:hover{text-decoration-color:var(--primary)}
 .roles{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);gap:2.6cqw;margin-top:6cqh}
 .roles a{white-space:nowrap}
 .roles dt{font-size:14px;font-weight:450;color:var(--ink-3)}
@@ -494,7 +494,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .hero .cta,.wall{margin-top:22px}
   .cues{margin-top:4px}
   .cues h3{font-size:22px}
-  .cues p{font-size:18px}
+  .cues p{font-size:17px;margin-top:.45em}
   .screen{margin-bottom:34px}
   .player{top:auto!important;margin-top:4px}
   .emap{display:flex;flex-direction:column;align-items:stretch;gap:10px}
@@ -518,80 +518,146 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   /* Reading on a phone must not wait for a section entrance or replay on every scroll. */
   .ws:not(.hero) .rv{opacity:1;translate:none;transition:none}
 }
-/* Short landscape phones need the top bar too, not a clipped desktop sidebar. */
+/* Phone. The page is the shell: its bar runs across the top with the workspace shapes, and every scene is a
+   workspace in its own rounded desk, with the shell colour showing between them as it does round the desktop frame. */
 @media (max-width:700px), (max-width:999px) and (max-height:600px){
-  :root{--bar:0px;--edge:6px;--top:calc(56px + env(safe-area-inset-top,0px));--corner:22px}
-  .desk,.grain,.frame{inset:var(--top) max(var(--edge),env(safe-area-inset-right,0px)) max(var(--edge),env(safe-area-inset-bottom,0px)) max(var(--edge),env(safe-area-inset-left,0px))}
-  .bar{width:auto;right:0;bottom:auto;height:var(--top);flex-direction:row;gap:10px;
-    padding:env(safe-area-inset-top,0px) max(6px,env(safe-area-inset-right,0px)) 0 max(14px,env(safe-area-inset-left,0px))}
-  @keyframes slide{from{transform:translateY(calc(-1 * var(--top)))}}
-  .spaces{flex:1 1 auto;min-width:0;max-width:320px;flex-direction:row;justify-content:space-between;width:auto;height:44px;padding:0 4px}
-  .spaces a{flex:1 1 0;min-width:0;width:auto;height:44px}
-  .spaces svg{width:32px;height:32px}
+  :root{--bar:0px;--edge:6px;--corner:28px;--top:calc(54px + env(safe-area-inset-top,0px));
+    --gl:max(var(--edge),env(safe-area-inset-left,0px));--gr:max(var(--edge),env(safe-area-inset-right,0px))}
+  html{scroll-snap-type:none}
+  .desk,.frame,.grain{display:none}
+  .bar{position:sticky;top:0;left:auto;bottom:auto;width:auto;height:var(--top);flex-direction:row;gap:8px;background:var(--shell);animation:none;
+    padding:env(safe-area-inset-top,0px) var(--gr) 0 calc(var(--gl) + 10px)}
+  /* Where the content meets the bar its corners are concave, as the desktop frame's are. */
+  .bar::before,.bar::after{content:"";position:absolute;top:100%;height:var(--corner);pointer-events:none}
+  .bar::before{left:0;width:calc(var(--gl) + var(--corner));background:radial-gradient(circle at 100% 100%,transparent var(--corner),var(--shell) calc(var(--corner) + .5px))}
+  .bar::after{right:0;width:calc(var(--gr) + var(--corner));background:radial-gradient(circle at 0 100%,transparent var(--corner),var(--shell) calc(var(--corner) + .5px))}
+  .bar .mark{width:22px;height:22px}
+  .bar .spaces{flex:1 1 auto;min-width:0;max-width:300px;width:auto;height:40px;margin:0 auto;padding:0 6px;flex-direction:row;justify-content:space-between}
+  .bar .spaces a{flex:1 1 0;min-width:0;width:auto;height:40px}
   .bar .papers{display:none}
-  .bar .snd{width:44px;height:44px;margin:0 0 0 auto}
-  .grain{display:none}
-  .ws{padding:24px 20px;scroll-margin-top:var(--top)}
-  .name{font-size:16.8cqw}
-  .title{font-size:34px!important}
-  .pitch{font-size:22px}
+  .bar .snd{width:44px;height:44px;margin:0}
+  .snd:not([aria-pressed="true"]) i{transform:scaleY(.45)}
+
+  main{display:flex;flex-direction:column;gap:var(--edge);margin:0 var(--gr) max(var(--edge),env(safe-area-inset-bottom,0px)) var(--gl)}
+  .ws{border-radius:var(--corner);padding:44px 22px 40px;scroll-margin-top:var(--top)}
+  .title{font-size:clamp(32px,9.6cqw,46px)!important}
   .cap{font-size:18px}
-  .hero .rv{transition-delay:calc(var(--rd) - .45s)}
-  .hero .cta{width:100%;gap:8px}
+  /* Entrances belong to the hero; the rest of the page is simply there when you scroll to it. */
+  .ws .rv{opacity:1;translate:none;transition:none}
+  .screen,.escreen,.tstage,.sn,.credits .big{opacity:1;scale:1;transition:none}
+  .hero .screen{opacity:0;scale:.94;transition:opacity .6s .45s,scale 1.3s var(--spring) .45s}
+  .hero.on .screen{opacity:1;scale:1}
+  .hero .sun,.hero .moon,.credits .big{animation:none}
+  .drift{display:none}
+
+  /* Hero: a poster that fills the first screen, with the next desk peeking in below. */
+  .hero{min-height:calc(100svh - var(--top) - 40px);padding-top:100px;padding-bottom:30px}
+  .hero{--sun:min(50cqw,230px);--moon:min(36cqw,170px)}
+  .hero .sun{width:var(--sun)!important;right:calc(var(--sun) * -.3)!important;top:calc(var(--sun) * -.46)!important}
+  .hero .moon{width:var(--moon)!important;left:calc(var(--moon) * -.33)!important;bottom:calc(var(--moon) * -.56)!important;top:auto!important}
+  .name{font-size:min(20.4cqw,84px)}
+  .pitch{font-size:clamp(22px,6.2cqw,34px);margin-top:16px}
+  .sub{font-size:17px;margin-top:12px}
+  .hero .cta{width:100%;gap:8px;margin-top:26px}
   .hero .cta .btn{flex:1 1 auto;min-width:0;padding:0 16px;font-size:16px}
   .hero .cta .btn.ton{order:-1;background:var(--primary);color:var(--on-p)}
   .hero .cta .btn.pri{background:var(--mid);color:var(--ink)}
-  /* Six tiny timeline slivers become a labelled, thumb-sized chapter chooser. */
-  .pbar{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:8px 12px}
-  .segs{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:repeat(3,minmax(44px,1fr));gap:4px 12px}
+  .hero .btn.ton:hover{background:color-mix(in oklch,var(--primary) 92%,var(--on-p))}
+  .hero .btn.pri:not(.off):hover{background:var(--high)}
+  .wall{margin-top:20px;gap:2px 10px;justify-content:space-between}
+  .wall>span{white-space:nowrap}
+  .wall .papers{gap:0;margin-inline:-10px}
+  .hero .screen{margin:auto 0 40px;padding-top:0}
+  .hero .copy{margin-bottom:26px}
+  .hold{top:calc(100% + 4px);min-height:44px;padding:0 14px 0 11px}
+
+  /* See it run: the picture first, then the chapter it is showing. */
+  .run .lead{display:contents}
+  .run .title{order:0}
+  .run .player{order:1;margin-top:0!important}
+  .run .cues{order:2;margin-top:2px;padding:18px 20px 20px;border-radius:24px;background:var(--mid);align-content:start}
+  .run .note{order:3}
+  .cues h3{font-size:22px}
+  .cues p{font-size:18px}
+  .pbar{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:6px 12px;margin-top:14px}
+  .pplay{width:46px;height:46px}
+  .ptime{grid-column:2;grid-row:1;justify-self:end;font-size:13.5px}
+  .pmute{grid-column:3;grid-row:1;width:44px;height:44px}
+  .segs{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 12px}
   .seg{min-height:48px;padding:8px 0}
   .seg span{margin-top:6px}
-  .ptime{grid-column:2;grid-row:1;justify-self:end;font-size:13.5px}
-  .pmute{grid-column:3;grid-row:1}
-  .pplay{width:46px;height:46px}
-  .pmute,.cpy{height:44px}
-  .pmute{width:44px}
-  .hold{top:calc(100% + 8px);min-height:44px;padding:0 14px 0 11px}
-  .screen{margin-bottom:56px}
+
+  /* Every edge: each panel carries a small map of the edge it opens from. */
+  /* While it sticks, the screen carries a strip of the scene's own colour above it, so rows scrolling under it never show in the gap. */
+  @media (orientation:portrait){.edges .escreen{position:sticky!important;top:calc(var(--top) + 8px)!important;z-index:3;margin-bottom:6px;
+    box-shadow:0 -9px 0 var(--tertiary),0 3cqh 8cqh -3cqh oklch(.35 .09 calc(var(--h) + 60) / .7)}}
+  .emap{gap:8px}
+  .el{display:grid;grid-template-columns:48px minmax(0,1fr);align-items:center;gap:0 14px;padding:12px 18px 12px 14px;border-radius:26px;
+    background:color-mix(in oklch,var(--fg) 7%,transparent)}
+  .el::before{content:"";grid-row:1/3;width:48px;height:32px;border-radius:9px;
+    box-shadow:inset 0 0 0 2px color-mix(in oklch,var(--fg) 30%,transparent);
+    background:linear-gradient(var(--fg),var(--fg)) var(--at) / var(--sz) no-repeat;opacity:.75;transition:opacity .3s}
+  .el[aria-pressed="true"]::before{opacity:1}
+  .el-t::before{--at:50% 4px;--sz:20px 6px}
+  .el-b::before{--at:50% calc(100% - 4px);--sz:20px 6px}
+  .el-l::before{--at:4px 50%;--sz:6px 16px}
+  .el-n::before{--at:calc(100% - 4px) 4px;--sz:14px 10px}
+  .el-s::before{--at:calc(100% - 4px) 50%;--sz:6px 14px}
+  .el b{font-size:20px;grid-column:2}
+  .el span{font-size:15px;grid-column:2}
+
+  /* Tiling */
   .seg3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
   .seg3 button{padding:0 8px}
+
+  /* Install: three steps in order, joined by a line. */
+  .step{position:relative;isolation:isolate;display:grid;grid-template-columns:64px minmax(0,1fr);column-gap:16px;align-items:start}
+  .step:not(:last-child)::before{content:"";position:absolute;left:31px;top:70px;bottom:-30px;z-index:-1;border-left:2px dotted color-mix(in oklch,var(--on-p) 35%,transparent)}
+  .step .sn{width:64px;margin:0;grid-row:1/4}
+  .step>:not(.sn){grid-column:2}
+  .sn svg{animation:none}
+  .step h3{font-size:22px;padding-top:2px}
+  .step p{font-size:17px;margin-top:4px}
+  .step .btn,.step .cmd{grid-column:1/-1;margin-top:16px;max-width:none}
+  .steps{gap:40px}
   .btn{height:52px;padding:0 22px}
   .btn.off{height:auto;min-height:52px;max-width:100%;padding:14px 18px;white-space:normal;text-align:center;line-height:1.3}
-  .cmd{flex-wrap:wrap;padding:14px}
-  .cmd code{flex-basis:100%;overflow-wrap:anywhere}
-  .cmd code span{white-space:normal}
-  .cmd .cpy{margin-left:auto}
-  main{margin:var(--top) max(var(--edge),env(safe-area-inset-right,0px)) max(var(--edge),env(safe-area-inset-bottom,0px)) max(var(--edge),env(safe-area-inset-left,0px))}
+  .install .btn.off{opacity:1;background:color-mix(in oklch,var(--on-p) 72%,var(--primary))}
+  .cmd{flex-direction:column;align-items:stretch;gap:10px;padding:16px}
+  .cmd code{font-size:14px;line-height:1.5}
+  .cpy{height:44px;border-radius:14px}
+  .fine{font-size:14.5px}
+
+  /* How it was built */
+  .ledger>p:first-child{font-size:clamp(26px,7.4cqw,38px)}
+  .galaxy{height:min(88cqw,420px)}
+  /* The galaxy blooms in as one picture. Dots that fly out and turn would repaint over a thousand circles every frame. */
+  .gx .d{translate:0 0;opacity:1;transition:none}
+  .on .gx .sp{animation:none}
+  .galaxy{opacity:0;scale:.86;transition:opacity .8s,scale 1.5s var(--spring)}
+  .on .galaxy{opacity:1;scale:1}
+
+  /* Credits */
+  .credits{--big:min(64cqw,280px)}
+  .credits .big{width:var(--big)!important;right:calc(var(--big) * -.375)!important;top:calc(var(--big) * -.375)!important}
+  .credits{padding-top:92px}
+  .who h2{font-size:clamp(28px,8cqw,40px)}
+  .roles{margin-top:30px;gap:20px}
+  .credits .cta{margin-top:30px}
+  .credits .cta .btn{flex:1 1 100%}
+  .foot{margin-top:26px}
+
+  @media (hover:none){
+    .hero .btn.ton:hover{background:var(--primary)}
+    .hero .btn.pri:not(.off):hover{background:var(--mid)}
+    .seg3 button:hover:not([aria-pressed="true"]){background:var(--mid);color:var(--ink-2)}
+    .cpy:hover{background:color-mix(in oklch,var(--primary) 18%,transparent)}
+    .pmute:hover,.snd:hover,.hold:hover{background:none}
+  }
 }
 @media (max-width:999px) and (max-height:600px){
   .hero .screen,.player,.edges .escreen{width:min(100%,calc((100svh - var(--top) - 110px) * 1.778))!important;align-self:center}
   .tstage{height:min(118cqw,560px,calc(100svh - var(--top) - 40px))}
-}
-/* A phone is a continuous page, not a desktop behind a fixed rounded viewport. */
-@media (max-width:700px), (max-width:999px) and (max-height:600px){
-  html{scroll-snap-type:none}
-  .desk,.frame,.grain{display:none}
-  .bar{position:sticky;top:0;background:var(--shell);animation:none;gap:4px;
-    padding-right:max(8px,env(safe-area-inset-right,0px));padding-left:max(12px,env(safe-area-inset-left,0px))}
-  .bar .mark{width:22px;height:22px}
-  .bar .spaces{display:none}
-  .mobile-nav{display:flex;flex:1;min-width:0;justify-content:space-evenly;align-items:center}
-  .mobile-nav a{display:grid;place-items:center;min-width:44px;min-height:44px;padding:0 5px;
-    border-radius:999px;color:var(--ink-2);font-size:14px;font-weight:500;white-space:nowrap}
-  .mobile-nav a[aria-current="true"]{color:var(--primary)}
-  .bar .snd{margin:0}
-  main{margin:0}
-  .ws{padding:40px max(24px,env(safe-area-inset-right,0px)) 44px max(24px,env(safe-area-inset-left,0px));
-    scroll-margin-top:var(--top)}
-  .hero{padding-top:30px}
-  .hero .sun{width:58cqw!important;right:-24cqw!important;top:-18cqw!important;opacity:.65!important}
-  .ws .rv{opacity:1;translate:none;transition:none}
-  .hero .sun,.hero .moon,.credits .big,.screen,.escreen,.tstage,.sn{opacity:1;scale:1;transition:none}
-  .hero .sun,.hero .moon,.credits .big{animation:none}
-  .drift{display:none}
-}
-@media (max-width:700px) and (orientation:portrait){
-  .edges .escreen{position:sticky!important;top:calc(var(--top) + 10px)!important;z-index:3}
 }
 @media (pointer:coarse){
   /* The visual swatch stays small; the actual button, not an overlapping hit halo, is 44px. */
@@ -624,7 +690,6 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
 <nav class="bar" aria-label="Sections">
   <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 2.5l2.6 8.2a5 5 0 0 0 3.3 3.3L30 16.5l-8.1 2.5a5 5 0 0 0-3.3 3.3L16 30.5l-2.6-8.2a5 5 0 0 0-3.3-3.3L2 16.5l8.1-2.5a5 5 0 0 0 3.3-3.3z"/></svg>
   <div class="spaces" id="spaces"></div>
-  <div class="mobile-nav"><a href="#run">Watch</a><a href="#edges">Panels</a><a href="#tiling">Tiling</a><a href="#install">Install</a></div>
   <div class="papers" role="group" aria-label="Wallpaper" data-papers></div>
   <button class="snd" id="snd" aria-pressed="false" aria-label="Sound effects" title="Sound: off"><i style="--k:0;--s:.55"></i><i style="--k:1;--s:.9"></i><i style="--k:2;--s:.7"></i><i style="--k:3;--s:.45"></i></button>
 </nav>
@@ -1404,7 +1469,6 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   function current(k) {
     if (k === cur || !links[k]) return; cur = k; Snd.scene(k);
     links.forEach((a, j) => { const on = j === k; a.setAttribute("aria-current", on); if (on) a.classList.remove("peek"); if (!a.classList.contains("peek")) a.querySelector("path")._m.to(on ? SCN[j][2] : "circle"); });
-    document.querySelectorAll(".mobile-nav a").forEach(a => a.setAttribute("aria-current", String(a.getAttribute("href") === "#" + SCN[k][0])));
   }
 
   /* ---------- workspaces: on a desktop, scrolling switches workspace ----------
