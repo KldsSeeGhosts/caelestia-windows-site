@@ -607,8 +607,11 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .el span{font-size:15px;grid-column:2}
 
   /* Tiling */
-  .seg3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
-  .seg3 button{padding:0 8px}
+  /* One track, with the chosen layout as a pill inside it, so the three read as a single control. */
+  .seg3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:4px;border-radius:999px;background:var(--mid)}
+  .seg3 button,.seg3 button:first-child,.seg3 button:last-child{padding:0 8px;border-radius:999px;background:none}
+  .seg3 button:hover:not([aria-pressed="true"]){background:var(--high)}
+  .seg3 button[aria-pressed="true"]{background:var(--primary)}
 
   /* Install: three steps in order, joined by a line. */
   .step{position:relative;isolation:isolate;display:grid;grid-template-columns:64px minmax(0,1fr);column-gap:16px;align-items:start}
@@ -650,7 +653,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   @media (hover:none){
     .hero .btn.ton:hover{background:var(--primary)}
     .hero .btn.pri:not(.off):hover{background:var(--mid)}
-    .seg3 button:hover:not([aria-pressed="true"]){background:var(--mid);color:var(--ink-2)}
+    .seg3 button:hover:not([aria-pressed="true"]){background:none;color:var(--ink-2)}
     .cpy:hover{background:color-mix(in oklch,var(--primary) 18%,transparent)}
     .pmute:hover,.snd:hover,.hold:hover{background:none}
   }
