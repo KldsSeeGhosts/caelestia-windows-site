@@ -83,6 +83,7 @@ svg{display:block;overflow:visible}
 .bar{position:fixed;left:0;top:0;bottom:0;width:var(--bar);z-index:6;display:flex;flex-direction:column;
   align-items:center;padding:20px 0 18px;gap:22px;animation:slide .8s .2s cubic-bezier(.2,.9,.25,1) both}
 .mark{width:28px;height:28px;color:var(--primary);flex:none}
+.mobile-nav{display:none}
 /* Workspaces, as in the shell: a small dot, and the focused one swells into its shape. */
 .spaces{display:flex;flex-direction:column;align-items:center;padding:6px 0;background:var(--mid);border-radius:999px;width:36px;flex:none}
 .spaces a{display:grid;place-items:center;width:36px;height:36px;animation:pop .6s var(--spring-fast) calc(.55s + var(--i) * 55ms) both}
@@ -566,6 +567,29 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .hero .screen,.player,.edges .escreen{width:min(100%,calc((100svh - var(--top) - 110px) * 1.778))!important;align-self:center}
   .tstage{height:min(118cqw,560px,calc(100svh - var(--top) - 40px))}
 }
+/* A phone is a continuous page, not a desktop behind a fixed rounded viewport. */
+@media (max-width:700px), (max-width:999px) and (max-height:600px){
+  html{scroll-snap-type:none}
+  .desk,.frame,.grain{display:none}
+  .bar{position:sticky;top:0;background:var(--shell);animation:none;gap:4px;
+    padding-right:max(8px,env(safe-area-inset-right,0px));padding-left:max(12px,env(safe-area-inset-left,0px))}
+  .bar .mark{width:22px;height:22px}
+  .bar .spaces{display:none}
+  .mobile-nav{display:flex;flex:1;min-width:0;justify-content:space-evenly;align-items:center}
+  .mobile-nav a{display:grid;place-items:center;min-width:44px;min-height:44px;padding:0 5px;
+    border-radius:999px;color:var(--ink-2);font-size:14px;font-weight:500;white-space:nowrap}
+  .mobile-nav a[aria-current="true"]{color:var(--primary)}
+  .bar .snd{margin:0}
+  main{margin:0}
+  .ws{padding:40px max(24px,env(safe-area-inset-right,0px)) 44px max(24px,env(safe-area-inset-left,0px));
+    scroll-margin-top:var(--top)}
+  .hero{padding-top:30px}
+  .hero .sun{width:58cqw!important;right:-24cqw!important;top:-18cqw!important;opacity:.65!important}
+  .ws .rv{opacity:1;translate:none;transition:none}
+  .hero .sun,.hero .moon,.credits .big,.screen,.escreen,.tstage,.sn{opacity:1;scale:1;transition:none}
+  .hero .sun,.hero .moon,.credits .big{animation:none}
+  .drift{display:none}
+}
 @media (max-width:700px) and (orientation:portrait){
   .edges .escreen{position:sticky!important;top:calc(var(--top) + 10px)!important;z-index:3}
 }
@@ -600,6 +624,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
 <nav class="bar" aria-label="Sections">
   <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 2.5l2.6 8.2a5 5 0 0 0 3.3 3.3L30 16.5l-8.1 2.5a5 5 0 0 0-3.3 3.3L16 30.5l-2.6-8.2a5 5 0 0 0-3.3-3.3L2 16.5l8.1-2.5a5 5 0 0 0 3.3-3.3z"/></svg>
   <div class="spaces" id="spaces"></div>
+  <div class="mobile-nav"><a href="#run">Watch</a><a href="#edges">Panels</a><a href="#tiling">Tiling</a><a href="#install">Install</a></div>
   <div class="papers" role="group" aria-label="Wallpaper" data-papers></div>
   <button class="snd" id="snd" aria-pressed="false" aria-label="Sound effects" title="Sound: off"><i style="--k:0;--s:.55"></i><i style="--k:1;--s:.9"></i><i style="--k:2;--s:.7"></i><i style="--k:3;--s:.45"></i></button>
 </nav>
@@ -623,6 +648,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   const reduced = matchMedia("(prefers-reduced-motion:reduce)");
   const fine = matchMedia("(hover:hover) and (pointer:fine)");
   const narrow = matchMedia("(max-width:999px)");
+  const phone = matchMedia("(max-width:700px), (max-width:999px) and (max-height:600px)");
   const mulberry = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   const pick = (a, not) => { let x; do x = a[Math.floor(Math.random() * a.length)]; while (x === not && a.length > 1); return x; };
   const rel = (el, anc) => { let x = 0, y = 0; for (let e = el; e && e !== anc; e = e.offsetParent) { x += e.offsetLeft; y += e.offsetTop; } return [x, y]; };
@@ -701,9 +727,10 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   // Shapes marked data-in wait as circles and bloom into their own shape when their scene arrives.
   const arm = root => root.querySelectorAll("path[data-shape]").forEach(p => {
     if (p._m) return; const m = new Morph(p, p.dataset.shape);
-    if (p.closest("[data-in]") && !reduced.matches && !p.closest(".ws.on")) m.snap("circle");
+    if (p.closest("[data-in]") && !phone.matches && !reduced.matches && !p.closest(".ws.on")) m.snap("circle");
   });
   function bloom(ws, on) {
+    if (phone.matches) return;
     ws.querySelectorAll("[data-in]").forEach(h => {
       const m = h.querySelector("path[data-shape]")?._m; if (!m || reduced.matches) return;
       clearTimeout(h._bt);
@@ -1366,9 +1393,10 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     if (on && ws === pendFocus) { pendFocus = null; ws.focus({preventScroll: true}); }
     bloom(ws, on);
     ctl[ws.id]?.set(on);
-    if (on) {
+    if (on && (!phone.matches || !ws._counted)) {
       ws.querySelectorAll("[data-n]").forEach(countUp);
-    } else {
+      ws._counted = true;
+    } else if (!on && !phone.matches) {
       ws.querySelectorAll("[data-n]").forEach(zero);
     }
   }
@@ -1376,6 +1404,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   function current(k) {
     if (k === cur || !links[k]) return; cur = k; Snd.scene(k);
     links.forEach((a, j) => { const on = j === k; a.setAttribute("aria-current", on); if (on) a.classList.remove("peek"); if (!a.classList.contains("peek")) a.querySelector("path")._m.to(on ? SCN[j][2] : "circle"); });
+    document.querySelectorAll(".mobile-nav a").forEach(a => a.setAttribute("aria-current", String(a.getAttribute("href") === "#" + SCN[k][0])));
   }
 
   /* ---------- workspaces: on a desktop, scrolling switches workspace ----------
@@ -1459,7 +1488,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   }
   function go(k) {
     if (!SECs[k]) return;
-    if (!staged) { SECs[k].scrollIntoView({behavior: reduced.matches ? "auto" : "smooth"}); return; }
+    if (!staged) { SECs[k].scrollIntoView({behavior: reduced.matches || phone.matches ? "auto" : "smooth"}); return; }
     const c = Math.round(P);
     if (Math.abs(k - c) > 1) jump(k + (k > c ? -1 : 1));
     scrollTo({top: k * stepH(), behavior: "smooth"});
