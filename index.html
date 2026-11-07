@@ -1366,11 +1366,11 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
         <h2 class="sr" id="build-h">How it was built</h2>
         <div class="ledger">
           <p>Built across ${num(agentsN, "int", true)} recorded agent invocations, ${num(t3.threads, "int")} threads, ${num(p.pullRequests, "int")} public pull requests and ${num(code.commits, "int")} contributor commits, over ${num(hours, "int")} elapsed hours.</p>
-          <p class="cap rv" style="--rd:1s">The recorded activity includes ${num(t.totalTokens, "bn")} tokens, about ${num(t.apiCostUsd, "usd0")} at stored API price estimates. It all ran on subscriptions.</p>
+          <p class="cap rv" style="--rd:1s">Usage records are incomplete. No verified project-wide token total or cost is available.</p>
         </div>
         <div class="galaxy" id="galaxy" aria-hidden="true"></div>
         <p class="gcap rv" style="--rd:2.2s" aria-hidden="true">One dot for each recorded agent invocation.</p>
-        <p class="bnote rv" style="--rd:1.4s">${p.asOf ? `Project metrics as of ${esc(day(p.asOf))}. ` : "Metrics freshness unavailable. "}Current and archived workspaces are included without duplicate commits. Recorded usage only; account-wide proxy totals are excluded. Cost uses stored price estimates, not billing. ${Object.values(p.sources || {}).some(s => s.state !== "fresh") ? "Some sources are stale." : ""}</p>
+        <p class="bnote rv" style="--rd:1.4s">${p.asOf ? `Project metrics as of ${esc(day(p.asOf))}. ` : "Metrics freshness unavailable. "}Commit counts include all refs in current and archived local histories, not only merged public work. Agent invocations are recorded delegations plus observed native Agent tool calls, not unique agents or all agent activity. Usage and stored-price estimates are partial, not independently reconciled accounting or billing; account-wide proxy totals are excluded. ${Object.values(p.sources || {}).some(s => s.state !== "fresh") ? "Some sources are stale." : ""}</p>
       </section></div>
 
       <div class="scene"><section id="credits" class="ws credits" tabindex="-1" aria-labelledby="cr-h">
