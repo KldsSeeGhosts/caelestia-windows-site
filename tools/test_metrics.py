@@ -47,9 +47,35 @@ class MetricsTests(unittest.TestCase):
             ("codex", "gpt-6.1-sol", 2, 100, 30, 80, 0),
             ("claudeAgent", "claude-opus-5-5", 1, 900, 50, 0, 0)],
             {"claude-opus-5-5": [10, 20, 30, 40]}, old)
-        self.assertEqual(230, usage["totals"]["totalTokens"])
+        self.assertEqual(230, usage["totals"]["recordedTokenEvents"])
+        self.assertIsNone(usage["totals"]["totalTokens"])
+        self.assertIsNone(usage["totals"]["apiCostUsd"])
         self.assertNotIn("deepseek-v4.1-flash", [r["model"] for r in usage["byModel"]])
         self.assertEqual(["claude-opus-5-5", "gpt-6.1-sol"], usage["unpricedModels"])
+
+    def test_missing_usage_is_unknown_and_not_free_or_zero_tokens(self):
+        usage = metrics.usage_metrics([
+            ("antigravity", "gemini-unreported", 3, None, None, None, None),
+            ("codex", "gpt-partial", 2, 100, 20, None, None)], {}, {"byModel": []})
+        models = {row["model"]: row for row in usage["byModel"]}
+        self.assertIsNone(models["gemini-unreported"]["inputTokens"])
+        self.assertIsNone(models["gemini-unreported"]["outputTokens"])
+        self.assertIsNone(models["gemini-unreported"]["apiCostUsd"])
+        self.assertIsNone(models["gpt-partial"]["inputTokens"])
+        self.assertEqual(20, models["gpt-partial"]["outputTokens"])
+        self.assertEqual(["gemini-unreported", "gpt-partial"], usage["unknownUsageModels"])
+        self.assertEqual("incomplete-not-reconciled", usage["accountingStatus"])
+
+    def test_synthetic_model_rows_are_not_usage(self):
+        usage = metrics.usage_metrics([("claudeAgent", "<synthetic>", 1, 1000, 1000, 0, 0)],
+                                      {}, {"byModel": []})
+        self.assertEqual([], usage["byModel"])
+        with tempfile.TemporaryDirectory() as root:
+            path = Path(root) / "D--Caelestia-caelestia-windows"
+            path.mkdir()
+            (path / "session.jsonl").write_text(json.dumps({"message": {"id": "synthetic",
+                "model": "<synthetic>", "usage": {"input_tokens": 1000}}}) + "\n")
+            self.assertEqual(({}, 0), metrics.transcript_metrics(root))
 
     def test_copied_history_is_counted_once(self):
         with patch.object(metrics.Path, "exists", return_value=True), patch.object(

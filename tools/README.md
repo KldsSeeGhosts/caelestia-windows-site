@@ -18,7 +18,11 @@ The publisher reads project-scoped T3 metadata, deduplicated Claude transcript
 usage and contributor commit hashes, plus current public GitHub repository
 counts. It never exports message text, workspace paths or credentials.
 Account-wide proxy usage is excluded because it cannot be attributed to this
-project. Costs use previously stored rates and are estimates, not billing.
+project. Usage coverage and counter semantics have not been fully reconciled.
+No project-wide token or cost headline is published. Retained token events
+include repeated cached-input processing, not unique text; known-rate
+estimates use historical prices and are neither complete cost nor billing.
+Missing model counters stay null, not zero. Synthetic records are excluded.
 Unpriced models are explicit. Missing sources retain their old freshness and
 cause a nonzero result rather than a false all-fresh timestamp.
 

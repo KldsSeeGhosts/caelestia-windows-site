@@ -106,7 +106,7 @@ def transcript_metrics(projects):
                     if not isinstance(message, dict):
                         continue
                     identifier = message.get("id")
-                    if identifier and message.get("usage") and message.get("model"):
+                    if identifier and message.get("usage") and message.get("model") not in (None, "<synthetic>"):
                         messages[identifier] = (message["model"], message["usage"])
                     for block in message.get("content", []):
                         if isinstance(block, dict) and block.get("type") == "tool_use" and block.get("name") == "Agent" and block.get("id"):
@@ -135,16 +135,17 @@ def usage_metrics(rows, transcripts, previous):
     models = {}
     for provider, model, runs, inp, out, cached, created in rows:
         model = canonical_model(model)
-        if not model:
+        if not model or model == "<synthetic>":
             continue
         row = models.setdefault(model, {"provider": PROVIDERS.get(provider, provider), "runs": 0,
-                                       "inputTokens": 0, "outputTokens": 0,
-                                       "cacheReadTokens": 0, "cacheWriteTokens": 0})
+                                       "inputTokens": None, "outputTokens": None,
+                                       "cacheReadTokens": None, "cacheWriteTokens": None})
         row["runs"] += runs
-        row["inputTokens"] += max(0, int(inp or 0) - int(cached or 0))
-        row["outputTokens"] += int(out or 0)
-        row["cacheReadTokens"] += int(cached or 0)
-        row["cacheWriteTokens"] += int(created or 0)
+        counters = {"inputTokens": max(0, int(inp) - int(cached)) if inp is not None and cached is not None else None,
+                    "outputTokens": out, "cacheReadTokens": cached, "cacheWriteTokens": created}
+        for field, value in counters.items():
+            if value is not None:
+                row[field] = (row[field] or 0) + int(value)
     for model, tokens in transcripts.items():
         row = models.setdefault(model, {"provider": "Anthropic", "runs": 0})
         row.update(zip(("inputTokens", "outputTokens", "cacheReadTokens", "cacheWriteTokens"), tokens))
@@ -152,7 +153,8 @@ def usage_metrics(rows, transcripts, previous):
     for model, values in models.items():
         row = {"model": model, **values}
         rate = rates.get(model, {}).get("pricePerMTok")
-        if rate:
+        if rate and all(row[field] is not None for field in (
+                "inputTokens", "outputTokens", "cacheReadTokens", "cacheWriteTokens")):
             row["pricePerMTok"] = rate
             row["priceSource"] = rates[model].get("priceSource")
             row["apiCostUsd"] = round(sum(
@@ -163,13 +165,20 @@ def usage_metrics(rows, transcripts, previous):
             row["apiCostUsd"] = None
         result.append(row)
     fields = ("inputTokens", "outputTokens", "cacheReadTokens", "cacheWriteTokens")
-    totals = {field: sum(row[field] for row in result) for field in fields}
-    totals["totalTokens"] = sum(totals.values())
-    totals["apiCostUsd"] = round(sum(row["apiCostUsd"] or 0 for row in result), 2)
+    totals = {field: sum(row[field] or 0 for row in result) for field in fields}
+    # Preserve observed counters for inspection, not a project-wide accounting
+    # claim. Repeated cached input is a token event, not unique text. Coverage
+    # and historical price semantics have not been independently reconciled.
+    totals["recordedTokenEvents"] = sum(totals.values())
+    totals["knownRateEstimateUsd"] = round(sum(row["apiCostUsd"] or 0 for row in result), 2)
+    totals["totalTokens"] = None
+    totals["apiCostUsd"] = None
     return {
         "asOf": now(), "totals": totals, "byModel": result,
-        "coverage": "Recorded project-scoped T3 usage and deduplicated Claude transcripts; missing usage is not estimated. Account-wide proxy totals are excluded. Cost is an estimate for known-price models at the previously stored rates, not a bill.",
-        "unpricedModels": sorted(row["model"] for row in result if row["apiCostUsd"] is None)}
+        "accountingStatus": "incomplete-not-reconciled",
+        "coverage": "Partial recorded token events, not unique tokens or a project-wide total. Provider coverage and counter semantics are not fully reconciled. Missing usage remains unknown. Claude transcript counters replace matching T3 model counters; account-wide proxy totals are excluded. Known-rate estimates use stored historical prices and are neither a bill nor a complete project cost.",
+        "unpricedModels": sorted(row["model"] for row in result if not rates.get(row["model"], {}).get("pricePerMTok")),
+        "unknownUsageModels": sorted(row["model"] for row in result if any(row[field] is None for field in fields))}
 
 
 def code_metrics(roots, author):
