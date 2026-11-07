@@ -11,14 +11,14 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Caelestia for Windows">
 <meta property="og:description" content="Caelestia, the Hyprland desktop shell, ported to Windows 11: a new bar, launcher, dashboard, notifications and window tiling, coloured by your wallpaper.">
-<meta property="og:image" content="https://kldsseeghosts.github.io/caelestia-windows-site/og.png">
+<meta property="og:image" content="https://kldsseeghosts.github.io/caelestia-windows/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="The Caelestia wordmark among bold rounded shapes.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Caelestia for Windows">
 <meta name="twitter:description" content="Caelestia, the Hyprland desktop shell, ported to Windows 11: a new bar, launcher, dashboard, notifications and window tiling, coloured by your wallpaper.">
-<meta name="twitter:image" content="https://kldsseeghosts.github.io/caelestia-windows-site/og.png">
+<meta name="twitter:image" content="https://kldsseeghosts.github.io/caelestia-windows/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght,wdth,ROND@6..144,200..700,25..151,0..100&display=swap" rel="stylesheet">
@@ -722,11 +722,10 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   const rel = (el, anc) => { let x = 0, y = 0; for (let e = el; e && e !== anc; e = e.offsetParent) { x += e.offsetLeft; y += e.offsetTop; } return [x, y]; };
   const hidden = () => document.hidden;
 
-  // Where visitors download the port. The repository stays private until its first public
-  // release: set RELEASED to true then, and every download button links to the latest release.
-  const REPO = "https://github.com/KldsSeeGhosts/caelestia-windows", RELEASED = false;
+  // Public preview downloads. The releases index also includes prereleases.
+  const REPO = "https://github.com/KldsSeeGhosts/caelestia-windows", RELEASED = true;
   const UPSTREAM = "https://github.com/caelestia-dots/shell";
-  const INSTALL_CMD = "powershell -ExecutionPolicy Bypass -File .\\Install-Caelestia.ps1";
+  const INSTALL_CMD = "powershell -NoProfile -ExecutionPolicy Bypass -File .\\Install-CaelestiaRelease.ps1";
 
   /* ---------- expressive shapes ----------
      Each shape is a radius for every angle, so any two shapes can morph by blending
@@ -1287,11 +1286,11 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     const p = d.project || {}, t3 = p.t3 || {}, u = d.usage || {}, t = u.totals || {}, code = p.code || {};
     agentsN = t3.delegated || isNum(p.claudeAgents) ? sum(t3.delegated) + (p.claudeAgents || 0) : null;
     const start = code.startedAt || t3.firstThreadAt;
-    const hours = start && d.updatedAt ? Math.round((new Date(d.updatedAt) - new Date(start)) / 36e5) : null;
+    const hours = start && p.asOf ? Math.round((new Date(p.asOf) - new Date(start)) / 36e5) : null;
     const num = (v, f, src) => `<span class="num" ${counter(v, f)} data-flat${src ? " data-src" : ""}>${shown0(v, f)}</span>`;
     const span = u.session?.start && u.asOf ? `, ${esc(day(u.session.start))} to ${esc(day(u.asOf))}` : "";
     const ext = (href, text) => `<a href="${href}" target="_blank" rel="noopener">${text}<span class="sr"> (opens in a new tab)</span></a>`;
-    const download = RELEASED ? `<a class="btn pri" href="${REPO}/releases/latest">Download for Windows</a>` : `<span class="btn pri off">First release coming soon</span>`;
+    const download = RELEASED ? `<a class="btn pri" href="${REPO}/releases">Download Windows preview</a>` : `<span class="btn pri off">First release coming soon</span>`;
     const edge = (k, cls) => { const [, , name, text] = EDGES[k]; return `<button class="el el-${cls}" data-k="${k}" aria-pressed="false"><b>${name}</b><span>${text}</span></button>`; };
     const idx = id => EDGES.findIndex(e => e[0] === id);
 
@@ -1366,12 +1365,12 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
         <div class="drift" data-drift="41" data-shapes="6" data-fade=".5" aria-hidden="true"></div>
         <h2 class="sr" id="build-h">How it was built</h2>
         <div class="ledger">
-          <p>Built by ${num(agentsN, "int", true)} AI agents and subagents, across ${num(t3.threads, "int")} threads, ${num(p.pullRequests, "int")} pull requests and ${num(code.commits, "int")} commits, in ${num(hours, "int")} hours.</p>
-          <p class="cap rv" style="--rd:1s">Along the way they worked through ${num(t.totalTokens, "bn")} tokens, about ${num(t.apiCostUsd, "usd0")} at public API prices. It all ran on subscriptions.</p>
+          <p>Built across ${num(agentsN, "int", true)} recorded agent invocations, ${num(t3.threads, "int")} threads, ${num(p.pullRequests, "int")} public pull requests and ${num(code.commits, "int")} contributor commits, over ${num(hours, "int")} elapsed hours.</p>
+          <p class="cap rv" style="--rd:1s">The recorded activity includes ${num(t.totalTokens, "bn")} tokens, about ${num(t.apiCostUsd, "usd0")} at stored API price estimates. It all ran on subscriptions.</p>
         </div>
         <div class="galaxy" id="galaxy" aria-hidden="true"></div>
-        <p class="gcap rv" style="--rd:2.2s" aria-hidden="true">One dot for each agent.</p>
-        <p class="bnote rv" style="--rd:1.4s">${d.updatedAt ? `Figures as of ${esc(day(d.updatedAt))}. ` : ""}Tokens and cost cover the measured build session${span}; the other figures cover the whole project.</p>
+        <p class="gcap rv" style="--rd:2.2s" aria-hidden="true">One dot for each recorded agent invocation.</p>
+        <p class="bnote rv" style="--rd:1.4s">${p.asOf ? `Project metrics as of ${esc(day(p.asOf))}. ` : "Metrics freshness unavailable. "}Current and archived workspaces are included without duplicate commits. Recorded usage only; account-wide proxy totals are excluded. Cost uses stored price estimates, not billing. ${Object.values(p.sources || {}).some(s => s.state !== "fresh") ? "Some sources are stale." : ""}</p>
       </section></div>
 
       <div class="scene"><section id="credits" class="ws credits" tabindex="-1" aria-labelledby="cr-h">
@@ -1380,7 +1379,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
         <div class="who">
           <h2 id="cr-h" class="rv" style="--rd:.2s">${ext(UPSTREAM, "Caelestia")} is by soramanew and the caelestia-dots contributors. This port brings it to Windows.</h2>
           <dl class="roles">
-            <div class="rv" style="--rd:.5s"><dt>Windows support</dt><dd>nunreasonable's ${ext("https://github.com/nunreasonable/quickshell", "Windows Quickshell")}, built for ${ext("https://github.com/nunreasonable/ii-windows", "ii-windows")}, on outfoxxed's ${ext("https://quickshell.org", "Quickshell")}</dd></div>
+            <div class="rv" style="--rd:.5s"><dt>Windows support</dt><dd>The maintained ${ext("https://github.com/KldsSeeGhosts/caelestia-quickshell-windows", "Windows backend")}, based on nunreasonable's ${ext("https://github.com/nunreasonable/quickshell", "Windows Quickshell")} for ${ext("https://github.com/nunreasonable/ii-windows", "ii-windows")}, on outfoxxed's ${ext("https://quickshell.org", "Quickshell")}</dd></div>
             <div class="rv" style="--rd:.62s"><dt>Expressive shapes</dt><dd>${ext("https://github.com/soramanew/m3shapes", "m3shapes")} by soramanew</dd></div>
             <div class="rv" style="--rd:.74s"><dt>The port</dt><dd>KldsSeeGhosts, with a team of AI agents</dd></div>
           </dl>
