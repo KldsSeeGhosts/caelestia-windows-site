@@ -1300,8 +1300,8 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
         ${shapeSvg(pick(BLOOM), "shape sun", 'data-in="150"')}${shapeSvg("flower", "shape moon", 'data-in="380"')}
         <div class="copy">
           <h1 class="name">Caelestia</h1>
-          <p class="pitch rv" style="--rd:.75s">The Caelestia shell from Hyprland, now on Windows&nbsp;11.</p>
-          <p class="sub rv" style="--rd:.9s">A new bar, launcher, dashboard and window tiling for your desktop, all coloured by your wallpaper.</p>
+          <p class="pitch rv" style="--rd:.75s">The Caelestia shell from Hyprland, ported to Windows&nbsp;11.</p>
+          <p class="sub rv" style="--rd:.9s">A new bar, launcher, dashboard and window tiling for your desktop, coloured by your wallpaper. Built on the Windows Quickshell backend from ii-windows.</p>
           <div class="cta rv" style="--rd:1.05s"><a class="btn pri" href="#install">Get Caelestia</a><a class="btn ton" href="#run">Watch it run</a></div>
           <div class="wall rv" style="--rd:1.2s"><span>Try a wallpaper</span><div class="papers" role="group" aria-label="Wallpaper" data-papers>${chips()}</div></div>
         </div>
@@ -1350,15 +1350,15 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
         <div class="lead"><h2 class="title" id="inst-h">Three steps, no admin rights</h2></div>
         <ol class="steps">
           <li class="step"><div class="sn" data-in="350" style="--i:0;--rot:140s">${shapeSvg("cookie9")}<span aria-hidden="true">1</span></div>
-            <h3><span class="sr">Step 1: </span>Download</h3><p>Get the latest release from GitHub and unzip it.</p>${download}</li>
+            <h3><span class="sr">Step 1: </span>Download</h3><p>Grab the latest Windows x64 ZIP from GitHub and extract it.</p>${download}</li>
           <li class="step"><div class="sn" data-in="500" style="--i:1;--rot:120s">${shapeSvg("flower")}<span aria-hidden="true">2</span></div>
-            <h3><span class="sr">Step 2: </span>Run the installer</h3><p>Open PowerShell in that folder and run:</p>
+            <h3><span class="sr">Step 2: </span>Run the installer</h3><p>Double-click <code>Install.cmd</code>, or run in PowerShell:</p>
             <div class="cmd"><code>${INSTALL_CMD.split(" ").map(w => `<span>${esc(w)}</span>`).join(" ")}</code><button class="cpy" aria-live="polite">Copy</button></div></li>
           <li class="step"><div class="sn" data-in="650" style="--i:2;--rot:160s">${shapeSvg("sunny")}<span aria-hidden="true">3</span></div>
             <h3><span class="sr">Step 3: </span>Start Caelestia</h3><p>Open it from the Start menu. The bar appears on the left edge of your screen.</p></li>
         </ol>
         <div class="fine rv" style="--rd:.9s"><p>Tiling, taskbar hiding and start at sign-in stay off until you turn them on. Uninstalling restores your taskbar and keeps your settings.</p>
-          <p>Needs 64-bit Windows 11 and Python 3 for wallpaper colours. Switching workspaces needs Windows 11 24H2 or later.</p></div>
+          <p>Needs 64-bit Windows 11, the Microsoft Visual C++ x64 Redistributable, and Python 3 for dynamic wallpaper colours. Switching workspaces needs Windows 11 24H2 or later. <a href="${REPO}#install" target="_blank" rel="noopener">Human and AI agent install instructions<span class="sr"> (opens in a new tab)</span></a> are in the README.</p></div>
       </section></div>
 
       <div class="scene"><section id="build" class="ws build" tabindex="-1" aria-labelledby="build-h">
@@ -1377,11 +1377,11 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
         <div class="drift" data-drift="43" data-shapes="8" data-fade=".7" aria-hidden="true"></div>
         ${shapeSvg("cookie12", "shape big", 'data-in="80"')}
         <div class="who">
-          <h2 id="cr-h" class="rv" style="--rd:.2s">${ext(UPSTREAM, "Caelestia")} is by soramanew and the caelestia-dots contributors. This port brings it to Windows.</h2>
+          <h2 id="cr-h" class="rv" style="--rd:.2s">All the design is ${ext(UPSTREAM, "Caelestia")}'s, by soramanew and contributors. This port just brings it to Windows.</h2>
           <dl class="roles">
-            <div class="rv" style="--rd:.5s"><dt>Windows support</dt><dd>The maintained ${ext("https://github.com/KldsSeeGhosts/caelestia-quickshell-windows", "Windows backend")}, based on nunreasonable's ${ext("https://github.com/nunreasonable/quickshell", "Windows Quickshell")} for ${ext("https://github.com/nunreasonable/ii-windows", "ii-windows")}, on outfoxxed's ${ext("https://quickshell.org", "Quickshell")}</dd></div>
-            <div class="rv" style="--rd:.62s"><dt>Expressive shapes</dt><dd>${ext("https://github.com/soramanew/m3shapes", "m3shapes")} by soramanew</dd></div>
-            <div class="rv" style="--rd:.74s"><dt>The port</dt><dd>KldsSeeGhosts, with a team of AI agents</dd></div>
+            <div class="rv" style="--rd:.5s"><dt>Windows backend</dt><dd>Our ${ext("https://github.com/KldsSeeGhosts/caelestia-quickshell-windows", "Windows Quickshell fork")}, built on nunreasonable's ${ext("https://github.com/nunreasonable/quickshell", "Windows Quickshell")} for ${ext("https://github.com/nunreasonable/ii-windows", "ii-windows")}, and outfoxxed's ${ext("https://quickshell.org", "Quickshell")}</dd></div>
+            <div class="rv" style="--rd:.62s"><dt>Shapes &amp; colours</dt><dd>${ext("https://github.com/soramanew/m3shapes", "m3shapes")} and ${ext("https://github.com/caelestia-dots/cli", "caelestia-cli")} by soramanew</dd></div>
+            <div class="rv" style="--rd:.74s"><dt>The port</dt><dd>KldsSeeGhosts, with AI agents directed and reviewed by the maintainer</dd></div>
           </dl>
           <div class="cta rv" style="--rd:.9s">${download}<a class="btn ton" href="${UPSTREAM}" target="_blank" rel="noopener">Caelestia on GitHub<span class="sr"> (opens in a new tab)</span></a></div>
         </div>
