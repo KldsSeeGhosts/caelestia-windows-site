@@ -725,6 +725,21 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   // Public preview downloads. The releases index also includes prereleases.
   const REPO = "https://github.com/KldsSeeGhosts/caelestia-windows", RELEASED = true;
   const UPSTREAM = "https://github.com/caelestia-dots/shell";
+  // Point every download button at the newest published Windows build,
+  // development builds included. Without the API the buttons keep the releases page.
+  async function latestDownload() {
+    try {
+      const r = await fetch("https://api.github.com/repos/KldsSeeGhosts/caelestia-windows/releases?per_page=20");
+      if (!r.ok) return;
+      for (const rel of await r.json()) {
+        const zip = rel.draft ? null : (rel.assets || []).find(a => /-windows-x64\.zip$/.test(a.name));
+        if (!zip) continue;
+        const v = String(rel.tag_name).replace(/^v/, "").replace(/-development$/, "");
+        document.querySelectorAll("a[data-latest]").forEach(a => { a.href = zip.browser_download_url; a.textContent = `Download ${v} preview for Windows x64`; });
+        return;
+      }
+    } catch {}
+  }
   const INSTALL_CMD = "powershell -NoProfile -ExecutionPolicy Bypass -File .\\Install-CaelestiaRelease.ps1";
 
   /* ---------- expressive shapes ----------
@@ -1290,7 +1305,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     const num = (v, f, src) => `<span class="num" ${counter(v, f)} data-flat${src ? " data-src" : ""}>${shown0(v, f)}</span>`;
     const span = u.session?.start && u.asOf ? `, ${esc(day(u.session.start))} to ${esc(day(u.asOf))}` : "";
     const ext = (href, text) => `<a href="${href}" target="_blank" rel="noopener">${text}<span class="sr"> (opens in a new tab)</span></a>`;
-    const download = RELEASED ? `<a class="btn pri" href="${REPO}/releases">Download Windows preview</a>` : `<span class="btn pri off">First release coming soon</span>`;
+    const download = RELEASED ? `<a class="btn pri" data-latest href="${REPO}/releases">Download Windows preview</a>` : `<span class="btn pri off">First release coming soon</span>`;
     const edge = (k, cls) => { const [, , name, text] = EDGES[k]; return `<button class="el el-${cls}" data-k="${k}" aria-pressed="false"><b>${name}</b><span>${text}</span></button>`; };
     const idx = id => EDGES.findIndex(e => e[0] === id);
 
@@ -1390,6 +1405,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
           <p class="sig"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="${SPARK}"/></svg>Caelestia, on Windows</p>
         </footer>
       </section></div>`;
+    if (RELEASED) latestDownload();
 
     // the bar's workspace shapes
     document.getElementById("spaces").innerHTML = SCN

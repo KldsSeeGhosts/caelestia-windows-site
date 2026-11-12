@@ -55,6 +55,13 @@ def publish(config, dry_run=False):
     page = (Path(__file__).resolve().parents[1] / "source/showcase.html").read_text(encoding="utf-8")
     if "const MEDIA = null;" not in page:
         raise ValueError("Missing reviewed media marker")
+    # The template is the only source of index.html. A page edited directly on
+    # a publishing branch is overwritten by the next run, so required
+    # behaviour is asserted here.
+    for marker in ('data-latest href="${REPO}/releases"', "if (RELEASED) latestDownload();",
+                   "Microsoft Visual C++ x64 Redistributable"):
+        if marker not in page:
+            raise ValueError(f"Template lost required download behaviour: {marker}")
     page = page.replace("const MEDIA = null;", 'const MEDIA = {"demo-loop": false, "demo-full": true};')
     page = page.replace('content="og.png"', f'content="{config["canonicalUrl"]}og.png"')
     if PRIVATE.search(page):
