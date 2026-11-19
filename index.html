@@ -357,6 +357,21 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 .pmute .w,.pmute[aria-pressed="true"] .x{display:none}
 .pmute[aria-pressed="true"] .w{display:block}
 .note{color:var(--ink-3);max-width:24em}
+/* On a desktop the chapters are a list: the one playing is open, and any of them can be picked. */
+@media (min-width:1000px){
+  .cues{display:flex;flex-direction:column;gap:.4cqh;margin-top:1.4cqh}
+  .cues li{position:relative;opacity:1;translate:none;pointer-events:auto;cursor:pointer;padding:1.1cqh 0 1.1cqh 1.5cqw;color:var(--ink-3);transition:color .3s}
+  .cues li::before{content:"";position:absolute;left:0;top:1.3cqh;bottom:1.3cqh;width:4px;border-radius:99px;background:var(--primary);scale:1 0;transition:scale .5s var(--spring-fast)}
+  .cues li.now{color:var(--ink);cursor:default;transition-delay:0s}
+  .cues li.now::before{scale:1 1}
+  .cues li:not(.now):hover{color:var(--ink-2)}
+  .cues h3{font-size:clamp(18px,min(1.7cqw,3.6cqh),28px)}
+  .cues li>div{display:grid;grid-template-rows:0fr;transition:grid-template-rows .55s var(--out)}
+  .cues li.now>div{grid-template-rows:1fr}
+  .cues p{min-height:0;overflow:hidden;margin:0;font-size:clamp(15px,min(1.3cqw,2.8cqh),21px)}
+  .cues p::before{content:"";display:block;height:.5em}
+  .seg{min-width:min-content}
+}
 .run.has-video .note{display:none}
 
 /* Sound: four bars in the shell's bar. They dance while sound plays, and rest when it is off. */
@@ -432,7 +447,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 .sn span{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(30px,min(3.4cqw,6cqh),56px);font-weight:400;font-stretch:112%;color:var(--primary);pointer-events:none}
 .step h3{font-size:clamp(22px,2cqw,34px);font-weight:450;font-stretch:108%;letter-spacing:-.012em;line-height:1.15}
 .step p{margin-top:.5em;max-width:21em;font-size:clamp(16px,1.3cqw,21px);font-weight:350;line-height:1.42;color:var(--fg2);text-wrap:pretty}
-.step .btn{margin-top:2.2cqh}
+.step .btn{margin-top:2.2cqh;max-width:100%}
 .cmd{display:flex;align-items:center;gap:8px;width:100%;max-width:30em;margin-top:2cqh;padding:6px 6px 6px 16px;border-radius:16px;background:var(--on-p);color:var(--primary)}
 /* the command wraps only between its words, so a flag like -File never splits at its hyphen */
 .cmd code{flex:1;min-width:0;font:500 14px/1.4 var(--mono)}
@@ -441,22 +456,42 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   transition:border-radius .5s var(--spring-fast),background-color .3s}
 .cpy:hover{background:color-mix(in oklch,var(--primary) 28%,transparent)}
 .cpy:active{border-radius:8px}
-.fine{position:absolute;left:5.5cqw;right:5.5cqw;bottom:6cqh;display:flex;flex-direction:column;gap:6px;font-size:15px;font-weight:450;line-height:1.45;color:var(--fg2);z-index:2}
+.fine{position:absolute;left:5.5cqw;right:5.5cqw;bottom:6cqh;max-width:62em;display:flex;flex-direction:column;gap:6px;font-size:15px;font-weight:450;line-height:1.45;color:var(--fg2);z-index:2}
 
-/* How it was built: one sentence, with the figures rolling in it, and a dot for every agent. */
-.ledger{position:absolute;left:5.5cqw;top:10cqh;width:46cqw;z-index:2}
-.ledger>p:first-child{font-size:clamp(26px,min(3.2cqw,6cqh),54px);font-weight:300;font-stretch:108%;line-height:1.18;letter-spacing:-.015em;color:var(--ink-2);text-wrap:pretty}
+/* How it was built: the two totals, the tally behind them, a row per model, and a dot for every agent. */
+.ledger{position:absolute;left:5.5cqw;top:7cqh;width:47cqw;z-index:2;display:flex;flex-direction:column;gap:3.4cqh}
+.figs{display:flex;gap:1.6cqh 4cqw}
+.fig{min-width:0}
+.fig b{display:block;font-size:clamp(38px,min(4.7cqw,9.5cqh),86px);font-weight:300;font-stretch:110%;letter-spacing:-.03em;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--primary)}
+.fig+.fig b{color:var(--tertiary)}
+.fig>span{display:block;margin-top:1.1cqh;font-size:clamp(14px,min(1.15cqw,2.3cqh),18px);font-weight:450;line-height:1.35;color:var(--ink-2);max-width:15em;text-wrap:balance}
+.tally{max-width:28em;font-size:clamp(17px,min(1.65cqw,3.3cqh),26px);font-weight:300;font-stretch:106%;line-height:1.32;color:var(--ink-2);text-wrap:pretty}
 .num{color:var(--ink);font-weight:450;font-variant-numeric:tabular-nums;white-space:nowrap}
 .num .odo{vertical-align:baseline}
-.ledger .cap{margin-top:4cqh;max-width:26em}
-.galaxy{position:absolute;left:54cqw;right:3cqw;top:5cqh;bottom:10cqh}
+/* Bars share one scale, so a model's length is its share of the tokens. Colour is the tool that ran it. */
+.models{width:100%;border-collapse:collapse;font-size:clamp(13px,min(1.1cqw,2.15cqh),16px);font-variant-numeric:tabular-nums}
+.models th,.models td{padding:.62cqh 0;text-align:left;font-weight:450;white-space:nowrap;color:var(--ink)}
+.models thead th{padding-bottom:.9cqh;font-size:.88em;color:var(--ink-3)}
+.models .r{text-align:right;padding-left:1.6cqw}
+.models td.mb{width:100%;padding-left:1.4cqw}
+.models td.mb i{display:block;height:max(6px,1cqh);border-radius:99px;background:color-mix(in oklch,var(--ink) 9%,transparent)}
+.models td.mb b{display:block;height:100%;min-width:max(6px,1cqh);width:calc(var(--f) * 100%);border-radius:inherit;background:var(--c);
+  transform:scaleX(0);transform-origin:left;transition:transform 1.3s var(--out) calc(.7s + var(--i) * 90ms)}
+.on .models td.mb b{transform:none}
+.models .none{color:var(--ink-3)}
+.galaxy{position:absolute;left:57cqw;right:3cqw;top:5cqh;bottom:max(13cqh,96px)}
 .gx{position:absolute;inset:0;width:100%;height:100%}
-.gx .d{fill:var(--primary);fill-opacity:var(--o);translate:var(--fx) var(--fy);opacity:0;transition:translate 1.7s cubic-bezier(.16,.9,.3,1) var(--dl),opacity .3s var(--dl)}
-.gx .d.t{fill:var(--tertiary)}
+.gx .d{fill:var(--c);fill-opacity:var(--o);translate:var(--fx) var(--fy);opacity:0;transition:translate 1.7s cubic-bezier(.16,.9,.3,1) var(--dl),opacity .3s var(--dl)}
+.g0{--c:var(--primary)}.g1{--c:var(--tertiary)}.g2{--c:var(--quad)}.g3{--c:var(--quin)}
 .on .gx .d{translate:0 0;opacity:1}
 .on .gx .sp{animation:spin 260s linear 3.4s infinite}
-.gcap{position:absolute;right:3.2cqw;bottom:4.5cqh;font-size:14px;font-weight:450;color:var(--ink-3)}
-.bnote{position:absolute;left:5.5cqw;bottom:4.5cqh;max-width:46cqw;font-size:13.5px;font-weight:450;line-height:1.45;color:var(--ink-3)}
+.gcap{position:absolute;left:57cqw;right:3cqw;bottom:4.5cqh;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 18px;font-size:14px;font-weight:450;color:var(--ink-2)}
+.gcap>span:first-child{flex-basis:100%;text-align:center;color:var(--ink-3)}
+.gcap i{display:inline-block;width:10px;height:10px;margin-right:7px;border-radius:50%;background:var(--c)}
+.bnote{position:absolute;left:5.5cqw;bottom:4.5cqh;max-width:47cqw;font-size:13px;font-weight:450;line-height:1.45;color:var(--ink-3);text-wrap:pretty}
+@media (min-width:1000px) and (max-height:860px){.models tbody tr:nth-child(n+7){display:none}}
+@media (min-width:1000px) and (max-height:700px){.models tbody tr:nth-child(n+5){display:none}}
+@media (min-width:1000px) and (max-height:640px){.models{display:none}}
 
 /* Credits */
 .credits .big{right:-16cqw;top:-36cqh;width:min(62cqw,118cqh);aspect-ratio:1;fill:var(--s-cont);animation:spin 220s linear infinite reverse;
@@ -508,8 +543,19 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .step .btn{margin-top:16px}
   .cmd{margin-top:14px}
   .fine{margin-top:6px}
-  .ledger>p:first-child{font-size:clamp(26px,7cqw,44px)}
-  .ledger .cap{margin-top:20px}
+  .ledger{gap:22px}
+  .figs{flex-wrap:wrap;gap:18px 36px}
+  .fig>span{max-width:none}
+  .models td.mb{min-width:64px}
+  .fig b{font-size:clamp(40px,11cqw,72px)}
+  .fig>span{font-size:15px;margin-top:6px}
+  .tally{font-size:clamp(18px,4.4cqw,24px);max-width:none}
+  .models{font-size:14px}
+  .models th,.models td{padding:5px 0}
+  .models .r{padding-left:12px}
+  .models td.mb{padding-left:12px}
+  .gcap{justify-content:flex-start}
+  .gcap>span:first-child{text-align:left}
   .galaxy{height:min(96cqw,520px)}
   .gcap,.bnote{max-width:none}
   .roles{grid-template-columns:1fr;gap:18px;margin-top:28px}
@@ -632,7 +678,9 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .fine{font-size:14.5px}
 
   /* How it was built */
-  .ledger>p:first-child{font-size:clamp(26px,7.4cqw,38px)}
+  .fig b{font-size:clamp(40px,12.5cqw,56px)}
+  .models td.mb{min-width:34px;padding-left:10px}
+  .models .r{padding-left:10px}
   .galaxy{height:min(88cqw,420px)}
   /* The galaxy blooms in as one picture. Dots that fly out and turn would repaint over a thousand circles every frame. */
   .gx .d{translate:0 0;opacity:1;transition:none}
@@ -735,7 +783,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
         const zip = rel.draft ? null : (rel.assets || []).find(a => /-windows-x64\.zip$/.test(a.name));
         if (!zip) continue;
         const v = String(rel.tag_name).replace(/^v/, "").replace(/-development$/, "");
-        document.querySelectorAll("a[data-latest]").forEach(a => { a.href = zip.browser_download_url; a.textContent = `Download ${v} preview for Windows x64`; });
+        document.querySelectorAll("a[data-latest]").forEach(a => { a.href = zip.browser_download_url; a.textContent = (a.closest(".step") || phone.matches) ? `Download ${v} preview` : `Download ${v} preview for Windows x64`; });
         return;
       }
     } catch {}
@@ -1188,10 +1236,13 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     });
     mute.addEventListener("click", () => { v.muted = !v.muted; look(); });
     // a chapter on its own shows a representative moment; while playing, it starts from the top
-    segs.forEach((s, i) => s.addEventListener("click", () => {
+    const seek = i => {
       if (vid) v.currentTime = starts()[i]; else { w.seek(CH[i].s + (w.playing ? 0 : CH[i].pose)); chapter(i); }
       draw();
-    }));
+    };
+    segs.forEach((s, i) => s.addEventListener("click", () => seek(i)));
+    // the chapter list is a pointer shortcut for the same buttons
+    cues.forEach((li, i) => li.addEventListener("click", () => { if (i !== k) { Snd.sfx("click"); seek(i); } }));
     ["play", "pause", "volumechange"].forEach(e => v.addEventListener(e, look));
     v.addEventListener("ended", () => { held = true; v.currentTime = 0; sync(); });
     let asked = false;
@@ -1295,14 +1346,39 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   /* ---------- scenes ---------- */
   const SCN = [["intro", "Caelestia", "cookie12"], ["run", "See it run", "cookie6"], ["edges", "Panels", "sunny"], ["tiling", "Tiling", "flower"],
     ["install", "Install", "cookie9"], ["build", "How it was built", "verysunny"], ["credits", "Credits", "clover"]];
-  let D = null, agentsN = null, builders = [], SECs = [], SCs = [], links = [];
+  let D = null, agentsN = null, groups = [], builders = [], SECs = [], SCs = [], links = [];
   function render(d) {
     D = d;
     const p = d.project || {}, t3 = p.t3 || {}, u = d.usage || {}, t = u.totals || {}, code = p.code || {};
     agentsN = t3.delegated || isNum(p.claudeAgents) ? sum(t3.delegated) + (p.claudeAgents || 0) : null;
     const start = code.startedAt || t3.firstThreadAt;
-    const hours = start && p.asOf ? Math.round((new Date(p.asOf) - new Date(start)) / 36e5) : null;
+    const days = start && p.asOf ? Math.round((new Date(p.asOf) - new Date(start)) / 864e5) : null;
+    // Who ran the delegated agents: the three busiest tools by name, the rest together. The same
+    // colours mark each model's row, so the dots and the bars read as one key.
+    const by = {...(t3.delegated || {})};
+    if (isNum(p.claudeAgents)) by["Claude Code"] = (by["Claude Code"] || 0) + p.claudeAgents;
+    const ranked = Object.entries(by).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
+    groups = ranked.slice(0, 3);
+    if (ranked.length > 3) groups.push(["Others", sum(ranked.slice(3).map(e => e[1]))]);
+    const tint = name => { const g = groups.findIndex(e => e[0] === name); return "g" + (g < 0 ? 3 : g); };
+    const COUNTERS = ["inputTokens", "outputTokens", "cacheReadTokens", "cacheWriteTokens"];
+    const all = (u.byModel || []).map(m => ({...m, tok: COUNTERS.every(k => isNum(m[k])) ? COUNTERS.reduce((a, k) => a + m[k], 0) : null}));
+    const counted = all.filter(m => m.tok !== null).sort((a, b) => b.tok - a.tok), priced = all.filter(m => isNum(m.apiCostUsd));
+    const runsAll = sum(all.map(m => m.runs)), pct = (a, b) => b ? Math.round(a / b * 100) : null;
+    const cached = pct(t.cacheReadTokens, t.recordedTokenEvents), covered = pct(sum(priced.map(m => m.runs)), runsAll);
+    const word = s => s[0].toUpperCase() + s.slice(1);
+    const nice = id => {
+      const s = String(id).split(/[\\/]/).pop(); let m;
+      if ((m = s.match(/^claude-([a-z]+)-(\d+)-(\d+)$/))) return `Claude ${word(m[1])} ${m[2]}.${m[3]}`;
+      if ((m = s.match(/^gpt-([\d.]+)-([a-z]+)$/))) return `GPT ${m[1]} ${word(m[2])}`;
+      return /^[a-z]+(-[a-z0-9.]+)+$/.test(s) ? s.split("-").map(word).join(" ") : s;
+    };
+    const tk = n => n >= 1e9 ? (n / 1e9).toFixed(2) + "B" : n >= 1e6 ? (n / 1e6).toFixed(n >= 1e8 ? 0 : 1) + "M" : int(n);
+    const rows = counted.slice(0, 8).map((m, i) => `<tr><th scope="row">${esc(nice(m.model))}</th>
+      <td class="mb ${tint(m.provider)}" aria-hidden="true"><i><b style="--f:${(m.tok / counted[0].tok).toFixed(4)};--i:${i}"></b></i></td>
+      <td class="r">${tk(m.tok)}</td><td class="r${isNum(m.apiCostUsd) ? "" : " none"}">${isNum(m.apiCostUsd) ? usd0(m.apiCostUsd) : "unpriced"}</td></tr>`).join("");
     const num = (v, f, src) => `<span class="num" ${counter(v, f)} data-flat${src ? " data-src" : ""}>${shown0(v, f)}</span>`;
+    const fig = (v, f, text) => `<p class="fig"><b ${counter(v, f)}>${shown0(v, f)}</b><span>${text}</span></p>`;
     const span = u.session?.start && u.asOf ? `, ${esc(day(u.session.start))} to ${esc(day(u.asOf))}` : "";
     const ext = (href, text) => `<a href="${href}" target="_blank" rel="noopener">${text}<span class="sr"> (opens in a new tab)</span></a>`;
     const download = RELEASED ? `<a class="btn pri" data-latest href="${REPO}/releases">Download Windows preview</a>` : `<span class="btn pri off">First release coming soon</span>`;
@@ -1328,7 +1404,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       <div class="scene"><section id="run" class="ws run" tabindex="-1" aria-labelledby="run-h">
         <div class="drift" data-drift="13" data-shapes="6" data-fade=".45" aria-hidden="true"></div>
         <div class="lead"><h2 class="title" id="run-h">See it run</h2>
-          <ol class="cues" aria-label="What the demo shows">${CH.map((c, i) => `<li${i ? "" : ' class="now"'}><h3>${esc(c.title)}</h3><p>${esc(c.text)}</p></li>`).join("")}</ol>
+          <ol class="cues" aria-label="What the demo shows">${CH.map((c, i) => `<li${i ? "" : ' class="now"'}><h3>${esc(c.title)}</h3><div><p>${esc(c.text)}</p></div></li>`).join("")}</ol>
           <p class="small note rv" style="--rd:.8s">A drawing of the shell, made in code.</p></div>
         <div class="player rv" style="--rd:.25s"><div class="pscreen"><video playsinline muted preload="metadata" aria-label="Demo of Caelestia running on Windows 11"></video>
             ${miniHtml("A drawing of the Caelestia shell, stepping through each chapter of the demo.")}</div>
@@ -1378,14 +1454,15 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
 
       <div class="scene"><section id="build" class="ws build" tabindex="-1" aria-labelledby="build-h">
         <div class="drift" data-drift="41" data-shapes="6" data-fade=".5" aria-hidden="true"></div>
-        <h2 class="sr" id="build-h">How it was built</h2>
         <div class="ledger">
-          <p>Built across ${num(agentsN, "int", true)} recorded agent invocations, ${num(t3.threads, "int")} threads, ${num(p.pullRequests, "int")} public pull requests and ${num(code.commits, "int")} contributor commits, over ${num(hours, "int")} elapsed hours.</p>
-          <p class="cap rv" style="--rd:1s">Usage records are incomplete. No verified project-wide token total or cost is available.</p>
+          <h2 class="title" id="build-h">How it was built</h2>
+          <div class="figs">${fig(t.recordedTokenEvents, "bn", "tokens recorded across the sessions")}${fig(t.knownRateEstimateUsd, "usd0", "what they cost at API list prices")}</div>
+          <p class="tally">${num(agentsN, "int", true)} delegated agents across ${num(t3.threads, "int")} threads, landing ${num(code.commits, "int")} commits and ${num(p.pullRequests, "int")} public pull requests in ${num(days, "int")} days.</p>
+          ${rows ? `<table class="models rv" style="--rd:.5s"><thead><tr><th scope="col">Model</th><td></td><th scope="col" class="r">Tokens</th><th scope="col" class="r">API price</th></tr></thead><tbody>${rows}</tbody></table>` : ""}
         </div>
         <div class="galaxy" id="galaxy" aria-hidden="true"></div>
-        <p class="gcap rv" style="--rd:2.2s" aria-hidden="true">One dot for each recorded agent invocation.</p>
-        <p class="bnote rv" style="--rd:1.4s">${p.asOf ? `Project metrics as of ${esc(day(p.asOf))}. ` : "Metrics freshness unavailable. "}Commit counts include all refs in current and archived local histories, not only merged public work. Agent invocations are recorded delegations plus observed native Agent tool calls, not unique agents or all agent activity. Usage and stored-price estimates are partial, not independently reconciled accounting or billing; account-wide proxy totals are excluded. ${Object.values(p.sources || {}).some(s => s.state !== "fresh") ? "Some sources are stale." : ""}</p>
+        ${groups.length ? `<p class="gcap rv" style="--rd:2.2s"><span>One dot for each delegated agent</span>${groups.map(([name, count], i) => `<span class="g${i}"><i></i>${esc(name)} ${int(count)}</span>`).join("")}</p>` : ""}
+        <p class="bnote rv" style="--rd:1.4s">${p.asOf ? `Recorded on my workstation up to ${esc(day(p.asOf))}. ` : "Metrics freshness unavailable. "}Both totals are partial, so the real figures are higher: ${int(counted.length)} of ${int(all.length)} models report token counts${isNum(cached) ? `, and ${cached}% of those tokens are cached context read again on each turn` : ""}. The API price uses stored list prices for ${int(priced.length)} models${isNum(covered) ? ` behind ${covered}% of runs` : ""}; it is an estimate and not a bill, and account-wide proxy totals are excluded. Commits count every ref in current and archived local histories. Delegated agents are recorded hand-offs, not unique agents. ${Object.values(p.sources || {}).some(s => s.state !== "fresh") ? "Some sources are stale." : ""}</p>
       </section></div>
 
       <div class="scene"><section id="credits" class="ws credits" tabindex="-1" aria-labelledby="cr-h">
@@ -1431,7 +1508,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     if (k > 0) jump(k); else startIntro();
   }
 
-  // One dot for each agent, on a sunflower spiral. They fly out of the number that counts them.
+  // One dot for each delegated agent, on a sunflower spiral. They fly out of the number that counts them.
   function layoutGalaxy() {
     const el = document.getElementById("galaxy"), n = agentsN;
     if (!el) return;
@@ -1442,10 +1519,12 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     if (src) { const [x, y] = rel(src, sec); ox = x + src.offsetWidth / 2 - sx; oy = y + src.offsetHeight / 2 - sy; }
     const R = Math.min(W, H) / 2 * .96, cx = W / 2, cy = H / 2, r0 = mulberry(7);
     const dot = Math.max(1.4, Math.min(6, R * Math.sqrt(Math.PI / n) * .46));
+    // the spiral fills outwards, so each tool's agents form a ring whose area is its share
+    const ends = []; groups.reduce((a, g) => (ends.push(a + g[1]), a + g[1]), 0);
     let s = "";
     for (let j = 0; j < n; j++) {
       const rr = R * Math.sqrt((j + .5) / n), a = j * 2.39996, x = cx + rr * Math.cos(a), y = cy + rr * Math.sin(a);
-      s += `<circle class="d${j % 9 ? "" : " t"}" cx="${f1(x)}" cy="${f1(y)}" r="${f1(dot)}" style="--fx:${(ox - x + (r0() - .5) * 40).toFixed(0)}px;--fy:${(oy - y + (r0() - .5) * 40).toFixed(0)}px;--dl:${(.3 + j / n * 1.3 + r0() * .15).toFixed(2)}s;--o:${(.5 + r0() * .5).toFixed(2)}"/>`;
+      s += `<circle class="d g${Math.max(0, ends.findIndex(e => j < e))}" cx="${f1(x)}" cy="${f1(y)}" r="${f1(dot)}" style="--fx:${(ox - x + (r0() - .5) * 40).toFixed(0)}px;--fy:${(oy - y + (r0() - .5) * 40).toFixed(0)}px;--dl:${(.3 + j / n * 1.3 + r0() * .15).toFixed(2)}s;--o:${(.5 + r0() * .5).toFixed(2)}"/>`;
     }
     el.innerHTML = `<svg class="gx" viewBox="0 0 ${W} ${H}"><g class="sp" style="transform-origin:${f1(cx)}px ${f1(cy)}px">${s}</g></svg>`;
   }
