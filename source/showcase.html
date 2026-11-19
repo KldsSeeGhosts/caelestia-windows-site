@@ -479,7 +479,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   transform:scaleX(0);transform-origin:left;transition:transform 1.3s var(--out) calc(.7s + var(--i) * 90ms)}
 .on .models td.mb b{transform:none}
 .models .none{color:var(--ink-3)}
-.galaxy{position:absolute;left:57cqw;right:3cqw;top:5cqh;bottom:13cqh}
+.galaxy{position:absolute;left:57cqw;right:3cqw;top:5cqh;bottom:max(13cqh,96px)}
 .gx{position:absolute;inset:0;width:100%;height:100%}
 .gx .d{fill:var(--c);fill-opacity:var(--o);translate:var(--fx) var(--fy);opacity:0;transition:translate 1.7s cubic-bezier(.16,.9,.3,1) var(--dl),opacity .3s var(--dl)}
 .g0{--c:var(--primary)}.g1{--c:var(--tertiary)}.g2{--c:var(--quad)}.g3{--c:var(--quin)}
@@ -489,6 +489,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 .gcap>span:first-child{flex-basis:100%;text-align:center;color:var(--ink-3)}
 .gcap i{display:inline-block;width:10px;height:10px;margin-right:7px;border-radius:50%;background:var(--c)}
 .bnote{position:absolute;left:5.5cqw;bottom:4.5cqh;max-width:47cqw;font-size:13px;font-weight:450;line-height:1.45;color:var(--ink-3);text-wrap:pretty}
+@media (min-width:1000px) and (max-height:860px){.models tbody tr:nth-child(n+7){display:none}}
 @media (min-width:1000px) and (max-height:700px){.models tbody tr:nth-child(n+5){display:none}}
 @media (min-width:1000px) and (max-height:640px){.models{display:none}}
 
@@ -678,6 +679,8 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 
   /* How it was built */
   .fig b{font-size:clamp(40px,12.5cqw,56px)}
+  .models td.mb{min-width:34px;padding-left:10px}
+  .models .r{padding-left:10px}
   .galaxy{height:min(88cqw,420px)}
   /* The galaxy blooms in as one picture. Dots that fly out and turn would repaint over a thousand circles every frame. */
   .gx .d{translate:0 0;opacity:1;transition:none}
@@ -1371,7 +1374,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       return s;
     };
     const tk = n => n >= 1e9 ? (n / 1e9).toFixed(2) + "B" : n >= 1e6 ? (n / 1e6).toFixed(n >= 1e8 ? 0 : 1) + "M" : int(n);
-    const rows = counted.slice(0, 6).map((m, i) => `<tr><th scope="row">${esc(nice(m.model))}</th>
+    const rows = counted.slice(0, 8).map((m, i) => `<tr><th scope="row">${esc(nice(m.model))}</th>
       <td class="mb ${tint(m.provider)}" aria-hidden="true"><i><b style="--f:${(m.tok / counted[0].tok).toFixed(4)};--i:${i}"></b></i></td>
       <td class="r">${tk(m.tok)}</td><td class="r${isNum(m.apiCostUsd) ? "" : " none"}">${isNum(m.apiCostUsd) ? usd0(m.apiCostUsd) : "unpriced"}</td></tr>`).join("");
     const num = (v, f, src) => `<span class="num" ${counter(v, f)} data-flat${src ? " data-src" : ""}>${shown0(v, f)}</span>`;
