@@ -1371,7 +1371,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       const s = String(id).split(/[\\/]/).pop(); let m;
       if ((m = s.match(/^claude-([a-z]+)-(\d+)-(\d+)$/))) return `Claude ${word(m[1])} ${m[2]}.${m[3]}`;
       if ((m = s.match(/^gpt-([\d.]+)-([a-z]+)$/))) return `GPT ${m[1]} ${word(m[2])}`;
-      return s;
+      return /^[a-z]+(-[a-z0-9.]+)+$/.test(s) ? s.split("-").map(word).join(" ") : s;
     };
     const tk = n => n >= 1e9 ? (n / 1e9).toFixed(2) + "B" : n >= 1e6 ? (n / 1e6).toFixed(n >= 1e8 ? 0 : 1) + "M" : int(n);
     const rows = counted.slice(0, 8).map((m, i) => `<tr><th scope="row">${esc(nice(m.model))}</th>
