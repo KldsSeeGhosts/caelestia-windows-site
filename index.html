@@ -1360,6 +1360,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     const COUNTERS = ["inputTokens", "outputTokens", "cacheReadTokens", "cacheWriteTokens"];
     const all = (u.byModel || []).map(m => ({...m, tok: COUNTERS.every(k => isNum(m[k])) ? COUNTERS.reduce((a, k) => a + m[k], 0) : null}));
     const counted = all.filter(m => m.tok !== null).sort((a, b) => b.tok - a.tok), priced = all.filter(m => isNum(m.apiCostUsd));
+    const incomplete = all.filter(m => m.tok === null && m.pricePerMTok).length;
     const runsAll = sum(all.map(m => m.runs)), pct = (a, b) => b ? Math.round(a / b * 100) : null;
     const cached = pct(t.cacheReadTokens, t.recordedTokenEvents), covered = pct(sum(priced.map(m => m.runs)), runsAll);
     const word = s => s[0].toUpperCase() + s.slice(1);
@@ -1372,7 +1373,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     const tk = n => n >= 1e9 ? (n / 1e9).toFixed(2) + "B" : n >= 1e6 ? (n / 1e6).toFixed(n >= 1e8 ? 0 : 1) + "M" : int(n);
     const rows = counted.slice(0, 8).map((m, i) => `<tr><th scope="row">${esc(nice(m.model))}</th>
       <td class="mb ${tint(m.provider)}" aria-hidden="true"><i><b style="--f:${(m.tok / counted[0].tok).toFixed(4)};--i:${i}"></b></i></td>
-      <td class="r">${tk(m.tok)}</td><td class="r${isNum(m.apiCostUsd) ? "" : " none"}">${isNum(m.apiCostUsd) ? usd0(m.apiCostUsd) : "unpriced"}</td></tr>`).join("");
+      <td class="r">${tk(m.tok)}</td><td class="r${isNum(m.apiCostUsd) ? "" : " none"}">${isNum(m.apiCostUsd) ? usd0(m.apiCostUsd) : "Rate unavailable"}</td></tr>`).join("");
     const num = (v, f, src) => `<span class="num" ${counter(v, f)} data-flat${src ? " data-src" : ""}>${shown0(v, f)}</span>`;
     const fig = (v, f, text) => `<p class="fig"><b ${counter(v, f)}>${shown0(v, f)}</b><span>${text}</span></p>`;
     const span = u.session?.start && u.asOf ? `, ${esc(day(u.session.start))} to ${esc(day(u.asOf))}` : "";
@@ -1454,13 +1455,13 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
         <div class="drift" data-drift="41" data-shapes="6" data-fade=".5" aria-hidden="true"></div>
         <div class="ledger">
           <h2 class="title" id="build-h">How it was built</h2>
-          <div class="figs">${fig(t.recordedTokenEvents, "bn", "tokens recorded across the sessions")}${fig(t.knownRateEstimateUsd, "usd0", "what they cost at API list prices")}</div>
+          <div class="figs">${fig(t.recordedTokenEvents, "bn", "tokens recorded across the sessions")}${fig(t.knownRateEstimateUsd, "usd0", "estimated cost at reference rates")}</div>
           <p class="tally">${num(agentsN, "int", true)} delegated agents across ${num(t3.threads, "int")} threads, landing ${num(code.commits, "int")} commits and ${num(p.pullRequests, "int")} public pull requests in ${num(days, "int")} days.</p>
-          ${rows ? `<table class="models rv" style="--rd:.5s"><thead><tr><th scope="col">Model</th><td></td><th scope="col" class="r">Tokens</th><th scope="col" class="r">API price</th></tr></thead><tbody>${rows}</tbody></table>` : ""}
+          ${rows ? `<table class="models rv" style="--rd:.5s"><thead><tr><th scope="col">Model</th><td></td><th scope="col" class="r">Tokens</th><th scope="col" class="r">API estimate</th></tr></thead><tbody>${rows}</tbody></table>` : ""}
         </div>
         <div class="galaxy" id="galaxy" aria-hidden="true"></div>
         ${groups.length ? `<p class="gcap rv" style="--rd:2.2s"><span>One dot for each delegated agent</span>${groups.map(([name, count], i) => `<span class="g${i}"><i></i>${esc(name)} ${int(count)}</span>`).join("")}</p>` : ""}
-        <p class="bnote rv" style="--rd:1.4s">${p.asOf ? `Recorded on my workstation up to ${esc(day(p.asOf))}. ` : "Metrics freshness unavailable. "}Both totals are partial, so the real figures are higher: ${int(counted.length)} of ${int(all.length)} models report token counts${isNum(cached) ? `, and ${cached}% of those tokens are cached context read again on each turn` : ""}. The API price uses stored list prices for ${int(priced.length)} models${isNum(covered) ? ` behind ${covered}% of runs` : ""}; it is an estimate and not a bill, and account-wide proxy totals are excluded. Commits count every ref in current and archived local histories. Delegated agents are recorded hand-offs, not unique agents. ${Object.values(p.sources || {}).some(s => s.state !== "fresh") ? "Some sources are stale." : ""}</p>
+        <p class="bnote rv" style="--rd:1.4s">${p.asOf ? `Recorded on my workstation up to ${esc(day(p.asOf))}. ` : "Metrics freshness unavailable. "}Both totals are partial. ${int(counted.length)} of ${int(all.length)} models have complete token counters${isNum(cached) ? `; ${cached}% of recorded token events are cache reads` : ""}. The API estimate uses stored reference rates for ${int(priced.length)} models${isNum(covered) ? ` behind ${covered}% of runs` : ""}. ${incomplete ? `${int(incomplete)} more ${incomplete === 1 ? "model has" : "models have"} rates but incomplete usage. ` : ""}Historical rate changes and discounts are not applied. This is an estimate, not a bill, and account-wide proxy totals are excluded. Commits count every ref in current and archived local histories. Delegated agents are recorded hand-offs, not unique agents. ${Object.values(p.sources || {}).some(s => s.state !== "fresh") ? "Some sources are stale." : ""}</p>
       </section></div>
 
       <div class="scene"><section id="credits" class="ws credits" tabindex="-1" aria-labelledby="cr-h">
