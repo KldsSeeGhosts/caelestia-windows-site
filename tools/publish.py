@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import metrics
 
-PUBLIC_FILES = ("index.html", "status-data.js", ".nojekyll", "og.png",
+PUBLIC_FILES = ("index.html", "release-download.js", "status-data.js", ".nojekyll", "og.png",
                 "demo-full.mp4", "demo-full-poster.jpg")
 PRIVATE = re.compile(r"(?i)\b[A-Z]:[\\/]|AppData|tail74ed91|\.ts\.net|linear\.app|"
                      r"\bErmin\b|gh[pousr]_[A-Za-z0-9]{8,}|sk-[A-Za-z0-9]{8,}|"
@@ -48,28 +48,38 @@ def exclusive_run(runtime):
             msvcrt.locking(lock.fileno(), msvcrt.LK_UNLCK, 1)
 
 
-def publish(config, dry_run=False):
-    runtime = Path(config["runtime"])
-    project, usage = metrics.collect(config)
-    payload = public_payload(project, usage)
-    page = (Path(__file__).resolve().parents[1] / "source/showcase.html").read_text(encoding="utf-8")
+def public_site(canonical_url):
+    source = Path(__file__).resolve().parents[1] / "source"
+    page = (source / "showcase.html").read_text(encoding="utf-8")
+    download = (source / "release-download.js").read_text(encoding="utf-8")
     if "const MEDIA = null;" not in page:
         raise ValueError("Missing reviewed media marker")
     # The template is the only source of index.html. A page edited directly on
     # a publishing branch is overwritten by the next run, so required
     # behaviour is asserted here.
-    for marker in ('data-latest href="${REPO}/releases"', "if (RELEASED) latestDownload();",
+    for marker in ('<script src="release-download.js"></script>',
+                   'data-release-download href="${REPO}/releases"', "showRelease();",
+                   "data-release-digest", "status-data.js",
                    "Microsoft Visual C++ x64 Redistributable"):
         if marker not in page:
             raise ValueError(f"Template lost required download behaviour: {marker}")
     page = page.replace("const MEDIA = null;", 'const MEDIA = {"demo-loop": false, "demo-full": true};')
-    page = page.replace('content="og.png"', f'content="{config["canonicalUrl"]}og.png"')
-    if PRIVATE.search(page):
+    page = page.replace('content="og.png"', f'content="{canonical_url}og.png"')
+    if PRIVATE.search(page) or PRIVATE.search(download):
         raise ValueError("Refusing personal data in public page")
+    return page, download
+
+
+def publish(config, dry_run=False):
+    runtime = Path(config["runtime"])
+    project, usage = metrics.collect(config)
+    payload = public_payload(project, usage)
+    page, download = public_site(config["canonicalUrl"])
     metrics.atomic_json(runtime / "project.json", project)
     metrics.atomic_json(runtime / "usage.json", usage)
     (runtime / "status-data.js").write_text(payload, encoding="utf-8")
     (runtime / "index.html").write_text(page, encoding="utf-8")
+    (runtime / "release-download.js").write_text(download, encoding="utf-8")
     (runtime / ".nojekyll").write_text("", encoding="utf-8")
     for target in config["targets"]:
         root = Path(target["path"])

@@ -749,6 +749,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
 <noscript><p class="nojs">Caelestia for Windows. Turn on JavaScript to see the shell in action.</p></noscript>
 <div class="track" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 
+<script src="release-download.js"></script>
 <script>
 (() => {
   /* ---------- helpers ---------- */
@@ -770,23 +771,18 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   const rel = (el, anc) => { let x = 0, y = 0; for (let e = el; e && e !== anc; e = e.offsetParent) { x += e.offsetLeft; y += e.offsetTop; } return [x, y]; };
   const hidden = () => document.hidden;
 
-  // Public preview downloads. The releases index also includes prereleases.
-  const REPO = "https://github.com/KldsSeeGhosts/caelestia-windows", RELEASED = true;
+  const REPO = "https://github.com/KldsSeeGhosts/caelestia-windows";
   const UPSTREAM = "https://github.com/caelestia-dots/shell";
-  // Point every download button at the newest published Windows build,
-  // development builds included. Without the API the buttons keep the releases page.
-  async function latestDownload() {
-    try {
-      const r = await fetch("https://api.github.com/repos/KldsSeeGhosts/caelestia-windows/releases?per_page=20");
-      if (!r.ok) return;
-      for (const rel of await r.json()) {
-        const zip = rel.draft ? null : (rel.assets || []).find(a => /-windows-x64\.zip$/.test(a.name));
-        if (!zip) continue;
-        const v = String(rel.tag_name).replace(/^v/, "").replace(/-development$/, "");
-        document.querySelectorAll("a[data-latest]").forEach(a => { a.href = zip.browser_download_url; a.textContent = (a.closest(".step") || phone.matches) ? `Download ${v} preview` : `Download ${v} preview for Windows x64`; });
-        return;
-      }
-    } catch {}
+  async function showRelease() {
+    const release = await window.CaelestiaDownloads?.current();
+    if (!release) return;
+    for (const link of document.querySelectorAll("[data-release-download]")) {
+      link.href = release.url;
+      link.textContent = `Download ${release.version} for Windows x64`;
+    }
+    document.querySelector("[data-release-notes]").href = release.notes;
+    document.querySelector("[data-release-digest]").textContent = release.sha256;
+    document.querySelector("[data-release-info]").hidden = false;
   }
   const INSTALL_CMD = "powershell -NoProfile -ExecutionPolicy Bypass -File .\\Install-CaelestiaRelease.ps1";
 
@@ -1381,7 +1377,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     const fig = (v, f, text) => `<p class="fig"><b ${counter(v, f)}>${shown0(v, f)}</b><span>${text}</span></p>`;
     const span = u.session?.start && u.asOf ? `, ${esc(day(u.session.start))} to ${esc(day(u.asOf))}` : "";
     const ext = (href, text) => `<a href="${href}" target="_blank" rel="noopener">${text}<span class="sr"> (opens in a new tab)</span></a>`;
-    const download = RELEASED ? `<a class="btn pri" data-latest href="${REPO}/releases">Download Windows preview</a>` : `<span class="btn pri off">First release coming soon</span>`;
+    const download = `<a class="btn pri" data-release-download href="${REPO}/releases">View Windows releases</a>`;
     const edge = (k, cls) => { const [, , name, text] = EDGES[k]; return `<button class="el el-${cls}" data-k="${k}" aria-pressed="false"><b>${name}</b><span>${text}</span></button>`; };
     const idx = id => EDGES.findIndex(e => e[0] === id);
 
@@ -1441,7 +1437,8 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
         <div class="lead"><h2 class="title" id="inst-h">Three steps, no admin rights</h2></div>
         <ol class="steps">
           <li class="step"><div class="sn" data-in="350" style="--i:0;--rot:140s">${shapeSvg("cookie9")}<span aria-hidden="true">1</span></div>
-            <h3><span class="sr">Step 1: </span>Download</h3><p>Grab the latest Windows x64 ZIP from GitHub and extract it.</p>${download}</li>
+            <h3><span class="sr">Step 1: </span>Download</h3><p>Download the Windows x64 ZIP from GitHub, verify its SHA-256, and extract it.</p>${download}
+            <p data-release-info hidden style="overflow-wrap:anywhere">ZIP SHA-256: <code data-release-digest></code>. <a data-release-notes href="${REPO}/releases">Release notes and source archives</a>.</p></li>
           <li class="step"><div class="sn" data-in="500" style="--i:1;--rot:120s">${shapeSvg("flower")}<span aria-hidden="true">2</span></div>
             <h3><span class="sr">Step 2: </span>Run the installer</h3><p>Double-click <code>Install.cmd</code>, or run in PowerShell:</p>
             <div class="cmd"><code>${INSTALL_CMD.split(" ").map(w => `<span>${esc(w)}</span>`).join(" ")}</code><button class="cpy" aria-live="polite">Copy</button></div></li>
@@ -1449,7 +1446,8 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
             <h3><span class="sr">Step 3: </span>Start Caelestia</h3><p>Open it from the Start menu. The bar appears on the left edge of your screen.</p></li>
         </ol>
         <div class="fine rv" style="--rd:.9s"><p>Tiling, taskbar hiding and start at sign-in stay off until you turn them on. Uninstalling restores your taskbar and keeps your settings.</p>
-          <p>Needs 64-bit Windows 11, the Microsoft Visual C++ x64 Redistributable, and Python 3 for dynamic wallpaper colours. Switching workspaces needs Windows 11 24H2 or later. <a href="${REPO}#install" target="_blank" rel="noopener">Human and AI agent install instructions<span class="sr"> (opens in a new tab)</span></a> are in the README.</p></div>
+          <p>Needs 64-bit Windows 11, PowerShell 7.4 or newer, and the Microsoft Visual C++ x64 Redistributable. Python is optional for dynamic wallpaper colours. See the <a href="${REPO}#install">installation instructions</a>.</p>
+          <p>Already installed? Check for the same release in Nexus under Settings &gt; Updates. The package is unsigned. If Windows policy blocks it, do not disable your protections.</p></div>
       </section></div>
 
       <div class="scene"><section id="build" class="ws build" tabindex="-1" aria-labelledby="build-h">
@@ -1482,7 +1480,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
           <p class="sig"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="${SPARK}"/></svg>Caelestia, on Windows</p>
         </footer>
       </section></div>`;
-    if (RELEASED) latestDownload();
+    showRelease();
 
     // the bar's workspace shapes
     document.getElementById("spaces").innerHTML = SCN

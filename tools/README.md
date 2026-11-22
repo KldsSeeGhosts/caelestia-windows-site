@@ -31,8 +31,11 @@ cause a nonzero result rather than a false all-fresh timestamp.
 Historical milestone prose is not republished as fresh project acceptance.
 Public PR counts exclude the private archive.
 
-Only index.html, status-data.js, .nojekyll and the reviewed image/video assets
-are staged by a publishing run. Unrelated staged files block publication.
+Only index.html, release-download.js, status-data.js, .nojekyll and the reviewed
+image/video assets are staged by a publishing run. The resolver selects the
+exact public ZIP from the same metadata pointer as Nexus; the metrics
+collector is independent of that pointer and the proxy dashboard.
+Unrelated staged files block publication.
 An operating-system lock prevents concurrent manual/hourly publishing.
 Destinations must match the configured canonical origin and branch. Pushes
 are non-force. A dry run refreshes private generated files but never modifies,

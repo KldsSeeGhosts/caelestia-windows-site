@@ -41,6 +41,14 @@ class MetricsTests(unittest.TestCase):
         self.assertIn("https://github.com/", publish.public_payload(
             {"url": "https://github.com/KldsSeeGhosts/caelestia-windows"}, {}))
 
+    def test_site_publishes_the_release_resolver_and_metrics_together(self):
+        page, download = publish.public_site("https://kldsseeghosts.github.io/caelestia-windows/")
+        self.assertIn('src="release-download.js"', page)
+        self.assertIn("status-data.js", page)
+        self.assertIn("nexus-channels/v1/development.dsse.json", download)
+        self.assertNotIn("latestDownload()", page)
+        self.assertTrue({"index.html", "release-download.js", "status-data.js"} <= set(publish.PUBLIC_FILES))
+
     def test_usage_does_not_double_count_claude_or_copy_proxy_totals(self):
         old = {"byModel": [{"model": "deepseek-v4.1-flash", "inputTokens": 999999}]}
         usage = metrics.usage_metrics([
