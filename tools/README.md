@@ -22,9 +22,18 @@ project. Usage coverage and counter semantics have not been fully reconciled.
 The page headlines recorded token events and their known-rate API estimate
 at the owner's request, next to a note that both are partial. Token events
 include repeated cached-input processing, not unique text; known-rate
-estimates use historical prices and are neither complete cost nor billing.
+estimates use historical snapshots and are neither complete cost nor billing.
+`source/model-rates.json` records dated public reference rates in USD per
+million tokens. It supplements the existing historical snapshot with
+explicit price-only aliases. Model usage stays grouped by the reported ID.
+Rates are fixed references, not a reconstruction of price changes, plans,
+speed tiers, or promotional discounts. The Gemini 4 Carbon entry uses the
+published introductory rate on the snapshot date. The SWE-2 entries use
+Cognition's non-promotional list prices, and the GLM coding-plan aliases
+use the stored API reference rates rather than a subscription price.
 Missing model counters stay null, not zero. Synthetic records are excluded.
-Unpriced models are explicit. Missing sources retain their old freshness and
+Known rates remain available when usage is incomplete, but no cost is
+estimated without the counters and applicable rates. Missing sources retain their old freshness and
 cause a nonzero result rather than a false all-fresh timestamp.
 
 `publisherRefreshedAt` is separate from the aggregate metric timestamp.

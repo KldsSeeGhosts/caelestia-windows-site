@@ -9,6 +9,9 @@ import subprocess
 PROVIDERS = {"codex": "Codex", "claudeAgent": "Claude Code",
              "deepseek": "DeepSeek", "zcode": "GLM", "antigravity": "Gemini",
              "cursor": "Cursor"}
+MODEL_RATES = Path(__file__).resolve().parents[1] / "source" / "model-rates.json"
+TOKEN_RATES = (("inputTokens", "input"), ("outputTokens", "output"),
+               ("cacheReadTokens", "cacheRead"), ("cacheWriteTokens", "cacheWrite"))
 
 
 def now():
@@ -129,9 +132,13 @@ def canonical_model(model):
     return model.split("/")[-1] if isinstance(model, str) else None
 
 
-def usage_metrics(rows, transcripts, previous):
+def usage_metrics(rows, transcripts, previous, reference_prices=None):
     """T3 scoped usage, with deduplicated Claude transcript usage instead of double-counting."""
-    rates = {row["model"]: row for row in previous.get("byModel", [])}
+    reference_prices = reference_prices or {}
+    rates = {row["model"]: row for snapshot in (previous, reference_prices)
+             for row in snapshot.get("byModel", []) if row.get("pricePerMTok")}
+    aliases = reference_prices.get("aliases", {})
+    fields = tuple(field for field, _ in TOKEN_RATES)
     models = {}
     for provider, model, runs, inp, out, cached, created in rows:
         model = canonical_model(model)
@@ -152,19 +159,18 @@ def usage_metrics(rows, transcripts, previous):
     result = []
     for model, values in models.items():
         row = {"model": model, **values}
-        rate = rates.get(model, {}).get("pricePerMTok")
-        if rate and all(row[field] is not None for field in (
-                "inputTokens", "outputTokens", "cacheReadTokens", "cacheWriteTokens")):
-            row["pricePerMTok"] = rate
-            row["priceSource"] = rates[model].get("priceSource")
-            row["apiCostUsd"] = round(sum(
-                row[key] * float(rate[rkey]) for key, rkey in (
-                    ("inputTokens", "input"), ("outputTokens", "output"),
-                    ("cacheReadTokens", "cacheRead"), ("cacheWriteTokens", "cacheWrite"))) / 1e6, 2)
-        else:
-            row["apiCostUsd"] = None
+        price = rates.get(model) or rates.get(aliases.get(model))
+        row["apiCostUsd"] = None
+        if price:
+            rate = row["pricePerMTok"] = price["pricePerMTok"]
+            row["priceSource"] = price.get("priceSource")
+            # A missing rate only matters for dollars if a recorded counter is
+            # nonzero. Missing counters are never treated as zero.
+            if all(row[field] is not None and (row[field] == 0 or rate.get(key) is not None)
+                   for field, key in TOKEN_RATES):
+                row["apiCostUsd"] = round(sum(row[field] * float(rate[key])
+                    for field, key in TOKEN_RATES if row[field] != 0) / 1e6, 2)
         result.append(row)
-    fields = ("inputTokens", "outputTokens", "cacheReadTokens", "cacheWriteTokens")
     totals = {field: sum(row[field] or 0 for row in result) for field in fields}
     # Preserve observed counters for inspection, not a project-wide accounting
     # claim. Repeated cached input is a token event, not unique text. Coverage
@@ -176,8 +182,8 @@ def usage_metrics(rows, transcripts, previous):
     return {
         "asOf": now(), "totals": totals, "byModel": result,
         "accountingStatus": "incomplete-not-reconciled",
-        "coverage": "Partial recorded token events, not unique tokens or a project-wide total. Provider coverage and counter semantics are not fully reconciled. Missing usage remains unknown. Claude transcript counters replace matching T3 model counters; account-wide proxy totals are excluded. Known-rate estimates use stored historical prices and are neither a bill nor a complete project cost.",
-        "unpricedModels": sorted(row["model"] for row in result if not rates.get(row["model"], {}).get("pricePerMTok")),
+        "coverage": "Partial recorded token events, not unique tokens or a project-wide total. Provider coverage and counter semantics are not fully reconciled. Missing usage remains unknown. Claude transcript counters replace matching T3 model counters; account-wide proxy totals are excluded. Estimates use stored reference rates without reconstructing historical changes, plan discounts or speed tiers. They are neither a bill nor a complete project cost.",
+        "unpricedModels": sorted(row["model"] for row in result if not row.get("pricePerMTok")),
         "unknownUsageModels": sorted(row["model"] for row in result if any(row[field] is None for field in fields))}
 
 
@@ -257,5 +263,6 @@ def collect(config):
     project["sources"] = states
     project["collectedAt"] = now()
     project["asOf"] = now() if all(row["state"] == "fresh" for row in states.values()) else previous.get("asOf")
-    usage = usage_metrics(rows, transcripts, prices) if rows is not None and states["claude"]["state"] == "fresh" else old_usage
+    usage = (usage_metrics(rows, transcripts, prices, read(MODEL_RATES))
+             if rows is not None and states["claude"]["state"] == "fresh" else old_usage)
     return project, usage

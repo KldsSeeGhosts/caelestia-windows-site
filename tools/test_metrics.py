@@ -74,6 +74,55 @@ class MetricsTests(unittest.TestCase):
         self.assertEqual(["gemini-unreported", "gpt-partial"], usage["unknownUsageModels"])
         self.assertEqual("incomplete-not-reconciled", usage["accountingStatus"])
 
+    def test_reference_estimates_do_not_replace_unrelated_historical_rates(self):
+        historical = {"input": 1, "output": 2, "cacheRead": 0.5, "cacheWrite": 0}
+        usage = metrics.usage_metrics([
+            ("codex", "gpt-6.2-sol", 1, 2_000_000, 1_000_000, 1_000_000, 1_000_000),
+            ("codex", "gpt-6.1-sol", 1, 1_000_000, 0, 0, 0)],
+            {}, {"byModel": [{"model": "gpt-6.1-sol", "pricePerMTok": historical}]},
+            metrics.read(metrics.MODEL_RATES))
+        models = {row["model"]: row for row in usage["byModel"]}
+        self.assertEqual(14.6, models["gpt-6.2-sol"]["apiCostUsd"])
+        self.assertEqual(1, models["gpt-6.1-sol"]["apiCostUsd"])
+        self.assertEqual(15.6, usage["totals"]["knownRateEstimateUsd"])
+        self.assertIsNone(usage["totals"]["apiCostUsd"])
+
+    def test_price_only_aliases_and_provider_variants_keep_separate_usage(self):
+        historical = {"input": 0.1, "output": 0.3, "cacheRead": 0.01, "cacheWrite": 0}
+        glm = r"builtin:zai-coding-plan\GLM-5.3"
+        usage = metrics.usage_metrics([
+            ("zcode", glm, 2, None, None, None, None),
+            ("zcode", "GLM-5.3", 1, 1_000_000, 0, 0, 0),
+            ("deepseek", "deepseek-v4.1-flash", 1, 1_000_000, 0, 0, 0),
+            ("cursor", "deepseek-v41-flash-1017", 1, 1_000_000, 0, 0, 0),
+            ("deepseek", "default", 1, 1_000_000, 0, 0, 0)],
+            {}, {"byModel": [{"model": model, "pricePerMTok": historical}
+                             for model in ("GLM-5.3", "deepseek-v4.1-flash")]},
+            metrics.read(metrics.MODEL_RATES))
+        models = {row["model"]: row for row in usage["byModel"]}
+        self.assertEqual(historical, models[glm]["pricePerMTok"])
+        self.assertEqual(2, models[glm]["runs"])
+        self.assertIsNone(models[glm]["apiCostUsd"])
+        self.assertEqual(1, models["GLM-5.3"]["runs"])
+        self.assertEqual(0.1, models["deepseek-v4.1-flash"]["apiCostUsd"])
+        self.assertEqual(0.3, models["deepseek-v41-flash-1017"]["apiCostUsd"])
+        self.assertEqual([glm], usage["unknownUsageModels"])
+        self.assertEqual(["default"], usage["unpricedModels"])
+        self.assertIn("pricePerMTok", publish.public_payload({}, usage))
+
+    def test_missing_rate_prevents_estimate_only_for_nonzero_recorded_counter(self):
+        usage = metrics.usage_metrics([
+            ("codex", "swe-2", 1, 2_000_000, 1_000_000, 1_000_000, 0),
+            ("acpRegistry_devin", "swe-2-high", 1, 2_000_000, 1_000_000, 1_000_000, 1),
+            ("acpRegistry_devin", "swe-2-flash-medium", 1, None, None, None, None)],
+            {}, {}, metrics.read(metrics.MODEL_RATES))
+        models = {row["model"]: row for row in usage["byModel"]}
+        self.assertEqual(18.3, models["swe-2"]["apiCostUsd"])
+        self.assertIsNone(models["swe-2-high"]["pricePerMTok"]["cacheWrite"])
+        self.assertIsNone(models["swe-2-high"]["apiCostUsd"])
+        self.assertIsNotNone(models["swe-2-flash-medium"]["pricePerMTok"])
+        self.assertIsNone(models["swe-2-flash-medium"]["apiCostUsd"])
+
     def test_synthetic_model_rows_are_not_usage(self):
         usage = metrics.usage_metrics([("claudeAgent", "<synthetic>", 1, 1000, 1000, 0, 0)],
                                       {}, {"byModel": []})
