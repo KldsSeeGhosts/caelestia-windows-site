@@ -54,7 +54,8 @@ class MetricsTests(unittest.TestCase):
         usage = metrics.usage_metrics([
             ("codex", "gpt-6.1-sol", 2, 100, 30, 80, 0),
             ("claudeAgent", "claude-opus-5-5", 1, 900, 50, 0, 0)],
-            {"claude-opus-5-5": [10, 20, 30, 40]}, old)
+            {"claude-opus-5-5": {"standard": {"input": 10, "output": 20, "cacheRead": 30,
+                                              "cacheWrite": 25, "cacheWrite1h": 15}}}, old)
         self.assertEqual(230, usage["totals"]["recordedTokenEvents"])
         self.assertIsNone(usage["totals"]["totalTokens"])
         self.assertIsNone(usage["totals"]["apiCostUsd"])
@@ -82,9 +83,12 @@ class MetricsTests(unittest.TestCase):
             {}, {"byModel": [{"model": "gpt-6.1-sol", "pricePerMTok": historical}]},
             metrics.read(metrics.MODEL_RATES))
         models = {row["model"]: row for row in usage["byModel"]}
-        self.assertEqual(14.6, models["gpt-6.2-sol"]["apiCostUsd"])
+        # 2M input that already contains 1M cache reads and 1M cache writes
+        # leaves no uncached input: 1M output, 1M reads and 1M writes remain.
+        self.assertEqual(0, models["gpt-6.2-sol"]["inputTokens"])
+        self.assertEqual(12.6, models["gpt-6.2-sol"]["apiCostUsd"])
         self.assertEqual(1, models["gpt-6.1-sol"]["apiCostUsd"])
-        self.assertEqual(15.6, usage["totals"]["knownRateEstimateUsd"])
+        self.assertEqual(13.6, usage["totals"]["knownRateEstimateUsd"])
         self.assertIsNone(usage["totals"]["apiCostUsd"])
 
     def test_price_only_aliases_and_provider_variants_keep_separate_usage(self):
@@ -174,7 +178,111 @@ class MetricsTests(unittest.TestCase):
                 (path / "session.jsonl").write_text(json.dumps(message) + "\n")
             models, agents = metrics.transcript_metrics(root)
         self.assertEqual(1, agents)
-        self.assertEqual(20, models["claude-opus-5-5"][1])
+        self.assertEqual(20, models["claude-opus-5-5"]["standard"]["output"])
+
+    def write_transcript(self, root, name, entries, folder="D--Caelestia-caelestia-windows"):
+        path = Path(root) / folder
+        path.mkdir(exist_ok=True)
+        (path / name).write_text("".join(json.dumps(entry) + "\n" for entry in entries))
+
+    def test_streamed_partial_usage_keeps_the_largest_count_not_the_last(self):
+        def chunk(output):
+            return {"requestId": "req-1", "message": {"id": "msg-1", "model": "claude-opus-5-5",
+                    "usage": {"input_tokens": 5, "output_tokens": output}}}
+        with tempfile.TemporaryDirectory() as root:
+            self.write_transcript(root, "a.jsonl", [chunk(900), chunk(12)])
+            models, _ = metrics.transcript_metrics(root)
+        self.assertEqual(900, models["claude-opus-5-5"]["standard"]["output"])
+        self.assertEqual(5, models["claude-opus-5-5"]["standard"]["input"])
+
+    def test_task_tool_counts_as_a_delegated_agent(self):
+        entry = {"message": {"id": "m", "model": "claude-sonnet-5-5", "usage": {"output_tokens": 1},
+                 "content": [{"type": "tool_use", "name": "Task", "id": "t1"},
+                             {"type": "tool_use", "name": "Agent", "id": "t2"},
+                             {"type": "tool_use", "name": "Bash", "id": "t3"}]}}
+        with tempfile.TemporaryDirectory() as root:
+            self.write_transcript(root, "a.jsonl", [entry])
+            self.assertEqual(2, metrics.transcript_metrics(root)[1])
+
+    def test_one_hour_cache_writes_and_fast_mode_use_their_own_rates(self):
+        standard = {"message": {"id": "s", "model": "claude-opus-5-5", "usage": {
+            "input_tokens": 1_000_000, "output_tokens": 1_000_000, "cache_read_input_tokens": 1_000_000,
+            "cache_creation_input_tokens": 2_000_000,
+            "cache_creation": {"ephemeral_5m_input_tokens": 1_000_000, "ephemeral_1h_input_tokens": 1_000_000}}}}
+        fast = {"message": {"id": "f", "model": "claude-opus-5-5", "usage": {
+            "output_tokens": 1_000_000, "speed": "fast"}}}
+        with tempfile.TemporaryDirectory() as root:
+            self.write_transcript(root, "a.jsonl", [standard, fast])
+            models, _ = metrics.transcript_metrics(root)
+        usage = metrics.usage_metrics([], models, {}, metrics.read(metrics.MODEL_RATES))
+        row = usage["byModel"][0]
+        # 4 input + 20 output + 0.20 read + 5 (5-minute write) + 8 (1-hour write) + 40 fast output
+        self.assertEqual(77.2, row["apiCostUsd"])
+        self.assertEqual(2_000_000, row["cacheWriteTokens"])
+        self.assertEqual(1_000_000, row["cacheWrite1hTokens"])
+        self.assertEqual(1_000_000, row["fastTokens"])
+
+    def test_fast_tokens_without_a_fast_rate_are_not_priced(self):
+        fast = {"message": {"id": "f", "model": "claude-sonnet-4-6", "usage": {
+            "output_tokens": 10, "speed": "fast"}}}
+        with tempfile.TemporaryDirectory() as root:
+            self.write_transcript(root, "a.jsonl", [fast])
+            models, _ = metrics.transcript_metrics(root)
+        usage = metrics.usage_metrics([], models, {}, metrics.read(metrics.MODEL_RATES))
+        self.assertIsNone(usage["byModel"][0]["apiCostUsd"])
+
+    def test_reference_rates_correct_a_wrong_carried_forward_rate(self):
+        wrong = {"input": 3.0, "output": 15.0, "cacheRead": 0.3, "cacheWrite": 3.75}
+        usage = metrics.usage_metrics([], {"claude-sonnet-5-5": {"standard": {
+            "input": 0, "output": 1_000_000, "cacheRead": 0, "cacheWrite": 0, "cacheWrite1h": 0}}},
+            {"byModel": [{"model": "claude-sonnet-5-5", "pricePerMTok": wrong}]},
+            metrics.read(metrics.MODEL_RATES))
+        self.assertEqual(10, usage["byModel"][0]["apiCostUsd"])
+
+    def test_ledger_keeps_counts_after_transcripts_are_deleted(self):
+        entry = {"message": {"id": "old", "model": "claude-opus-5-5", "usage": {"output_tokens": 70}}}
+        with tempfile.TemporaryDirectory() as root, tempfile.TemporaryDirectory() as private:
+            ledger = Path(private) / "ledger.json"
+            self.write_transcript(root, "a.jsonl", [entry])
+            metrics.transcript_metrics(root, ledger)
+            (Path(root) / "D--Caelestia-caelestia-windows" / "a.jsonl").unlink()
+            models, _ = metrics.transcript_metrics(root, ledger)
+            self.assertNotIn("content", ledger.read_text())
+        self.assertEqual(70, models["claude-opus-5-5"]["standard"]["output"])
+
+    def test_subagent_turns_without_a_run_attempt_are_counted(self):
+        with tempfile.TemporaryDirectory() as root:
+            database = Path(root) / "state.sqlite"
+            connection = sqlite3.connect(database)
+            connection.executescript("""
+                CREATE TABLE projection_projects(project_id,workspace_root);
+                CREATE TABLE orchestration_v2_projection_threads(thread_id,project_id,created_at,default_provider,payload_json);
+                CREATE TABLE orchestration_v2_projection_subagents(thread_id,provider);
+                CREATE TABLE orchestration_v2_projection_runs(run_id,thread_id,provider,payload_json);
+                CREATE TABLE orchestration_v2_projection_run_attempts(attempt_id,run_id);
+                CREATE TABLE orchestration_v2_projection_provider_threads(provider_thread_id,provider);
+                CREATE TABLE orchestration_v2_projection_provider_turns(provider_turn_id,thread_id,provider_thread_id,run_attempt_id,payload_json);
+                CREATE TABLE orchestration_v2_projection_messages(thread_id,role);
+            """)
+            usage = lambda i, o, c, models=None: json.dumps({"turnTokenUsage": {
+                "inputTokens": i, "outputTokens": o, "cachedInputTokens": c, **({"models": models} if models else {})}})
+            connection.executemany("INSERT INTO projection_projects VALUES(?,?)", [("p", "D:/Caelestia/caelestia-windows")])
+            connection.execute("INSERT INTO orchestration_v2_projection_threads VALUES('t','p','2026-10-25','codex','{}')")
+            connection.execute("INSERT INTO orchestration_v2_projection_subagents VALUES('t','codex')")
+            connection.execute("""INSERT INTO orchestration_v2_projection_runs VALUES('r','t','codex','{"modelSelection":{"model":"gpt-6.1-sol"}}')""")
+            connection.execute("INSERT INTO orchestration_v2_projection_run_attempts VALUES('a','r')")
+            connection.execute("INSERT INTO orchestration_v2_projection_provider_threads VALUES('main','codex')")
+            connection.execute("INSERT INTO orchestration_v2_projection_provider_threads VALUES('child','codex')")
+            connection.executemany("INSERT INTO orchestration_v2_projection_provider_turns VALUES(?,?,?,?,?)", [
+                ("1", "t", "main", "a", usage(100, 10, 60)),
+                ("2", "t", "child", None, usage(50, 5, 20, ["gpt-6.2-sol"]))])
+            connection.commit()
+            connection.close()
+            stats, rows = metrics.tally_t3(database, ["D:/Caelestia/caelestia-windows"])
+        self.assertEqual(1, stats["subagentTurns"])
+        by_model = {row[1]: row for row in rows}
+        self.assertEqual(("codex", "gpt-6.1-sol", 1, 100, 10, 60, None), by_model["gpt-6.1-sol"])
+        self.assertEqual(("codex", "gpt-6.2-sol", 0, 50, 5, 20, None), by_model["gpt-6.2-sol"])
 
     @unittest.skipUnless(sys.platform == "win32", "Windows byte lock")
     def test_concurrent_publisher_is_refused_and_lock_is_released(self):

@@ -31,6 +31,20 @@ speed tiers, or promotional discounts. The Gemini 4 Carbon entry uses the
 published introductory rate on the snapshot date. The SWE-2 entries use
 Cognition's non-promotional list prices, and the GLM coding-plan aliases
 use the stored API reference rates rather than a subscription price.
+Anthropic rates were checked against the published pricing page on the
+snapshot date, including 1-hour cache writes and the fast-mode multiplier.
+These committed rates win over rates carried forward in the previous
+snapshot, so a wrong historical rate is corrected on the next run.
+
+T3 usage is read from every provider turn in the project's threads. Delegated
+subagent turns have no run attempt in T3, so they are joined by thread, not
+by run. T3 input counters already include cache reads and cache writes, so
+both are subtracted to get uncached input. Claude transcript requests are
+deduplicated by message ID, keeping the largest count per channel, because
+streamed and copied entries repeat a request with partial usage. Each request
+is priced by its own cache duration and speed. Claude Code deletes old
+transcripts, so seen request counts are kept in a private runtime ledger
+(`claude-usage-ledger.json`, token counts only) and history never shrinks.
 Missing model counters stay null, not zero. Synthetic records are excluded.
 Known rates remain available when usage is incomplete, but no cost is
 estimated without the counters and applicable rates. Missing sources retain their old freshness and
