@@ -689,8 +689,8 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .bar::before{left:0;width:calc(var(--gl) + var(--corner));background:radial-gradient(circle at 100% 100%,transparent var(--corner),var(--shell) calc(var(--corner) + .5px))}
   .bar::after{right:0;width:calc(var(--gr) + var(--corner));background:radial-gradient(circle at 0 100%,transparent var(--corner),var(--shell) calc(var(--corner) + .5px))}
   .bar .mark{width:22px;height:22px}
-  .bar .spaces{flex:1 1 auto;min-width:0;max-width:300px;width:auto;height:40px;margin:0 auto;padding:0 6px;flex-direction:row;justify-content:space-between}
-  .bar .spaces a{flex:1 1 0;min-width:0;width:auto;height:40px}
+  .bar .spaces{flex:1 1 auto;min-width:0;max-width:300px;width:auto;height:44px;margin:0 auto;padding:0 6px;flex-direction:row;justify-content:space-between}
+  .bar .spaces a{flex:1 1 0;min-width:0;width:auto;height:44px}
   .bar .papers{display:none}
   .bar .snd{width:44px;height:44px;margin:0}
   .snd:not([aria-pressed="true"]) i{transform:scaleY(.45)}
@@ -1765,7 +1765,10 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
      drawn, at most every frame, and with reduced motion they are drawn once and left still. */
   const skies = [];
   let skyLoop = 0, skyT = 0, skyColT = 0, skyCol = {ink: "#e8e8f4", p: "#b8c3ff", t: "#f0c8e0"}, skyOk = true,
-      skyPX = .5, skyPY = .5, skySX = .5, skySY = .5, skyMX = -1e4, skyMY = -1e4, skyMove = 0, sVel = 0, sY = scrollY, sT = 0;
+      skyPX = .5, skyPY = .5, skySX = .5, skySY = .5, skyMX = -1e4, skyMY = -1e4, skyMove = 0, skyTouch = -1e9, sVel = 0, sY = scrollY, sT = 0;
+  // On a phone the sky is lighter: fewer stars at a lower resolution, half the frame rate while nothing moves.
+  // A finger draws the constellation where it touches, and scrolling gives the stars depth and streaks.
+  const coarse = matchMedia("(pointer:coarse)");
   function skyColours() {
     const cs = getComputedStyle(root), v = k => cs.getPropertyValue(k).trim();
     if (skyOk) skyCol = {ink: v("--ink"), p: v("--primary"), t: v("--tertiary")};
@@ -1773,9 +1776,9 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   function skySize(s) {
     const w = s.ws.clientWidth, h = s.ws.clientHeight;
     if (!w || !h || (w === s.w && h === s.h)) return;
-    const dpr = Math.min(devicePixelRatio || 1, 1.5), rnd = mulberry(s.seed);
+    const dpr = Math.min(devicePixelRatio || 1, coarse.matches ? 1.25 : 1.5), rnd = mulberry(s.seed);
     s.w = w; s.h = h; s.dpr = dpr; s.cv.width = Math.round(w * dpr); s.cv.height = Math.round(h * dpr);
-    s.stars = Array.from({length: Math.min(700, Math.round(w * h / 2300 * s.dens))}, () => {
+    s.stars = Array.from({length: Math.min(coarse.matches ? 320 : 700, Math.round(w * h / 2300 * s.dens * (coarse.matches ? .75 : 1)))}, () => {
       const z = Math.pow(rnd(), 1.9) * .9 + .1, c = rnd();
       return {x: rnd() * w, y: rnd() * h, z, r: .3 + z * 1.3, a: .22 + z * .7, tw: rnd() * 6.283, ts: .5 + rnd() * 2.2, c: c < .1 ? "p" : c < .17 ? "t" : "ink", px: 0, py: 0};
     });
@@ -1805,20 +1808,25 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     skySX += (skyPX - skySX) * k; skySY += (skyPY - skySY) * k;
     sVel *= Math.pow(.03, dt);
     const vel = staged ? V : sVel * .6, warp = still ? 0 : Math.max(-1.2, Math.min(1.2, vel / 3));
+    const busy = Math.abs(warp) > .02 || now - skyMove < 1500 || now - skyTouch < 1600;
     let any = false;
     skies.forEach(s => {
       const shown = staged ? s.ws.parentElement.classList.contains("vis") : s.ws.classList.contains("in") || s.ws.classList.contains("on");
       if (!shown || !s.w) return;
-      any = true; drawSky(s, t, dt, warp, still);
+      any = true;
+      if (coarse.matches && !busy && !still && (s.fr = (s.fr || 0) + 1) % 2) return;
+      drawSky(s, t, dt, warp, still, now);
     });
     if (any && !still && !document.hidden) skyLoop = requestAnimationFrame(skyFrame);
   }
-  function drawSky(s, t, dt, warp, still) {
-    const {ctx, w, h, dpr} = s, TAU = 6.2832;
+  function drawSky(s, t, dt, warp, still, now) {
+    const {ctx, w, h, dpr} = s, TAU = 6.2832, r = s.cv.getBoundingClientRect();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h); ctx.lineCap = "round";
-    const ox = (skySX - .5) * -34, oy = (skySY - .5) * -22, streak = warp * h * .17;
+    // when the page scrolls, far stars lag behind near ones, so the sky has depth
+    const depth = staged || still ? 0 : -r.top * .2;
+    const ox = (skySX - .5) * -34, oy = (skySY - .5) * -22, streak = warp * Math.min(h, innerHeight) * (coarse.matches ? .12 : .17);
     for (const st of s.stars) {
-      let x = (st.x + ox * st.z) % w, y = (st.y + oy * st.z) % h;
+      let x = (st.x + ox * st.z) % w, y = (st.y + (oy + depth) * st.z) % h;
       if (x < 0) x += w; if (y < 0) y += h;
       st.px = x; st.py = y;
       const a = st.a * (.7 + .3 * Math.sin(t * st.ts + st.tw)), col = skyCol[st.c], L = streak * st.z;
@@ -1831,25 +1839,27 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       }
     }
     // a constellation joins the bright stars round the pointer
-    if (s.web && fine.matches && !still) {
-      const r = s.cv.getBoundingClientRect(), sc = r.width / w || 1, mx = (skyMX - r.left) / sc, my = (skyMY - r.top) / sc, R = 200, J = 125;
+    const touchK = Math.max(0, 1 - (now - skyTouch) / 1400);
+    if (s.web && (fine.matches || touchK > 0) && !still) {
+      const sc = r.width / w || 1, mx = (skyMX - r.left) / sc, my = (skyMY - r.top) / sc, R = coarse.matches ? 170 : 200, J = coarse.matches ? 110 : 125;
+      const fade = fine.matches ? 1 : touchK;
       if (mx > -R && mx < w + R && my > -R && my < h + R) {
         const near = [];
         for (const st of s.bright) { const d = Math.hypot(st.px - mx, st.py - my); if (d < R) { near.push([st.px, st.py, d]); if (near.length > 24) break; } }
         ctx.strokeStyle = skyCol.p; ctx.lineWidth = .9;
         for (let i = 0; i < near.length; i++) for (let j = i + 1; j < near.length; j++) {
           const a = near[i], b = near[j], dd = Math.hypot(a[0] - b[0], a[1] - b[1]); if (dd > J) continue;
-          ctx.globalAlpha = (1 - dd / J) * (1 - Math.max(a[2], b[2]) / R) * .7;
+          ctx.globalAlpha = (1 - dd / J) * (1 - Math.max(a[2], b[2]) / R) * .7 * fade;
           ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
         }
         ctx.fillStyle = skyCol.p;
-        near.forEach(([x, y, d]) => { ctx.globalAlpha = (1 - d / R) * .9; ctx.beginPath(); ctx.arc(x, y, 1.7, 0, TAU); ctx.fill(); });
+        near.forEach(([x, y, d]) => { ctx.globalAlpha = (1 - d / R) * .9 * fade; ctx.beginPath(); ctx.arc(x, y, 1.7, 0, TAU); ctx.fill(); });
       }
     }
     // a planet keeps its orbit round the live drawing
     const scr = s.orbit && s.ws.querySelector(".screen");
     if (scr && scr.offsetWidth) {
-      const cx = scr.offsetLeft + scr.offsetWidth / 2 + ox * .5, cy = scr.offsetTop + scr.offsetHeight / 2 + oy * .5, rx = scr.offsetWidth * .64, ry = rx * .27;
+      const cx = scr.offsetLeft + scr.offsetWidth / 2 + ox * .5, cy = scr.offsetTop + scr.offsetHeight / 2 + oy * .5, rx = Math.min(scr.offsetWidth * .64, w * .47), ry = rx * (w < 520 ? .34 : .27);
       ctx.save(); ctx.translate(cx, cy); ctx.rotate(-.19);
       ctx.globalAlpha = .24; ctx.strokeStyle = skyCol.ink; ctx.lineWidth = 1; ctx.setLineDash([1.5, 7]);
       ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
@@ -1881,8 +1891,19 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   }
   addEventListener("pointermove", e => {
     if (e.pointerType === "touch") return;
-    skyPX = e.clientX / innerWidth; skyPY = e.clientY / innerHeight; skyMX = e.clientX; skyMY = e.clientY; skyKick();
+    skyPX = e.clientX / innerWidth; skyPY = e.clientY / innerHeight; skyMX = e.clientX; skyMY = e.clientY; skyMove = performance.now(); skyKick();
   }, {passive: true});
+  // a finger on the first or last screen joins the stars under it, and the lines fade once it lifts
+  const onTouch = e => { const p = e.touches[0]; if (!p) return; skyMX = p.clientX; skyMY = p.clientY; skyTouch = performance.now(); skyKick(); };
+  addEventListener("touchstart", onTouch, {passive: true});
+  addEventListener("touchmove", onTouch, {passive: true});
+  // a tap on the wordmark sends a wave through its letters
+  document.addEventListener("pointerdown", e => {
+    const n = e.target.closest(".name"); if (!n || reduced.matches) return;
+    n.querySelectorAll(".lt").forEach((l, i) => l.animate([{translate: "0 0"}, {translate: "0 -.16em", offset: .35}, {translate: "0 0"}],
+      {duration: 750, delay: i * 45, easing: "cubic-bezier(.38,1.21,.22,1)"}));
+    Snd.sfx("boing");
+  });
   document.addEventListener("pointerout", e => { if (!e.relatedTarget) { skyMX = skyMY = -1e4; } });
   addEventListener("scroll", () => {
     const n = performance.now(), d = Math.max(8, n - sT);
