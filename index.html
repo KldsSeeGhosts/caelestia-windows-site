@@ -159,7 +159,20 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 .on .rv{opacity:1;translate:0 0}
 
 /* One heading style for every scene: sentence case, set in the font's wide cut. */
-.title{font-size:clamp(34px,min(4.3cqw,7.8cqh),72px);font-weight:350;font-stretch:112%;letter-spacing:-.03em;line-height:1.02;color:var(--fg);text-wrap:balance}
+.title{font-size:clamp(38px,min(5.4cqw,9.6cqh),100px);font-weight:300;font-stretch:116%;letter-spacing:-.04em;line-height:1;color:var(--fg);text-wrap:balance}
+/* Headings are set a word at a time, and each word rises out of its own line as the scene arrives. */
+.wd{display:inline-block;vertical-align:top;overflow:clip;padding:.1em .03em .14em;margin:-.1em -.03em -.14em}
+.wd>span{display:inline-block;translate:0 115%;rotate:5deg;transform-origin:0 100%;
+  transition:translate 1.15s var(--out) calc(var(--rd0,.12s) + var(--wi) * 80ms),rotate 1.15s var(--out) calc(var(--rd0,.12s) + var(--wi) * 80ms)}
+.on .wd>span{translate:0 0;rotate:0deg}
+/* Each workspace's number, huge and drawn in outline behind its scene. */
+.numeral{position:absolute;z-index:0;font-size:min(50cqh,34cqw);font-weight:200;font-stretch:125%;letter-spacing:-.06em;line-height:.8;white-space:nowrap;
+  color:transparent;-webkit-text-stroke:1.5px color-mix(in oklch,var(--fg) 15%,transparent);pointer-events:none;user-select:none;
+  opacity:0;translate:0 .14em;transition:opacity 1.2s .25s,translate 1.8s var(--out) .15s}
+.on .numeral{opacity:1;translate:0 0}
+.numeral.bl{left:2.5cqw;bottom:-.12em}
+.numeral.tr{right:2.5cqw;top:-.1em}
+.flood-p .numeral,.flood-t .numeral{-webkit-text-stroke-color:color-mix(in oklch,var(--fg) 24%,transparent)}
 .cap{font-size:clamp(18px,1.75cqw,28px);font-weight:300;font-stretch:106%;line-height:1.32;color:var(--fg2);max-width:24em;text-wrap:pretty}
 .small{font-size:15px;font-weight:450;color:var(--fg2);line-height:1.4}
 .lead{position:absolute;left:5.5cqw;top:7cqh;display:flex;flex-direction:column;gap:2.6cqh;z-index:2}
@@ -174,7 +187,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 .cta{display:flex;flex-wrap:wrap;gap:10px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:56px;padding:0 28px;border-radius:999px;overflow:hidden;white-space:nowrap;
   font-size:17px;font-weight:550;font-stretch:106%;letter-spacing:.005em;
-  transition:scale .16s ease-out,background-color .2s,color .2s}
+  translate:var(--bx,0) var(--by,0);transition:scale .16s ease-out,background-color .2s,color .2s,translate .6s var(--spring)}
 .btn:focus-visible{border-radius:999px}
 /* A highlight sweeps across a filled button as the pointer finds it. */
 .btn{position:relative;isolation:isolate}
@@ -200,18 +213,40 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   scale:.4;opacity:0;
   transition:scale 1.6s var(--spring) .3s,opacity .7s .3s}
 .hero.on .sun,.hero.on .moon{scale:1;opacity:1}
-.copy{position:absolute;left:5.5cqw;top:8cqh;width:36cqw;display:flex;flex-direction:column;align-items:flex-start;z-index:2}
+.copy{position:absolute;left:5.5cqw;top:5.5cqh;width:36cqw;display:flex;flex-direction:column;align-items:flex-start;z-index:2}
 /* The wordmark uses its final font axes from the first frame. Never animate text metrics. */
-.name{font-size:min(10.5cqw,19cqh);font-weight:300;font-stretch:125%;letter-spacing:-.03em;line-height:1;white-space:nowrap;margin:0 0 0 -.04em;
-  padding-bottom:.06em;background:linear-gradient(100deg,var(--ink) 35%,var(--primary) 72%,var(--tertiary));-webkit-background-clip:text;background-clip:text;color:transparent}
+/* The wordmark runs most of the way across the screen. Its letters rise in one after another, shade from
+   ink into the wallpaper's two key colours, and swell as the pointer passes over them. Only transforms move. */
+.name{font-size:min(17cqw,27cqh);font-weight:300;font-stretch:125%;letter-spacing:-.05em;line-height:.92;white-space:nowrap;margin:0 0 0 -.05em}
+.name>span[aria-hidden]{display:block}
+.lt{display:inline-block;color:color-mix(in oklch,var(--b) calc(var(--t) * 100%),var(--a));transform-origin:50% 100%;
+  opacity:0;transform:translateY(.42em) rotate(8deg) scale(.9);translate:0 calc(var(--lift,0) * -.09em);scale:calc(1 + var(--lift,0) * .07);
+  transition:opacity .6s calc(.08s + var(--i) * 55ms),transform 1.25s var(--spring) calc(.08s + var(--i) * 55ms),translate .5s var(--spring-fast),scale .5s var(--spring-fast)}
+.hero.on .lt{opacity:1;transform:none}
 .pitch{margin-top:3.2cqh;font-size:clamp(22px,2.3cqw,38px);font-weight:350;font-stretch:108%;line-height:1.16;letter-spacing:-.01em;text-wrap:balance}
 .sub{margin-top:1.8cqh;max-width:27em;font-size:clamp(16px,1.3cqw,20px);line-height:1.5;color:var(--ink-2);text-wrap:pretty}
 .hero .cta{margin-top:3.6cqh}
 .wall{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:3.6cqh;color:var(--ink-2);font-size:15px}
 /* A desktop inside the desktop: a living drawing of the shell, sized by its own width. */
-.screen{position:absolute;right:4cqw;bottom:9.5cqh;width:min(56cqw,92cqh);aspect-ratio:16/9;z-index:2;border-radius:clamp(14px,1.5cqw,26px);
+.screen{position:absolute;right:4cqw;bottom:max(15cqh,96px);width:min(52cqw,84cqh);aspect-ratio:16/9;z-index:2;border-radius:clamp(14px,1.5cqw,26px);
   box-shadow:0 3cqh 8cqh -3cqh oklch(.05 .04 var(--h) / .75);opacity:0;scale:.9;transition:opacity .6s .45s,scale 1.3s var(--spring) .45s}
 .on .screen{opacity:1;scale:1}
+/* On a desktop the drawing stands turned toward the words, and turns to follow the pointer. */
+@media (min-width:1000px) and (prefers-reduced-motion:no-preference){
+  .hero .screen{transform:perspective(1700px) rotateX(var(--rx,5deg)) rotateY(var(--ry,-11deg));transition:opacity .6s .45s,scale 1.3s var(--spring) .45s,transform .9s var(--out)}
+}
+/* Everything the shell brings, running along the foot of the first screen. */
+.marq{position:absolute;left:0;right:0;bottom:0;z-index:2;height:max(6.5cqh,48px);display:flex;align-items:center;overflow:hidden;
+  border-top:1px solid color-mix(in oklch,var(--ink) 10%,transparent);
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
+  opacity:0;transition:opacity 1s 1.4s}
+.hero.on .marq{opacity:1}
+.mq{display:flex;flex:none;white-space:nowrap;animation:marq 52s linear infinite}
+.mq span{display:inline-flex;align-items:center;gap:clamp(18px,2cqw,34px);padding-right:clamp(18px,2cqw,34px);
+  font-size:clamp(17px,1.6cqw,26px);font-weight:400;font-stretch:125%;letter-spacing:-.01em;color:var(--ink-2)}
+.mq span:nth-child(odd){color:var(--ink)}
+.mq svg{width:.62em;height:.62em;fill:var(--primary)}
+@keyframes marq{to{transform:translateX(-50%)}}
 /* The drawing glows in the wallpaper's two key colours, breathing slowly. */
 .screen::before{content:"";position:absolute;inset:-12% -9%;z-index:-1;pointer-events:none;
   background:radial-gradient(50% 60% at 28% 42%,oklch(.62 .16 var(--h) / .42),transparent 72%),radial-gradient(48% 58% at 76% 62%,oklch(.64 .14 calc(var(--h) + 60) / .34),transparent 72%);
@@ -421,7 +456,10 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   grid-template-columns:minmax(0,1.45fr) auto minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto minmax(0,1fr);
   grid-template-areas:"h t ." "l s r" ". b ."}
 .emap .h{grid-area:h;align-self:start;display:flex;flex-direction:column;gap:2cqh;padding-right:2cqw}
-.edges .title{font-size:clamp(30px,min(3.3cqw,6.2cqh),56px)}
+.edges .title{font-size:clamp(30px,min(3.6cqw,6.6cqh),62px)}
+.run .title,.tiling .title{font-size:clamp(36px,min(4.8cqw,8.6cqh),90px)}
+.install .title{font-size:clamp(34px,min(4.4cqw,7.6cqh),84px)}
+.build .title{font-size:clamp(34px,min(4.6cqw,8cqh),84px)}
 .escreen{grid-area:s;position:relative;width:min(48cqw,calc((100cqh - 10cqh - 230px) * 1.778));aspect-ratio:16/9;border-radius:clamp(14px,1.5cqw,26px);
   box-shadow:0 3cqh 8cqh -3cqh oklch(.35 .09 calc(var(--h) + 60) / .7);opacity:0;scale:.92;transition:opacity .6s .2s,scale 1.2s var(--spring) .2s}
 .on .escreen{opacity:1;scale:1}
@@ -466,7 +504,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 @container (max-width:110px){.tt{font-size:0}.tt b{margin:0}}
 
 /* Install: three steps on the primary colour, joined by a line drawn as the scene arrives. */
-.install .lead{width:60cqw}
+.install .lead{width:64cqw}
 .ipath{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .ipath path{fill:none;stroke:var(--on-p);stroke-opacity:.25;stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 2.4s cubic-bezier(.45,0,.2,1) .4s}
 .on .ipath path{stroke-dashoffset:0}
@@ -489,10 +527,15 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   transition:border-radius .5s var(--spring-fast),background-color .3s}
 .cpy:hover{background:color-mix(in oklch,var(--primary) 28%,transparent)}
 .cpy:active{border-radius:8px}
+@media (min-width:1000px) and (min-height:760px){
+  .step{padding:2.4cqh 1.7cqw 2.8cqh;border-radius:clamp(24px,2.4cqw,40px);background:color-mix(in oklch,var(--on-p) 7%,transparent);
+    box-shadow:inset 0 0 0 1px color-mix(in oklch,var(--on-p) 12%,transparent);transition:background-color .4s,translate .6s var(--spring)}
+  .step:hover{background:color-mix(in oklch,var(--on-p) 11%,transparent);translate:0 -6px}
+}
 .fine{position:absolute;left:5.5cqw;right:5.5cqw;bottom:6cqh;max-width:62em;display:flex;flex-direction:column;gap:6px;font-size:15px;font-weight:450;line-height:1.45;color:var(--fg2);z-index:2}
 
 /* How it was built: the two totals, the tally behind them, a row per model, and a dot for every agent. */
-.ledger{position:absolute;left:5.5cqw;top:7cqh;width:47cqw;z-index:2;display:flex;flex-direction:column;gap:3.4cqh}
+.ledger{position:absolute;left:5.5cqw;top:6.5cqh;bottom:4.5cqh;width:47cqw;z-index:2;display:flex;flex-direction:column;gap:3cqh;overflow:hidden}
 .lh{display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px 20px}
 /* How fresh the figures are, as a live status light. */
 .fresh[hidden]{display:none}
@@ -505,6 +548,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 @keyframes ping{from{scale:1;opacity:.7}to{scale:3.2;opacity:0}}
 /* Where the estimate went, one bar split by tool, in the same colours as the agents and the model rows. */
 .spl{display:flex;flex-direction:column;gap:1.1cqh}
+.spl[hidden]{display:none}
 .spl-b{display:flex;gap:3px;height:max(10px,1.3cqh)}
 .spl-b b{flex:var(--f) 1 0;min-width:5px;border-radius:99px;background:var(--c);transform-origin:left;scale:0 1;transition:scale 1.2s var(--out) calc(.55s + var(--i) * 110ms)}
 .on .spl-b b{scale:1 1}
@@ -540,18 +584,14 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 .gcap{position:absolute;left:57cqw;right:3cqw;bottom:4.5cqh;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 18px;font-size:14px;font-weight:450;color:var(--ink-2)}
 .gcap>span:first-child{flex-basis:100%;text-align:center;color:var(--ink-3)}
 .gcap i{display:inline-block;width:10px;height:10px;margin-right:7px;border-radius:50%;background:var(--c)}
-.bnote{position:absolute;left:5.5cqw;bottom:4.5cqh;max-width:47cqw;font-size:13px;font-weight:450;line-height:1.45;color:var(--ink-3);text-wrap:pretty}
-@media (min-width:1000px) and (max-height:860px){.models tbody tr:nth-child(n+7){display:none}}
-@media (min-width:1000px) and (max-height:700px){.models tbody tr:nth-child(n+5){display:none}}
-@media (min-width:1000px) and (max-height:640px){.models{display:none}}
-@media (min-width:1000px) and (max-height:760px){.spl{display:none}}
+.bnote{margin-top:auto;padding-top:.5cqh;font-size:13px;font-weight:450;line-height:1.45;color:var(--ink-3);text-wrap:pretty}
 
 /* Credits */
 .credits .big{right:-16cqw;top:-36cqh;width:min(62cqw,118cqh);aspect-ratio:1;fill:var(--s-cont);animation:spin 220s linear infinite reverse;
   scale:.5;opacity:0;transition:scale 2s var(--spring),opacity 1s}
 .credits.on .big{scale:1;opacity:1}
-.who{position:absolute;left:5.5cqw;top:10cqh;width:56cqw;z-index:2}
-.who h2{font-size:clamp(28px,min(3.4cqw,6.4cqh),58px);font-weight:300;font-stretch:108%;line-height:1.14;letter-spacing:-.02em;text-wrap:balance}
+.who{position:absolute;left:5.5cqw;top:10cqh;width:60cqw;z-index:2}
+.who h2{font-size:clamp(30px,min(3.8cqw,6.8cqh),70px);font-weight:300;font-stretch:112%;line-height:1.08;letter-spacing:-.035em;text-wrap:balance}
 .who a:not(.btn),.roles a,.foot a{text-decoration:underline 1.5px color-mix(in oklch,var(--primary) 55%,transparent);text-underline-offset:.2em;transition:text-decoration-color .3s}
 .who a:not(.btn):hover,.roles a:hover,.foot a:hover{text-decoration-color:var(--primary)}
 .roles{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);gap:2.6cqw;margin-top:6cqh}
@@ -570,7 +610,10 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .ws>.drift{position:absolute!important;left:0!important;top:0!important;right:0!important;bottom:0!important}
   .ws>.ipath{display:none}
   .lead{gap:14px}
-  .title{font-size:clamp(34px,9cqw,60px)!important}
+  .title{font-size:clamp(38px,10cqw,72px)!important}
+  .ws>.numeral{position:absolute!important;left:auto!important;right:-.04em!important;top:-.1em!important;bottom:auto!important;width:auto!important;font-size:40cqw}
+  .hero .screen{transform:none}
+  .hero .marq{height:52px;margin-top:-6px;opacity:1}
   .cap{font-size:clamp(18px,4.6cqw,26px);max-width:none}
   .hero .sun{position:absolute!important;right:-26cqw!important;top:-22cqw!important;width:80cqw!important}
   .hero .moon{position:absolute!important;left:-14cqw!important;top:auto!important;bottom:-10cqw!important;width:40cqw!important}
@@ -616,6 +659,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .foot{flex-direction:column;align-items:flex-start;margin-top:10px}
   /* Reading on a phone must not wait for a section entrance or replay on every scroll. */
   .ws:not(.hero) .rv{opacity:1;translate:none;transition:none}
+  .ws:not(.hero) .wd>span{translate:none;rotate:none;transition:none}
 }
 /* Phone. The page is the shell: its bar runs across the top with the workspace shapes, and every scene is a
    workspace in its own rounded desk, with the shell colour showing between them as it does round the desktop frame. */
@@ -639,7 +683,9 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
 
   main{display:flex;flex-direction:column;gap:var(--edge);margin:0 var(--gr) max(var(--edge),env(safe-area-inset-bottom,0px)) var(--gl)}
   .ws{border-radius:var(--corner);padding:44px 22px 40px;scroll-margin-top:var(--top)}
-  .title{font-size:clamp(32px,9.6cqw,46px)!important}
+  .title{font-size:clamp(36px,11cqw,56px)!important}
+  .numeral{display:none}
+  .hero .marq{height:46px}
   .cap{font-size:18px}
   /* Entrances belong to the hero; the rest of the page is simply there when you scroll to it. */
   .ws .rv{opacity:1;translate:none;transition:none}
@@ -782,7 +828,7 @@ main{position:relative;z-index:1;margin:var(--edge) var(--edge) var(--edge) var(
   .spl-b b{scale:1 1}
   .dsw{translate:calc((var(--x0) + (var(--x1) - var(--x0)) * var(--fr)) * 1cqw) calc((var(--y0) + (var(--y1) - var(--y0)) * var(--fr)) * 1cqh)}
 }
-@media (forced-colors:active){.frame{box-shadow:none;border:2px solid CanvasText}.name{background:none;color:CanvasText}.glow,.screen::before{display:none}}
+@media (forced-colors:active){.frame{box-shadow:none;border:2px solid CanvasText}.lt{color:CanvasText}.glow,.screen::before,.numeral{display:none}}
 /* In flow, scenes off screen stop their ambient motion. */
 html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
 .nojs{position:fixed;inset:0;z-index:7;display:grid;place-content:center;padding:24px;text-align:center;font-size:19px;color:var(--ink-2)}
@@ -1167,6 +1213,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   const stateAt = t => { const s = {...INIT}; for (const e of EV) { if (e.at > t + 1e-6) break; Object.assign(s, e.p); } return s; };
   const chAt = t => CH.reduce((k, c, i) => t >= c.s - 1e-6 ? i : k, 0);
   const NXL = ["Appearance", "Bar", "Notifications", "Session"];
+  const FEATURES = ["Bar", "Launcher", "Dashboard", "Notifications", "Window tiling", "Colours from your wallpaper", "Session menu", "Nexus settings", "Virtual desktops", "Wallpaper Engine", "Every monitor"];
   const SPARK = "M16 2.5l2.6 8.2a5 5 0 0 0 3.3 3.3L30 16.5l-8.1 2.5a5 5 0 0 0-3.3 3.3L16 30.5l-2.6-8.2a5 5 0 0 0-3.3-3.3L2 16.5l8.1-2.5a5 5 0 0 0 3.3-3.3z";
   const PWR = ["M7 11V8a5 5 0 0 1 10 0v3M6 11h12v9H6z", "M19.5 14.5A8 8 0 1 1 9.5 4.5a6.2 6.2 0 0 0 10 10z", "M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4.5v4.5H15", "M12 3.5v8M6.6 7a7.5 7.5 0 1 0 10.8 0"];
   const LN = [[20, "--m-p"], [30, "--m-ink2"], [14, "--m-t"], [33, "--m-ink2"], [24, "--m-q"], [11, "--m-dim"], [27, "--m-ink2"], [18, "--m-u"], [31, "--m-ink2"], [16, "--m-p"], [25, "--m-ink2"], [12, "--m-s"], [29, "--m-ink2"]];
@@ -1458,15 +1505,16 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       <p class="spl-k"><span class="sr">Estimate by tool: </span>${spent.map(([k, v]) => `<span class="${tint(k)}"><i></i>${esc(k)} <em>${usd0(v)}</em></span>`).join("")}</p></div>` : "";
     return `<div class="drift" data-drift="41" data-shapes="6" data-fade=".5" aria-hidden="true"></div>
         <div class="ledger">
-          <div class="lh"><h2 class="title" data-k="06" id="build-h">How it was built</h2><p class="fresh" data-fresh hidden><i></i><span></span></p></div>
+          <div class="lh"><h2 class="title" data-k="06 / 07" id="build-h">How it was built</h2><p class="fresh" data-fresh hidden><i></i><span></span></p></div>
           <div class="figs">${fig(t.recordedTokenEvents, "bn", "tokens recorded across the sessions")}${fig(t.knownRateEstimateUsd, "usd0", "estimated cost at reference rates")}</div>
           <p class="tally">${num(agentsN, "int", true)} delegated agents across ${num(t3.threads, "int")} threads, landing ${num(code.commits, "int")} commits and ${num(p.pullRequests, "int")} public pull requests in ${num(days, "int")} days.</p>
           ${split}
           ${rows ? `<table class="models rv" style="--rd:.5s"><thead><tr><th scope="col">Model</th><td></td><th scope="col" class="r">Tokens</th><th scope="col" class="r">API estimate</th></tr></thead><tbody>${rows}</tbody></table>` : ""}
+  <p class="bnote rv" style="--rd:1.4s">${!d ? "Loading the latest figures. " : p.asOf ? `Recorded on my workstation up to ${esc(day(p.asOf))}. ` : "Metrics freshness unavailable. "}Both totals are partial. ${int(counted.length)} of ${int(all.length)} models have complete token counters${isNum(cached) ? `; ${cached}% of recorded token events are cache reads` : ""}. The API estimate uses stored reference rates for ${int(priced.length)} models${isNum(covered) ? ` behind ${covered}% of runs` : ""}. ${incomplete ? `${int(incomplete)} more ${incomplete === 1 ? "model has" : "models have"} rates but incomplete usage. ` : ""}Historical rate changes and discounts are not applied. Delegated subagent turns are counted, and Claude requests are priced one at a time, including cache lifetime and fast mode. This is an estimate, not a bill, and account-wide proxy totals are excluded. Commits count every ref in current and archived local histories. Delegated agents are recorded hand-offs, not unique agents. ${Object.values(p.sources || {}).some(s => s.state !== "fresh") ? "Some sources are stale." : ""}</p>
         </div>
         <div class="galaxy" id="galaxy" aria-hidden="true"></div>
         ${groups.length ? `<p class="gcap rv" style="--rd:2.2s"><span>One dot for each delegated agent</span>${groups.map(([name, count], i) => `<span class="g${i}"><i></i>${esc(name)} ${int(count)}</span>`).join("")}</p>` : ""}
-        <p class="bnote rv" style="--rd:1.4s">${!d ? "Loading the latest figures. " : p.asOf ? `Recorded on my workstation up to ${esc(day(p.asOf))}. ` : "Metrics freshness unavailable. "}Both totals are partial. ${int(counted.length)} of ${int(all.length)} models have complete token counters${isNum(cached) ? `; ${cached}% of recorded token events are cache reads` : ""}. The API estimate uses stored reference rates for ${int(priced.length)} models${isNum(covered) ? ` behind ${covered}% of runs` : ""}. ${incomplete ? `${int(incomplete)} more ${incomplete === 1 ? "model has" : "models have"} rates but incomplete usage. ` : ""}Historical rate changes and discounts are not applied. Delegated subagent turns are counted, and Claude requests are priced one at a time, including cache lifetime and fast mode. This is an estimate, not a bill, and account-wide proxy totals are excluded. Commits count every ref in current and archived local histories. Delegated agents are recorded hand-offs, not unique agents. ${Object.values(p.sources || {}).some(s => s.state !== "fresh") ? "Some sources are stale." : ""}</p>`;
+`;
   }
   function render(d) {
     const ext = (href, text) => `<a href="${href}" target="_blank" rel="noopener">${text}<span class="sr"> (opens in a new tab)</span></a>`;
@@ -1479,7 +1527,8 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
         <div class="drift" data-drift="5" data-shapes="12" aria-hidden="true"></div>
         ${shapeSvg(pick(BLOOM), "shape sun", 'data-in="150"')}${shapeSvg("flower", "shape moon", 'data-in="380"')}
         <div class="copy">
-          <h1 class="name">Caelestia</h1>
+          <h1 class="name" aria-label="Caelestia"><span aria-hidden="true">${[..."Caelestia"].map((ch, i, a) => { const t = i / (a.length - 1), lo = t < .5;
+            return `<span class="lt" style="--i:${i};--a:var(${lo ? "--ink" : "--primary"});--b:var(${lo ? "--primary" : "--tertiary"});--t:${(lo ? t * 2 : t * 2 - 1).toFixed(3)}">${ch}</span>`; }).join("")}</span></h1>
           <p class="pitch rv" style="--rd:.75s">The Caelestia shell from Hyprland, ported to Windows&nbsp;11.</p>
           <p class="sub rv" style="--rd:.9s">A new bar, launcher, dashboard and window tiling for your desktop, coloured by your wallpaper. Built on the Windows Quickshell backend from ii-windows.</p>
           <div class="cta rv" style="--rd:1.05s"><a class="btn pri" href="#install">Get Caelestia</a><a class="btn ton" href="#run">Watch it run</a></div>
@@ -1488,11 +1537,12 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
         <div class="screen" id="hero-screen">
           ${miniHtml("A live drawing of the Caelestia shell: the bar with workspace dots and a clock, tiled windows, and panels sliding out of the screen's edges.")}
           <button class="hold" aria-pressed="false"><svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg><svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><span>Pause</span></button></div>
+        <div class="marq" aria-hidden="true"><div class="mq">${[0, 1].map(() => FEATURES.map(f => `<span>${esc(f)}<svg viewBox="0 0 32 32"><path d="${SPARK}"/></svg></span>`).join("")).join("")}</div></div>
       </section></div>
 
       <div class="scene"><section id="run" class="ws run" tabindex="-1" aria-labelledby="run-h">
-        <div class="drift" data-drift="13" data-shapes="6" data-fade=".45" aria-hidden="true"></div>
-        <div class="lead"><h2 class="title" data-k="02" id="run-h">See it run</h2>
+        <div class="drift" data-drift="13" data-shapes="6" data-fade=".45" aria-hidden="true"></div><span class="numeral bl" aria-hidden="true">02</span>
+        <div class="lead"><h2 class="title" data-k="02 / 07" id="run-h">See it run</h2>
           <ol class="cues" aria-label="What the demo shows">${CH.map((c, i) => `<li${i ? "" : ' class="now"'}><h3>${esc(c.title)}</h3><div><p>${esc(c.text)}</p></div></li>`).join("")}</ol>
           <p class="small note rv" style="--rd:.8s">A drawing of the shell, made in code.</p></div>
         <div class="player rv" style="--rd:.25s"><div class="pscreen"><video playsinline muted preload="metadata" aria-label="Demo of Caelestia running on Windows 11"></video>
@@ -1504,9 +1554,9 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       </section></div>
 
       <div class="scene"><section id="edges" class="ws edges flood-t" tabindex="-1" aria-labelledby="edges-h">
-        <div class="drift" data-drift="21" data-shapes="7" data-flood aria-hidden="true"></div>
+        <div class="drift" data-drift="21" data-shapes="7" data-flood aria-hidden="true"></div><span class="numeral bl" aria-hidden="true">03</span>
         <div class="emap">
-          <div class="h"><h2 class="title" data-k="03" id="edges-h">Every edge opens something</h2><p class="cap rv">Pick a name to open its panel.</p></div>
+          <div class="h"><h2 class="title" data-k="03 / 07" id="edges-h">Every edge opens something</h2><p class="cap rv">Pick a name to open its panel.</p></div>
           <div class="escreen">${miniHtml("A drawing of the Caelestia shell. The panel named alongside it is open.")}</div>
           ${edge(idx("dash"), "t")}${edge(idx("bar"), "l")}
           <div class="er">${edge(idx("note"), "n")}${edge(idx("sess"), "s")}</div>
@@ -1515,8 +1565,8 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       </section></div>
 
       <div class="scene"><section id="tiling" class="ws tiling" tabindex="-1" aria-labelledby="tile-h">
-        <div class="drift" data-drift="31" data-shapes="6" data-fade=".6" aria-hidden="true"></div>
-        <div class="lead"><h2 class="title" data-k="04" id="tile-h">Tiling, built in</h2>
+        <div class="drift" data-drift="31" data-shapes="6" data-fade=".6" aria-hidden="true"></div><span class="numeral bl" aria-hidden="true">04</span>
+        <div class="lead"><h2 class="title" data-k="04 / 07" id="tile-h">Tiling, built in</h2>
           <p class="cap rv">Windows arrange themselves as they open, with Hyprland's layouts and gaps. Choose a layout, then pick a window.</p>
           <div class="seg3 rv" style="--rd:.5s" role="group" aria-label="Layout">${["Dwindle", "Master", "Scrolling"].map(l => `<button data-l="${l.toLowerCase()}" aria-pressed="false">${l}</button>`).join("")}</div>
           <p class="small rv" style="--rd:.65s">Tiling stays off until you turn it on.</p></div>
@@ -1525,9 +1575,9 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       </section></div>
 
       <div class="scene"><section id="install" class="ws install flood-p" tabindex="-1" aria-labelledby="inst-h">
-        <div class="drift" data-drift="22" data-shapes="7" data-flood aria-hidden="true"></div>
+        <div class="drift" data-drift="22" data-shapes="7" data-flood aria-hidden="true"></div><span class="numeral tr" aria-hidden="true">05</span>
         <svg class="ipath" aria-hidden="true"></svg>
-        <div class="lead"><h2 class="title" data-k="05" id="inst-h">Three steps, no admin rights</h2></div>
+        <div class="lead"><h2 class="title" data-k="05 / 07" id="inst-h">Three steps, no admin rights</h2></div>
         <ol class="steps">
           <li class="step"><div class="sn" data-in="350" style="--i:0;--rot:140s">${shapeSvg("cookie9")}<span aria-hidden="true">1</span></div>
             <h3><span class="sr">Step 1: </span>Download</h3><p>Download the Windows x64 ZIP from GitHub, verify its SHA-256, and extract it.</p>${download}
@@ -1578,13 +1628,14 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       a.addEventListener("focus", () => a.matches(":focus-visible") && peek(true)); a.addEventListener("blur", () => peek(false));
     });
     SECs = [...document.querySelectorAll("#app .ws")]; SCs = SECs.map(s => s.parentElement);
+    words(document.getElementById("app"));
 
     document.querySelectorAll("[data-drift]").forEach(driftOf);
     arm(document.getElementById("app"));
     fresh();
-    builders = [layoutGalaxy, layoutPath];
+    builders = [fitLedger, layoutGalaxy, layoutPath];
     ctl.intro = heroDemo(); ctl.run = runDemo(); ctl.edges = edgeMap(); ctl.tiling = tiler();
-    hoverShapes();
+    hoverShapes(); heroPointer();
     setHue(hue, false);
     setMode();
     const k = SCN.findIndex(s => "#" + s[0] === location.hash);
@@ -1600,7 +1651,7 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     if (on) setOn(ws, false);
     ws.innerHTML = buildHtml(d); ws._counted = false;
     ws.querySelectorAll("[data-drift]").forEach(driftOf);
-    arm(ws); layoutGalaxy(); fresh();
+    words(ws); arm(ws); fitLedger(); layoutGalaxy(); fresh();
     if (on) requestAnimationFrame(() => requestAnimationFrame(() => setOn(ws, true)));
   }
   // How long ago the figures were recorded, in words, kept current while the page is open.
@@ -1618,6 +1669,35 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
   }
   setInterval(() => { if (!document.hidden) fresh(); }, 6e4);
 
+  // Headings are set a word at a time, so each word can rise into place as its scene arrives.
+  function words(root) {
+    root.querySelectorAll(".title:not([data-split])").forEach(h => {
+      h.dataset.split = ""; let i = 0;
+      [...h.childNodes].forEach(n => {
+        if (n.nodeType !== 3) return;
+        const f = document.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach(w => {
+          if (!w) return;
+          if (/^\s+$/.test(w)) { f.append(w); return; }
+          const o = document.createElement("span"), x = document.createElement("span");
+          o.className = "wd"; x.textContent = w; x.style.setProperty("--wi", i++); o.append(x); f.append(o);
+        });
+        n.replaceWith(f);
+      });
+    });
+  }
+  // The ledger keeps to one screen: on a short window it drops its smallest model rows, then the split,
+  // then the table, rather than letting the notes run over them. Offsets ignore the entrance's slide.
+  function fitLedger() {
+    const lg = document.querySelector("#build .ledger"); if (!lg) return;
+    const rows = [...lg.querySelectorAll(".models tbody tr")], tb = lg.querySelector(".models"), sp = lg.querySelector(".spl");
+    rows.forEach(r => r.hidden = false); if (tb) tb.hidden = false; if (sp) sp.hidden = false;
+    if (narrow.matches) return;
+    const last = lg.lastElementChild, over = () => last.offsetTop + last.offsetHeight > lg.clientHeight + 1;
+    for (let i = rows.length - 1; i >= 3 && over(); i--) rows[i].hidden = true;
+    if (over() && sp) sp.hidden = true;
+    if (over() && tb) tb.hidden = true;
+  }
   // One dot for each delegated agent, on a sunflower spiral. They fly out of the number that counts them.
   function layoutGalaxy() {
     const el = document.getElementById("galaxy"), n = agentsN;
@@ -1798,6 +1878,26 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
     if (/^[1-9]$/.test(e.key) && SECs[+e.key - 1]) { e.preventDefault(); go(+e.key - 1); }
   });
 
+  /* ---------- the first screen answers the pointer ----------
+     The drawing turns to follow it, and the wordmark's letters swell as it passes over them. */
+  function heroPointer() {
+    const sec = document.getElementById("intro"), copy = sec?.querySelector(".copy"), lts = [...(sec?.querySelectorAll(".lt") || [])], scr = document.getElementById("hero-screen");
+    if (!sec || !fine.matches || reduced.matches || narrow.matches) return;
+    let q = 0, px = 0, py = 0;
+    const paintP = () => {
+      q = 0;
+      const r = sec.getBoundingClientRect(), nx = (px - r.left) / r.width - .5, ny = (py - r.top) / r.height - .5;
+      scr.style.setProperty("--ry", (-11 + nx * 12).toFixed(2) + "deg"); scr.style.setProperty("--rx", (5 - ny * 9).toFixed(2) + "deg");
+      const c = copy.getBoundingClientRect();
+      lts.forEach(l => {
+        const u = l.offsetHeight || 1, cx = c.left + l.offsetLeft + l.offsetWidth / 2, cy = c.top + l.offsetTop + u / 2;
+        l.style.setProperty("--lift", Math.max(0, 1 - Math.hypot(px - cx, (py - cy) * 1.3) / (u * 1.15)).toFixed(3));
+      });
+    };
+    sec.addEventListener("pointermove", e => { if (e.pointerType === "touch") return; px = e.clientX; py = e.clientY; if (!q) q = requestAnimationFrame(paintP); }, {passive: true});
+    sec.addEventListener("pointerleave", () => { scr.style.removeProperty("--rx"); scr.style.removeProperty("--ry"); lts.forEach(l => l.style.removeProperty("--lift")); });
+  }
+
   /* ---------- shapes and buttons answer the pointer ---------- */
   function hoverShapes() {
     const app = document.getElementById("app");
@@ -1817,7 +1917,18 @@ html:not(.staged) .ws:not(.in) *{animation-play-state:paused!important}
       host.style.setProperty("--mx", ((e.clientX - r.left) / r.width - .5).toFixed(3));
       host.style.setProperty("--my", ((e.clientY - r.top) / r.height - .5).toFixed(3));
     }, {passive: true});
-    app.addEventListener("pointerleave", () => { lean?.style.removeProperty("--mx"); lean?.style.removeProperty("--my"); lean = null; });
+    // buttons lean a little toward the pointer, and settle back when it leaves
+    let mag = null;
+    const unmag = () => { mag?.style.removeProperty("--bx"); mag?.style.removeProperty("--by"); mag = null; };
+    if (fine.matches && !reduced.matches) app.addEventListener("pointermove", e => {
+      const b = e.target.closest(".btn:not(.off)");
+      if (b !== mag) unmag();
+      if (!b) return; mag = b;
+      const r = b.getBoundingClientRect();
+      b.style.setProperty("--bx", ((e.clientX - r.left - r.width / 2) * .16).toFixed(1) + "px");
+      b.style.setProperty("--by", ((e.clientY - r.top - r.height / 2) * .28).toFixed(1) + "px");
+    }, {passive: true});
+    app.addEventListener("pointerleave", () => { lean?.style.removeProperty("--mx"); lean?.style.removeProperty("--my"); lean = null; unmag(); });
     // the big shapes change on their own, every few seconds, while they are on screen
     const shown = ws => staged ? ws.parentElement.classList.contains("vis") : ws.classList.contains("in");
     if (!reduced.matches) [[".hero .sun path", 5200], [".credits .big path", 6100]].forEach(([sel, ms]) => {
