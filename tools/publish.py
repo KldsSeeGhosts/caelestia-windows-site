@@ -12,6 +12,8 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import metrics
 
+SOURCE = Path(__file__).resolve().parents[1]
+SYNCED = "CAELESTIA_PUBLISHER_SYNCED"
 PUBLIC_FILES = ("index.html", "release-download.js", "status-data.js", ".nojekyll", "og.png",
                 "demo-full.mp4", "demo-full-poster.jpg")
 PRIVATE = re.compile(r"(?i)\b[A-Z]:[\\/]|AppData|tail74ed91|\.ts\.net|linear\.app|"
@@ -48,8 +50,21 @@ def exclusive_run(runtime):
             msvcrt.locking(lock.fileno(), msvcrt.LK_UNLCK, 1)
 
 
+def sync_source(root=SOURCE):
+    """Fast-forward the checkout the page and metrics code come from.
+
+    The hourly run builds index.html from this checkout's template. If it fell
+    behind a reviewed merge, it would publish the old page over the new one, so
+    it updates first. A checkout that cannot fast-forward (no upstream, local
+    commits, conflicting edits) raises, and nothing is published."""
+    head = lambda: metrics.command(["git", "-C", str(root), "rev-parse", "HEAD"]).strip()
+    before = head()
+    metrics.command(["git", "-C", str(root), "pull", "--ff-only"])
+    return before != head()
+
+
 def public_site(canonical_url):
-    source = Path(__file__).resolve().parents[1] / "source"
+    source = SOURCE / "source"
     page = (source / "showcase.html").read_text(encoding="utf-8")
     download = (source / "release-download.js").read_text(encoding="utf-8")
     if "const MEDIA = null;" not in page:
@@ -119,8 +134,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
     try:
         config = metrics.read(args.config)
+        updated = False
         with exclusive_run(Path(config["runtime"])):
-            result = publish(config, args.dry_run)
+            if config.get("syncSource", True) and not os.environ.get(SYNCED):
+                updated = sync_source()
+            if not updated:
+                result = publish(config, args.dry_run)
+        if updated:
+            # New reviewed code arrived. Publish with it, not with the copy already loaded.
+            rerun = subprocess.run([sys.executable, *sys.orig_argv[1:]], env={**os.environ, SYNCED: "1"})
+            raise SystemExit(rerun.returncode)
         raise SystemExit(result)
     except subprocess.CalledProcessError as error:
         metrics.report_failure("publisher", error)

@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 import sqlite3
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -283,6 +284,34 @@ class MetricsTests(unittest.TestCase):
         by_model = {row[1]: row for row in rows}
         self.assertEqual(("codex", "gpt-6.1-sol", 1, 100, 10, 60, None), by_model["gpt-6.1-sol"])
         self.assertEqual(("codex", "gpt-6.2-sol", 0, 50, 5, 20, None), by_model["gpt-6.2-sol"])
+
+    def test_publisher_checkout_fast_forwards_before_building_the_page(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            git = lambda *a: metrics.command(["git", "-c", "user.name=test", "-c", "user.email=test@localhost",
+                                              "-c", "init.defaultBranch=main", *a])
+            git("init", "-q", "--bare", str(tmp / "origin.git"))
+            git("clone", "-q", str(tmp / "origin.git"), str(tmp / "publisher"))
+            (tmp / "publisher" / "page.html").write_text("old", encoding="utf-8")
+            git("-C", str(tmp / "publisher"), "add", "page.html")
+            git("-C", str(tmp / "publisher"), "commit", "-q", "-m", "old")
+            git("-C", str(tmp / "publisher"), "push", "-q", "origin", "HEAD:main")
+            git("-C", str(tmp / "publisher"), "branch", "-q", "--set-upstream-to=origin/main")
+            git("clone", "-q", str(tmp / "origin.git"), str(tmp / "reviewer"))
+            (tmp / "reviewer" / "page.html").write_text("new", encoding="utf-8")
+            git("-C", str(tmp / "reviewer"), "commit", "-q", "-am", "new")
+            git("-C", str(tmp / "reviewer"), "push", "-q", "origin", "HEAD:main")
+            self.assertTrue(publish.sync_source(tmp / "publisher"))
+            self.assertEqual("new", (tmp / "publisher" / "page.html").read_text(encoding="utf-8"))
+            self.assertFalse(publish.sync_source(tmp / "publisher"))
+            # a checkout that has diverged refuses, rather than publishing an old page
+            (tmp / "publisher" / "page.html").write_text("local", encoding="utf-8")
+            git("-C", str(tmp / "publisher"), "commit", "-q", "-am", "local")
+            (tmp / "reviewer" / "page.html").write_text("newer", encoding="utf-8")
+            git("-C", str(tmp / "reviewer"), "commit", "-q", "-am", "newer")
+            git("-C", str(tmp / "reviewer"), "push", "-q", "origin", "HEAD:main")
+            with self.assertRaises(subprocess.CalledProcessError):
+                publish.sync_source(tmp / "publisher")
 
     @unittest.skipUnless(sys.platform == "win32", "Windows byte lock")
     def test_concurrent_publisher_is_refused_and_lock_is_released(self):

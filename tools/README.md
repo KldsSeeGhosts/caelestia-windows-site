@@ -59,7 +59,13 @@ image/video assets are staged by a publishing run. The resolver selects the
 exact public ZIP from the same metadata pointer as Nexus; the metrics
 collector is independent of that pointer and the proxy dashboard.
 Unrelated staged files block publication.
-An operating-system lock prevents concurrent manual/hourly publishing.
+An operating-system lock prevents concurrent manual/hourly publishing. Before it
+builds anything, the publisher fast-forwards the checkout it runs from
+(`git pull --ff-only`) and, if new commits arrived, runs again with the new
+code, so a merged template is never overwritten by an older copy. If that
+checkout cannot fast-forward (no upstream, local commits or conflicting edits),
+the run fails and publishes nothing. Set `"syncSource": false` in the private
+config to turn this off.
 Destinations must match the configured canonical origin and branch. Pushes
 are non-force. A dry run refreshes private generated files but never modifies,
 commits or pushes public files. It may fast-forward the configured clones.
